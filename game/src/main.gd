@@ -1,0 +1,28 @@
+extends Node2D
+
+## Main entry point — The Curse of Gallowfell
+##
+## Phase 3 B1 hello-world + B2.3 dev-mode smoke test. Replace with the actual
+## game bootstrap in B2.4 (GameState autoload) / B2.5 (combat scene scaffold).
+
+## Set false to skip dev-mode smoke tests on launch (e.g. when wiring later
+## scenes that don't want test output cluttering the console).
+const RUN_DEV_TESTS: bool = true
+
+
+func _ready() -> void:
+	print("=== The Curse of Gallowfell ===")
+	print("Engine: Godot 4 — hello world confirmed")
+
+	if RUN_DEV_TESTS:
+		_run_dev_test("res://src/runtime/card_zones_test.gd")  # B2.3
+		_run_dev_test("res://src/runtime/game_state_test.gd")  # B2.4
+
+
+func _run_dev_test(path: String) -> void:
+	var test_script: GDScript = load(path)
+	if test_script == null:
+		printerr("[main] could not load %s" % path)
+		return
+	var test := test_script.new() as Node
+	add_child(test)  # _ready() on the test node will fire the suite

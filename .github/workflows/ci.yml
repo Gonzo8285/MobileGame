@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate project structure
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check Godot project structure
+        run: |
+          echo "=== The Curse of Gallowfell — CI hello world ==="
+          FAIL=0
+
+          check() {
+            if [ -e "$1" ]; then
+              echo "  ✓ $1"
+            else
+              echo "  ✗ MISSING: $1"
+              FAIL=1
+            fi
+          }
+
+          check "game/project.godot"
+          check "game/icon.svg"
+          check "game/scenes/main.tscn"
+          check "game/src/main.gd"
+
+          if [ $FAIL -eq 1 ]; then
+            echo "Structure check FAILED"
+            exit 1
+          fi
+
+          echo "=== Structure valid — CI green ==="

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M24"
+display_name = "Choir of the Long Dead"
+faction = 1
+card_type = 0
+rarity = 1
+cost = 5
+hp = 4
+attack = 2
+attack_range = 2
+cooldown = 1
+keywords = Array[int]([])
+effect_text = "Aura: friendly Ash Wraiths gain +1 HP. On play: existing Ash Wraiths get +1 HP immediately."
+flavour_text = "Twelve voices. Eleven of them have been dead longer than the kingdom."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

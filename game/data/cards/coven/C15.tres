@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"C15"
+display_name = "Black-Tongue Adept"
+faction = 2
+card_type = 0
+rarity = 0
+cost = 2
+hp = 2
+attack = 2
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([3])
+effect_text = "On attack: apply Poison-1 (or +1 stack if target already Poisoned)."
+flavour_text = "Her tongue is black to the root. The root goes deep."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"C28"
+display_name = "The Sodden Penitent"
+faction = 2
+card_type = 0
+rarity = 0
+cost = 4
+hp = 3
+attack = 2
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([9, 8])
+effect_text = "When this unit is sacrificed: summon two 2/2 Drowned-Kings (Poison-1 on attack)."
+flavour_text = "She chose the bog over the chapel. The bog repays the choice."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

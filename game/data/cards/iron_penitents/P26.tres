@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"P26"
+display_name = "The Long Confession"
+faction = 0
+card_type = 1
+rarity = 1
+cost = 4
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([9])
+effect_text = "Sacrifice up to 3 friendly Penitents. Each one grants you +1 mana and draws 1 card this turn."
+flavour_text = "Three voices. Three names. None of them survived to recant."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

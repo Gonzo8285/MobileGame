@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"C12"
+display_name = "Brood-Mother of the Mire"
+faction = 2
+card_type = 0
+rarity = 2
+cost = 4
+hp = 5
+attack = 1
+attack_range = 2
+cooldown = 2
+keywords = Array[int]([8])
+effect_text = "On play: summon 3 Bog-Spawns on empty tiles in lane."
+flavour_text = "The mire has a mother. She has more children than the mire has tiles."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

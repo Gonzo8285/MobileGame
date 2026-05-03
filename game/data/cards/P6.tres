@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"P6"
+display_name = "The Crucified Saint"
+faction = 0
+card_type = 0
+rarity = 2
+cost = 5
+hp = 6
+attack = 4
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([10])
+effect_text = "On play: deal 2 dmg to all friendly Penitents in lane (triggers Penance)."
+flavour_text = "Nailed to his own banner; he refuses to come down."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = true
+unlock_tag = &""

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M11"
+display_name = "Funeral Bell"
+faction = 1
+card_type = 2
+rarity = 2
+cost = 3
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([4])
+effect_text = "First enemy entering: Root 2 turns. Adjacent friendly Mourners gain +1 ATK next turn."
+flavour_text = "It is rung once. The lane remembers."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = true
+unlock_tag = &""

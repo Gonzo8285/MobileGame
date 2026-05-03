@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L40"
+display_name = "Banner of the Last Hour"
+faction = 3
+card_type = 1
+rarity = 0
+cost = 0
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([6])
+effect_text = "RELIC. At the start of each combat: place a 3-turn Banner-Token in your starting lane (row gains Shield-1 while it stands)."
+flavour_text = "When the last hour comes, the banner stands. The banner has always stood."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = false
+is_starter = false
+unlock_tag = &"relic_last_legion"
