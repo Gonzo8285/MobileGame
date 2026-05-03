@@ -1,0 +1,109 @@
+# Gaming app — research & dev backlog
+
+Heartbeat reads top-most `[ ]` item, does ONE bite-sized chunk (≤10 min of work), appends findings to `research_notes.md`, ticks the item, then stops. Keeps each run cheap.
+
+## Phase 0 — Infrastructure verification (do these FIRST when sandbox is online)
+
+- [x] V1. Verify GitHub PAT works against Gonzo8285/MobileGame. Use the Read tool with this EXACT absolute path to load the token: `C:\Users\Paul McCann\OneDrive - R.T. Keedwell Group\Documents\Claude\Projects\Gaming app\secrets\github_pat.txt`. Then from the bash sandbox call `GET /repos/Gonzo8285/MobileGame` and `git ls-remote https://x-access-token:$TOKEN@github.com/Gonzo8285/MobileGame.git`. Append result to research_notes.md and update project_config.md "Verified" line. If sandbox unavailable, leave V1 unticked and try again next run. If 401/403/404, flag `**BLOCKED — needs Paul:** PAT scope or repo access` at top.
+- [x] V2. Once V1 passes, write a minimal `.gitignore` (covers `secrets/`, OS junk, engine build dirs) and `README.md` to the repo, commit "chore: bootstrap repo", push to main. Confirms write access. (Done via GitHub web UI 2026-04-29 — sandbox proxy blocks github.com and Paul's work network does TLS interception, so CLI push not viable from either side. Files authored locally in project folder, then uploaded by Paul in browser.)
+
+## Phase 1 — Research (do these first, in order)
+
+- [x] R1. Top-grossing & most-downloaded mobile genres on iOS+Google Play, 2026 — list 5 genres with one-line "why it makes money" each
+- [x] R2. Hybrid-casual vs hyper-casual vs casual vs midcore — 4-line cheat sheet of dev cost, time-to-ship, ARPDAU range
+- [x] R3. Top 10 most addictive mechanics (variable rewards, daily streaks, energy, gacha, battle pass, loss aversion, social proof, FOMO, sunk cost, near-miss) — one line each on how to implement
+- [x] R4. Free game engines shortlist (Unity, Godot 4, Defold, Phaser, Cocos Creator) — score each on: free?, AI/CLI-controllable?, iOS+Android export, asset ecosystem
+- [x] R5. Pick the recommended engine for Claude-driven dev with reasoning (≤6 lines) — **Godot 4**
+- [x] R6. Free asset pipelines — sprites (Stable Diffusion / Kenney.nl / OpenGameArt), audio (freesound, ElevenLabs free, Suno free tier), fonts (Google Fonts) — one line each, licence note
+- [x] R7. Monetization stack — AdMob vs AppLovin MAX vs Unity LevelPlay; rewarded video best practice; IAP price ladder template
+- [x] R8. Retention systems blueprint — Day-1, Day-7, Day-30 mechanics; daily reward calendar template
+- [x] R9. Apple Developer Program 2026 — cost, what Paul must do personally, what Claude can prep, signing requirements (must be on a Mac or use a cloud-Mac CI)
+- [x] R10. Google Play Console 2026 — cost, internal/closed/open testing tracks, required artefacts, 14-day pre-launch checklist
+- [x] R11. ASO 2026 — title/subtitle/keyword fields, screenshot frame templates, A/B test tooling
+- [x] R12. Soft-launch playbook — recommended markets (PH, CA, NZ, etc.), KPIs to gate global launch
+- [x] R13. CI/CD options Claude can drive headless — GitHub Actions, EAS Build, Codemagic, Unity Cloud Build — costs, free tiers, auth requirements
+- [x] R14. AI tools/MCPs worth connecting — image gen, audio gen, analytics, store-listing — list and which are free
+- [x] R15. Final research summary — 1-page condensed brief Paul reads before Phase 2 — see `phase1_brief.md`
+
+## Phase 2 — Game selection (UNLOCKED 2026-04-28)
+
+References + constraints captured in research_notes.md. Heartbeat: do R3–R8 first, then proceed to G1.
+
+- [x] G1. Unpack Paul's game references — done in main session (see "Phase 2 unlocked" block in notes)
+- [x] G2. Concept selection — Paul picked #1 directly (no need for full pitch comparison)
+- [x] G3. **PAUL PICKED:** Roguelite TD deckbuilder, grimdark fantasy, original IP
+- [x] G4. 1-page Game Design Doc — core loop, run structure, card types, Warlord classes, faction list (original names), monetisation surfaces, MVP scope, working title shortlist — see `gdd_v0.md`
+- [x] G5. Name the game — 5 working-title candidates in the grimdark "in the style of" lane, check trademark + .com + app-store availability for each — see `g5_names.md` (top pick: Gallowmarch, awaiting Paul's call)
+- [x] G6. Faction bible — 4–5 original factions with one-line vibe + visual cue (e.g. "Iron Penitents = zealot crusaders, hammer + chain motif"). NO GW/WotC names. — see `faction_bible.md`
+- [x] G7. Card design v0 — 30-card starter pool across 3 factions: 18 units, 8 spells, 4 traps. Costs, rarities, simple keywords. — see `cards_v0.md`
+- [x] G8. Monetisation surface map — exactly where microtxns, bundles, energy, resource locks, battle pass slot in. One diagram in markdown.
+- [x] G9. **Warlord roster — 10 characters.** 5 free at start, 5 unlockable. Each gets: name, faction, one-line backstory, signature passive, signature unit, signature spell, visual cue. Free 5 should span playstyles (aggro / control / swarm / summoner / tempo) so new players can find their fit. Paid 5 should be flashier/synergistic to drive desire — but NOT pay-to-win. Note unlock cost/method per paid Warlord. — see `warlords_v1.md` (Gallowfell-aligned respin of v0)
+
+## Phase 2.5 — Gallowfell lore reconciliation (added 2026-04-30 after lore_gallowfell.md)
+
+Paul reframed factions/setting in `lore_gallowfell.md`. v0 design docs use the old faction names; sync them so Phase 3 builds against the canonical lore.
+
+- [x] S1. Update `faction_bible.md` to Gallowfell factions: keep Iron Penitents; replace with Withered Court (Catacombs), Hollow Pact (Bog of Bargains), Ferrum Host (Foundry), Sable Wilds (Cinderwood). Pull motivation + visual motif from `lore_gallowfell.md`.
+- [x] S2. Update `gdd_v0.md`: swap faction list, add Hanging Hour + Reanimation as core mechanics, add biome map, swap working-title block to "The Curse of Gallowfell".
+- [x] S3. Update `cards_v0.md` faction tags to new faction names; spot-check card flavour text for references that now break.
+- [x] S4. Trademark + .com + Apple/Google store availability scan on "Gallowfell" — surface-level WebSearch returns no public hits. Formal USPTO/EUIPO/UKIPO + domain registrar check still owed; queue for Claude Code on Paul's laptop (it can hit those endpoints).
+
+## Phase 2.6 — Deck depth expansion (added 2026-04-30 by Paul)
+
+Original 30-card pool too thin for real deckbuilding. Target: ~35-40 cards per faction × 5 = 175-200 launch cards. Each faction supports 3 sub-archetypes (~10-12 cards each), synergy anchored on 2-3-4-cost cards.
+
+- [x] C1. Per-faction archetype briefs — for each of the 5 factions, define 3 sub-archetypes with: identity card (a 4-cost rare that names the strategy), payoff card, supporting cast 2-3-4 cost spine, and 1 anti-synergy with a rival faction archetype. Output: `archetypes_v0.md`.
+- [x] C2. Iron Penitents full pool (~40 cards) — Bleed-stack / Sacrifice-Penance / Cleave-melee. 60% units, 25% spells, 10% traps, 5% specials. Output: `cards_iron_penitents_v1.md` + `.tres` files in `game/data/cards/iron_penitents/`. _(Done 2026-05-01: markdown authored in earlier live session; .tres P10–P40 batch-generated this heartbeat. P39/P40 relics flagged as `is_draftable=false` + `unlock_tag=&"relic_iron_penitents"` pending Paul's confirmation on the relic-slot system per cards_iron_penitents_v1.md open Q1.)_
+- [x] C3. Ash-Mourners full pool (~40 cards) — Smoke-Fear control / Resurrect spam / Trap-control. Same structure. _(Done 2026-05-01: `cards_ash_mourners_v1.md` authored + 29 new `.tres` files (M12–M40) under `game/data/cards/ash_mourners/` + `M5.tres` reshaped in place per S2 promotion. Two relics flagged `is_draftable=false`+`unlock_tag=&"relic_ash_mourners"` pending Paul's relic-system call.)_
+- [x] C4. Coven of the Black Mire full pool (~40 cards) — Poison-stack / Bog-Spawn swarm / Sacrifice combo. _(Done 2026-05-01: `cards_coven_v1.md` authored + 30 new `.tres` files (C11–C40) under `game/data/cards/coven/`. C6 Mother Quag retained as single dual-archetype card per Paul's lock. Two relics flagged `is_draftable=false`+`unlock_tag=&"relic_coven"` pending Paul's relic-system call.)_
+- [x] C5. The Last Legion full pool (~40 cards) — Rally-Formation / Tempo-Echo / Banner-buff. _(Done 2026-05-01 heartbeat: `cards_last_legion_v1.md` authored + 40 new `.tres` files (L1–L40) under `game/data/cards/last_legion/`. Net-new faction (no v0 cards). 4 Rares = Sergeant-Smith Vikar (L7), Echo-Sergeant (L18), Banner-Captain of the Crowned Anvil (L33), Crowned Anvil Standard 5c artifact-unit (L34). 60/25/10/5 distribution + 24/12/4 rarity hit exactly. Echo flagged as soft-keyword for engine-side enum addition (Q1 — affects B2.5 wave-spawner). Banner-Token flagged as new lane-object class (Q2 — affects B2.6/B2.7). Two relics flagged `is_draftable=false`+`unlock_tag=&"relic_last_legion"` pending Paul's relic-system call.)_
+- [x] C6. Skinward Pact full pool (~40 cards) — Big-monster / Transformation / Beast-summon. _(Done 2026-05-02 heartbeat: `cards_skinward_pact_v1.md` authored + 40 new `.tres` files (W1–W40) under `game/data/cards/skinward_pact/`. Net-new faction (no v0 cards). 4 Rares = Bear-Skin Hierophant (W4 E1 identity), Thrask the Bear-Who-Was-King (W8 E1 6c R payoff), Wyrd-Shifter of the Cinderwood (W19 E2 identity), Pelt-Bound Shaman (W31 E3 identity). 60/25/10/5 distribution + 24/12/4 rarity hit exactly. W27 Cub-Token + W28 Wolf-Token authored as 0c C draftable (mirrors C1 Bog-Spawn pattern). Transformation flagged as soft-keyword on 9 cards for engine-side enum addition (Q1 — affects B2.6/B2.7 card-play loop). Wilds-tag system flagged for engine work (Q2 — needs faction-4 lookup OR new tags field on Card). Two relics flagged `is_draftable=false`+`unlock_tag=&"relic_skinward_pact"` pending Paul's relic-system call.)_
+- [x] C7. Cross-faction balance pass — ensure each archetype has a clean counter elsewhere; flag any combos that snowball without a check; rarity distribution consistent across factions. _(Done 2026-05-02 04:17 UTC: rarity 24C/12U/4R verified consistent across all 5 factions; v0.1 anti-synergy grid re-validated symmetric (3-deal/3-receive each); 3 snowball flags raised — aura-stacking rule needs adding to GDD, Bleed-5 per-enemy cap recommended, Wyrd-Shifter ramp flagged for soft-launch monitor. None require card redesign — all 1-line GDD clarifications. Pool is internal-MVP ship-ready. See research_notes.md "C7 — Cross-faction balance pass" for full audit.)_
+- [x] C8. Internal-MVP scope update — first internal build = 3 factions × ~100 cards (Penitents + Mourners + Coven). Validate deckbuilder feel before adding the other 2. _(Done 2026-05-02 heartbeat: `internal_mvp_scope.md` authored. IMV-1 = 3 factions + 3 faction-locked Warlords + B2.5–B2.10 build slice. Tier system (W1–W5), real ad/IAP SDK (B4), AI art (B3), soft-launch CI (B5–B7) all deferred to IMV-2. Last Legion + Skinward Pact `.tres` stay on disk, flipped `is_draftable=false`. 5-criterion validation gate defined. Open Q for Paul on Warlord trio composition — non-blocking, default = canonical free-3.)_
+
+## Phase 2.7 — Warlord tier system (added 2026-04-30 by Paul)
+
+Each Warlord earns XP on wins-with-that-Warlord. Tiers unlock sideways powers, never bigger numbers.
+
+- [x] W1. Tier system design — XP curve (Tier 2 ≈ 10-15 wins, Tier 3 ≈ 30 wins, Tier 4 ≈ 60-80 wins), variant-passive choice mechanic (1 of 2 at Tier 2), signature alt-fire pattern (Tier 3), mastery reward template (Tier 4). Anti-pay-to-win bound: NEVER unlocks raw power. Output: `warlord_tiers_v0.md`. _(Done 2026-05-02 14:17 UTC heartbeat: `warlord_tiers_v0.md` authored. XP curve hits all 3 target bands (12/32/72 A0 wins). Tier 2 = 1-of-2 variant passive (default stays available, both sidegrades). Tier 3 = signature alt-fire (same cost, opposite-axis effect). Tier 4 = mastery skin + lore reveal + title + Warlord-specific Ascension slot. Boosters cap ×3.0 stacked → whale floor ~25 wins, free floor ~72 wins to T4. Engine handoff sketched for W5. 6 open questions surfaced — see doc §7.)_
+- [ ] W2. Tier content per Warlord — for all 10, author Tier 2 variant passives (×2 each), Tier 3 signature alt-fires, Tier 4 mastery cosmetic + lore-reveal one-liner + Ascension-modifier slot. Output: `warlord_tiers_full.md`.
+- [ ] W3. XP economy integration — wire battle-pass and daily-quest XP boosters into the tier system. Reflect in `monetisation_map.md`.
+- [ ] W4. UI mock — Warlord-select screen with tier ladder visible (locked / unlocked / next-XP). ASCII or markdown wireframe v0.
+- [ ] W5. Engine wiring — extend `Warlord` Resource class with `tier_unlocks: Array[Resource]` field; add XP store to `GameState`. Order this after Phase 2.6 C1 lands.
+
+## Phase 2.8 — Lore consistency reconciliation (flagged 2026-04-30)
+
+Faction names have drifted across docs. Two parallel Gallowfell namings co-exist:
+- **Track A** (faction_bible.md, warlords_v0.md, lore_gallowfell.md v0.1, GDD v0): Iron Penitents / Ash-Mourners / Coven of the Black Mire / The Last Legion / Skinward Pact.
+- **Track B** (cards_v0.md v1.0, warlords_v1.md, the original lore_gallowfell.md draft): Iron Penitents / Withered Court / Hollow Pact / Ferrum Host / Sable Wilds.
+
+- [x] L1. **Canonical names locked by Paul 2026-04-30: Track A.** Iron Penitents / Ash-Mourners / Coven of the Black Mire / The Last Legion / Skinward Pact.
+- [x] L2. Heartbeat: globally rename Track-B leftovers across `cards_v0.md`, `warlords_v1.md`, any `.tres` files, and any other doc still using Withered Court / Hollow Pact / Ferrum Host / Sable Wilds → replace with the Track-A equivalents (Ash-Mourners / Coven of the Black Mire / The Last Legion / Skinward Pact). Iron Penitents stays. _(Done 2026-05-01: batch-renamed across `cards_v0.md` / `gdd_v0.md` / `faction_bible.md` / `warlords_v1.md` / `lore_gallowfell.md` / `C1.tres` via sed — 38 references updated + 1 double-article fix ("the The Last Legion" → "the Last Legion"). Engine constants (`GFEnums.Faction.WITHERED_COURT/HOLLOW_PACT/FERRUM_HOST/SABLE_WILDS` in `enums.gd`) preserved — internal-only. Remaining Track-B mentions in `backlog.md` and `research_notes.md` are historical decision-narration and intentionally retained.)_
+- [ ] L3. Re-export the pitch .docx after rename so the public-facing brief matches. Use the build script at `C:\Users\Paul McCann\AppData\Roaming\Claude\local-agent-mode-sessions\343244bc-cab4-4b88-b9f9-6573e14e08a3\4d6195cf-cece-44eb-944e-83b0f2b8cc83\local_96bb105c-a158-4eba-a241-8f2b6dade67f\outputs\build_pitch_doc.js` (or its in-repo copy if heartbeat archives it). Output to project folder root.
+
+## Phase 3 — Build (gated on Phase 2 sign-off)
+
+- [x] B1. Repo init, engine project skeleton, version control, CI hello-world
+- [ ] B2. Core loop prototype (no art) — playable in editor
+  - [x] B2.1. Data spine — `Card` Resource class + `GFEnums` namespace (faction, type, rarity, range, keyword, run-phase). 2026-05-01.
+  - [x] B2.2. Author the 30 starter cards from `cards_v0.md` as `.tres` files under `game/data/cards/` (one per card, ID = filename).
+  - [x] B2.3. `Deck` + `Hand` + `Discard` classes with shuffle, draw, mulligan, mill rules. _(Done 2026-05-01: `src/runtime/{deck,hand,discard}.gd` authored as RefCounted classes with typed Array[Card] storage, signals, and validation hooks. Fisher-Yates shuffle (deterministic via injected RandomNumberGenerator). Auto-reshuffle on empty deck draw. Mulligan returns hand to deck → shuffle → redraw same count. Hand has overflow rule (returns false + emits `overflowed` signal — caller routes to discard). Smoke test at `src/runtime/card_zones_test.gd` (10 assertions incl. conservation invariant). `main.gd` runs the suite on launch when `RUN_CARD_ZONES_TEST=true`. Logic mirrored in Python and verified — 0 errors. Engine syntax untestable in sandbox; Paul to confirm in Godot.)_
+  - [x] B2.4. `GameState` autoload singleton — run state (mana, turn, phase), signals for UI. _(Done 2026-05-01: `src/runtime/game_state.gd` (222 LoC) holds run-level + combat-level + vitals state, with 7 signals (run_started/run_ended, phase_changed, turn_started/turn_ended, mana_changed, hp_changed, node_advanced). Lifecycle: start_run → start_combat → next_turn × N → take_damage → end_run. Mana overflow capped at max+5. HP take_damage triggers end_run(false) on lethal. Registered as autoload `GameState` in `project.godot`. Smoke test at `src/runtime/game_state_test.gd` (16 assertions + signal-emission audit). Wired into `main.gd` via `RUN_DEV_TESTS=true` flag — runs both B2.3 and B2.4 suites on engine launch.)_
+  - [ ] B2.5. Combat scene scaffold — 3-lane grid, wave spawner, base HP, defeat/victory conditions.
+  - [ ] B2.6. Card-play loop — drag from hand → drop on lane → resolve cost + place unit/spell/trap.
+  - [ ] B2.7. Turn engine — enemy advance, unit attacks, status tick, end-of-turn draw.
+  - [ ] B2.8. Reward screen — pick 1 of 3 cards from a weighted faction pool.
+  - [ ] B2.9. Map screen — branching node graph, 1 chapter (5 nodes), seeds for testing.
+  - [ ] B2.10. End-to-end smoke test — start run → play 1 combat → take reward → next node → die. Playable in Godot editor.
+- [ ] B3. Art pass v1 (placeholder → final via AI pipeline)
+  - [ ] B3.0. Research cheapest viable cloud GPU option for ComfyUI / AI art gen (Vast.ai, RunPod, Replicate, Modal). Score on: cost per hour, ease of setup, Claude-controllable API. Paul has no local GPU box — cloud is the only route. Add recommendation to research_notes.md.
+  - [ ] B3.1. (PAUL ACTION — ~early May 2026) Apple Developer account registration £79/yr at developer.apple.com. Claude will prep all assets; Paul clicks enrol. No blocker on B2/B3 art work until iOS build needed.
+- [ ] B4. Monetization SDK wiring (test mode)
+- [ ] B5. Internal test build → Paul plays on device
+- [ ] B6. Soft launch build to Google Play internal track
+- [ ] B7. iOS TestFlight build
+- [ ] B8. Tuning loop based on KPIs
+- [ ] B9. Global launch checklist
+
+## Notes / decisions log
+(Heartbeat appends here)
