@@ -17,6 +17,7 @@ func _ready() -> void:
 	if RUN_DEV_TESTS:
 		_run_dev_test("res://src/runtime/card_zones_test.gd")  # B2.3
 		_run_dev_test("res://src/runtime/game_state_test.gd")  # B2.4
+		_run_dev_test("res://src/runtime/combat_test.gd")      # B2.5
 
 
 func _run_dev_test(path: String) -> void:

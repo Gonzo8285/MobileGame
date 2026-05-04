@@ -903,3 +903,56 @@ Authored `warlord_tiers_v0.md` against the Phase 2.7 W1 spec.
 - **6 open questions surfaced for Paul** (XP-on-loss, booster cap exception for live-ops, T2 default passive availability, W10/W11 A-slot difficulty, multiplier-display style, MVP-slice tier coverage).
 
 Doc lands at `warlord_tiers_v0.md`, ~140 lines. Hands cleanly to W2 (per-Warlord content), W3 (XP-booster economy reflection in `monetisation_map.md`), W4 (tier-ladder UI mock), W5 (engine wiring after Phase 2.6 C1 lands).
+
+## Repo push + Gallowfell scan (Claude Code on Paul's laptop, 2026-05-02)
+
+**Pushed to `Gonzo8285/MobileGame@main`:**
+- Commit 1: `feat: Godot 4.3 project scaffold + CI workflow` — 214 files (Godot project, all 5 faction card decks as `.tres`, runtime GDScript, GitHub Actions CI).
+- Commit 2: `chore: phase 2.5 lore sync — Gallowfell faction names + GDD curse mechanics + warlords v1` — 28 lore/design docs.
+- B1 is now physically on GitHub (was previously authored locally only). CI workflow will fire on next push.
+
+**Gallowfell trademark + domain scan (S4 follow-up):**
+| Check | Result |
+|---|---|
+| USPTO (TESS) | No web-visible hits. Programmatic API blocked. **Manual visit to tmsearch.uspto.gov still owed.** |
+| EUIPO eSearch | No web-visible hits. Programmatic blocked. **Manual visit to euipo.europa.eu/eSearch still owed.** |
+| UKIPO | No web-visible hits. **Manual visit to trademarks.ipo.gov.uk still owed.** |
+| gallowfell.com | NXDOMAIN — appears unregistered |
+| gallowfell.app | NXDOMAIN — appears unregistered |
+| gallowfell.io | NXDOMAIN — appears unregistered |
+| gallowfell.game | NXDOMAIN — appears unregistered |
+
+**Bottom line:** zero web footprint for "Gallowfell" — no existing game, company, or product. All 4 candidate domains appear unregistered. Programmatic-level scan is clean. The three trademark registries block bots, so the formal sign-off requires Paul to log in manually to each. **Paul-action flagged in S4** — the only remaining gate before "Gallowfell" can be locked as the canonical title.
+
+## B2.5 — Combat scene scaffold (heartbeat 2026-05-02 14:35 UTC)
+
+Authored under green-light from Paul ("feel free to run some processes while we have allowances").
+
+**New files (12):**
+- `game/src/data/enemy.gd` — Enemy Resource (id, name, hp, atk, armor, move_speed, base_damage_override, faction, keywords, flavour). Mirrors Card pattern.
+- `game/src/data/wave.gd` + `wave_spawn_entry.gd` — Wave Resource + sub-entry pair. Wave holds `Array[WaveSpawnEntry]` of {on_turn, lane, enemy}.
+- `game/src/runtime/enemy_instance.gd` — RefCounted runtime for one enemy alive on a lane (data ref + current_hp + tile + statuses + take_damage/advance/add_status helpers).
+- `game/src/runtime/lane.gd` — RefCounted, owns `enemies: Array[EnemyInstance]` + reserved `friendly_units` slot for B2.6. Tile convention: 0 = base, tile_count = spawn position. `advance_all()` moves every alive enemy by its move_speed and emits `enemy_reached_base(enemy, dmg)` for any that cross 0; despawns them.
+- `game/src/runtime/wave_spawner.gd` — RefCounted, holds current_wave + lanes ref. `tick(turn)` reads spawn entries for that turn and spawns into lanes. `is_complete()` = wave turn_count reached AND all lanes empty.
+- `game/src/runtime/combat.gd` — Node2D orchestrator. setup() builds lanes + spawner. start() binds GameState turn signals, kicks `start_combat()`. Turn signals route to `_on_turn_started` (spawner.tick) and `_on_turn_ended` (lanes advance + win/loss check). `_finish` disconnects signals + emits `combat_ended(victory)`. `cleanup()` for safe tear-down.
+- `game/scenes/combat.tscn` — placeholder scene (3 ColorRect lanes + base ColorRect + status Label HUD). Sized for 1080×1920 portrait.
+- `game/data/enemies/E1–E5.tres` — 5 placeholder enemy archetypes (Cathedral Flagellant melee / Carrion Hound rusher / Bog-Lurker tank / Ash-Wraith FEAR-debuffer / Reaper-Bell siege).
+- `game/data/waves/act1_combat1.tres` — 5-spawn 10-turn wave for testing.
+- `game/src/runtime/combat_test.gd` — 14-assertion smoke test, three fights: (1) load act1 wave + drive 10 turns + verify spawns/damage; (2) defeat path with low-HP base + over-tuned Reaper-Bell; (3) victory path by manually killing the lone enemy and ticking past wave.turn_count.
+- `game/src/main.gd` — added third `_run_dev_test` line for `combat_test.gd`.
+
+**Bugs caught and fixed in-flight:**
+- Initial `combat.gd` self-called `GameState.next_turn()` from inside `_on_turn_ended`. That signal is itself fired by `next_turn()` → infinite recursion. Removed the auto-advance; B2.7 turn engine (or the test driver) is responsible for ticking. Added `is_over` guard so a stale signal connection can't double-handle.
+- Between-fights signal leak: combat1's connections to GameState.turn_started/turn_ended persisted into fight 2, where combat1's lingering 6-tile-lane enemies would advance during fight 2's 2-tile-lane ticks. Added explicit `cleanup()` method, called between fights in the test.
+
+**Verification:** Python mirror of lane + spawner + GameState + combat orchestration. All 14 assertions pass — fight 1 ends turn 10 with base_hp=24 (E1+E2 reach base for 6 dmg, E1-lane-2 + E3 + E4 still in-flight); fight 2 ends in 2 ticks with combat_ended(false) and base_hp=0; fight 3 ends in 3 ticks with combat_ended(true) and full HP. Engine syntax cannot be tested headless in this sandbox — Paul should run `main.gd` in Godot and confirm `[combat_test] PASS` appears.
+
+**Hand-off to next heartbeat (B2.6 — card-play loop):**
+- `lane.friendly_units: Array` is the slot UnitInstance lands in; class needs authoring next.
+- Drag-drop input requires the placeholder Lane visuals to gain Area2D children for hit detection. ColorRects in combat.tscn are stand-ins for that.
+- Card cost spend should route through `GameState.spend_mana()` (already returns bool — false = "not enough" UX hook).
+
+**Open Qs surfaced:**
+1. tile_count default = 6. Feels right for portrait but should mock once hand UI lands (B2.6) — fewer tiles = faster fights, more = more strategic depth.
+2. Enemy keywords currently exposed but unused. B2.7 status-tick will consume them (FEAR/SLOW/BLEED apply to enemies; SMOKE/DREAD apply to lanes).
+3. Wave .tres uses `Array[Resource]([SubResource(...)])` syntax for `spawns`. If Godot's parser is stricter than expected and needs `Array[WaveSpawnEntry](...)` instead, swap that one literal.

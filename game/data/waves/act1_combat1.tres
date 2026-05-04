@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="Wave" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://src/data/wave.gd" id="1_wave"]
+[ext_resource type="Script" path="res://src/data/wave_spawn_entry.gd" id="2_entry"]
+[ext_resource type="Resource" path="res://data/enemies/E1.tres" id="3_e1"]
+[ext_resource type="Resource" path="res://data/enemies/E2.tres" id="4_e2"]
+[ext_resource type="Resource" path="res://data/enemies/E3.tres" id="5_e3"]
+[ext_resource type="Resource" path="res://data/enemies/E4.tres" id="6_e4"]
+
+[sub_resource type="Resource" id="Resource_a01_s1"]
+script = ExtResource("2_entry")
+on_turn = 1
+lane = 1
+enemy = ExtResource("3_e1")
+
+[sub_resource type="Resource" id="Resource_a01_s2"]
+script = ExtResource("2_entry")
+on_turn = 2
+lane = 0
+enemy = ExtResource("4_e2")
+
+[sub_resource type="Resource" id="Resource_a01_s3"]
+script = ExtResource("2_entry")
+on_turn = 3
+lane = 2
+enemy = ExtResource("3_e1")
+
+[sub_resource type="Resource" id="Resource_a01_s4"]
+script = ExtResource("2_entry")
+on_turn = 4
+lane = 1
+enemy = ExtResource("5_e3")
+
+[sub_resource type="Resource" id="Resource_a01_s5"]
+script = ExtResource("2_entry")
+on_turn = 5
+lane = 0
+enemy = ExtResource("6_e4")
+
+[resource]
+script = ExtResource("1_wave")
+id = &"act1_combat1"
+display_name = "Cathedral Approach"
+turn_count = 10
+spawns = Array[Resource]([SubResource("Resource_a01_s1"), SubResource("Resource_a01_s2"), SubResource("Resource_a01_s3"), SubResource("Resource_a01_s4"), SubResource("Resource_a01_s5")])
