@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"W21"
+display_name = "Skin-Lord Augur"
+faction = 4
+card_type = 0
+rarity = 1
+cost = 5
+hp = 4
+attack = 4
+attack_range = 1
+cooldown = 2
+keywords = Array[int]([])
+effect_text = "On play: transform the cheapest Wilds in lane into a beast costing 2 more (free, no per-turn cap)."
+flavour_text = "He looks at the youngest and sees the oldest."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

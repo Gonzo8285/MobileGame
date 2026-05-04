@@ -878,6 +878,43 @@ B2.4 fully ticked. Next eligible: **B2.5 — combat scene scaffold** (3-lane gri
 - **Verdict: pool is balance-ship-ready for internal MVP.** No archetype redesigns required. Three rule clarifications needed (aura-stacking, Bleed-cap, Wyrd-Shifter monitoring) — all 1-line GDD edits, no card changes. C7 closed; C8 next.
 - **Open Qs for Paul (low-stakes, MVP-deferrable):** Q1 confirm "named auras don't stack" rule for GDD; Q2 confirm Bleed-5 cap; Q3 confirm Wyrd-Shifter monitor-don't-tune yet stance. None of these block C8 or B2.5+.
 
+---
+
+## B3.0 — Cloud GPU vendor selection (live session 2026-05-02)
+
+**Context:** Paul's RTX 2050 has ~4 GB VRAM (memory-flagged). SDXL workloads need 8-10 GB. Civitai geo-blocked in UK since July 2025 (Online Safety Act). Both constraints push to cloud. Web-searched current 2026 prices.
+
+**Lane comparison:**
+
+| Vendor | GPU | $/hr | Setup | Claude-control | Reliability | Verdict |
+|---|---|---|---|---|---|---|
+| **RunPod Community** | RTX 4090 24GB | **$0.39** | Pre-built ComfyUI templates, 2-min boot | REST + GraphQL API | Datacenter SLA-lite | **PICKED** |
+| RunPod Secure | RTX 4090 24GB | $0.69 | Same | Same | Production-grade SLA | Reserve for prod, not prototype |
+| Vast.ai | RTX 3090 24GB | $0.17 | Marketplace, varies by host | API | Reliability score 0.95+ filter required | Backup if budget tightens |
+| Vast.ai | RTX 4090 24GB | $0.29 | Same | Same | Same | Cheaper than RunPod but flakier |
+| fal.ai | Serverless ComfyUI | ~$0.002-0.02/img | None — pay-per-call | API-first | High | Use for rapid prototyping (mood thumbnails) |
+| Modal | A10G/A100 | $1.10+/hr | Code-first deploy | Python SDK | High | Overkill for SDXL, better for LLM serving |
+
+**Decision: RunPod Community Cloud, RTX 4090, on-demand pod with 30 GB persistent network volume.** Reasons in order: (1) cheapest 24 GB GPU with managed reliability — Vast.ai is cheaper but reclaim risk kills unattended heartbeat work; (2) ComfyUI templates pre-built, eliminates ~30 min of setup per session; (3) REST/GraphQL API enables full Claude automation; (4) persistent volume keeps juggernautXL + LoRAs warm between sessions ($0.10/GB/mo = ~£2/mo); (5) UK-accessible billing, GBP-friendly currency display.
+
+**Cost projection:**
+- Active art-gen month (full 200-card pass + iteration): ~£8-12
+- Dormant month (storage only): ~£2
+- Per-task heartbeat ceiling: cap pods at 2 hrs auto-stop = max £0.78/task
+
+**Paul's setup completed (live 2026-05-02):**
+- RunPod account created, £30 topped up
+- API key generated, saved to `secrets/runpod_api_key.txt` (matches existing `github_pat.txt` protocol; gitignored)
+- Read/Write scope on the key — sufficient for pod create/start/stop/delete + ComfyUI HTTP proxy access
+
+**Sandbox network constraint discovered:** Cowork bash sandbox proxy returns 403 on outbound HTTPS to api.runpod.io, huggingface.co, and example.com. This matches the V2 finding that github.com was blocked from sandbox. **Implication:** all RunPod + HF interaction must run from Paul's laptop (or his Claude Code), not from heartbeat/Cowork sandbox. Same split-brain pattern as the GitHub workflow. Confirms path forward: Cowork authors scripts/configs, Paul or Claude Code on laptop executes anything network-bound.
+
+**No RunPod MCP** in the registry (closest hits: Google Compute Engine, Cloudflare Developer Platform). Will drive RunPod via curl + bash + Python `requests` from the laptop side. RunPod's GraphQL API is well-documented; no connector needed.
+
+**Civitai → Hugging Face migration plan:** juggernautXL v9 confirmed on HF as `RunDiffusion/Juggernaut-XL-v9`. The 10 LoRAs in `pipeline_setup/loras_resolved.md` need per-LoRA HF mirror research — many SDXL LoRAs cross-mirror to HF, but some are Civitai-only. Heartbeat task to scan all 10 and flag which need substitutes. Note: cloud pod has no UK IP block on Civitai access either, so worst case the LoRAs download directly to the pod from Civitai — no migration strictly required, just a contingency plan if Civitai goes fully offline.
+
+**Phase 3 next steps queued:** B3.0a smoke test, B3.0b LoRA migration scan, B3.0c workflow_gallowfell_card.json authoring, B3.0d Python automation script. See backlog.md.
+
 ## C8 — Internal-MVP scope lock (heartbeat 2026-05-02 09:16)
 
 - Wrote `internal_mvp_scope.md`. IMV-1 = 3 factions (Penitents + Mourners + Coven, ~120 cards already on disk) + 3 faction-locked Warlords + B2.5–B2.10 build slice. Last Legion + Skinward Pact card `.tres` files stay on disk but flipped `is_draftable=false` for IMV-1; flip back on for IMV-2.
@@ -956,3 +993,148 @@ Authored under green-light from Paul ("feel free to run some processes while we 
 1. tile_count default = 6. Feels right for portrait but should mock once hand UI lands (B2.6) — fewer tiles = faster fights, more = more strategic depth.
 2. Enemy keywords currently exposed but unused. B2.7 status-tick will consume them (FEAR/SLOW/BLEED apply to enemies; SMOKE/DREAD apply to lanes).
 3. Wave .tres uses `Array[Resource]([SubResource(...)])` syntax for `spawns`. If Godot's parser is stricter than expected and needs `Array[WaveSpawnEntry](...)` instead, swap that one literal.
+
+## B2.6 (logic slice) — CardPlay resolver (heartbeat 2026-05-02 14:55 UTC)
+
+Push-on-from-B2.5 under same green light. Strategy: split B2.6 into logic-first (this run) + UI scaffold (next run). Logic gets robust testing; UI lands once we have a verified resolver to call.
+
+**New files (3) + 1 edit:**
+- `game/src/runtime/unit_instance.gd` — RefCounted runtime mirror of EnemyInstance for friendly units. Fields: card_data, current_hp, lane_index, tile, cooldown_counter, status. Methods: is_alive / can_attack / take_damage / heal / tick_cooldown / reset_cooldown / add_status / get_status. cooldown_counter starts at card.cooldown so units don't insta-attack on the turn they're played.
+- `game/src/runtime/card_play.gd` — central `CardPlay.play_card(card, target, hand, discard, lanes) -> Dictionary`. Static-method module via `class_name CardPlay`. Validates → deducts mana → moves card hand→discard → branches on card_type. UNIT places on `lane.place_unit(card, tile)`. SPELL/TRAP are intentional stubs — cost paid + card discarded, effect engine arrives in B2.7. Result dict shape: `{success, reason, unit, spell_target, trap_lane}` — UI consumers read `success` first, branch on others.
+- `game/src/runtime/card_play_test.gd` — 19-assertion smoke test. Loads cards from all 5 faction pool dirs, picks first UNIT/SPELL/TRAP it finds. Tests: AS1-6 successful unit placement (mana, hand, discard, lane state); AS7-8 occupied-tile rejection + state-immutable; AS9 invalid lane; AS10 tile 0 rejected; AS11-12 auto-tile picks back rank (tile 1); AS13 insufficient mana; AS14 null card; AS15-16 spell stub preserves spell_target; AS17-19 trap invalid-lane fail / valid-lane success / trap_lane preserved.
+- `game/src/runtime/lane.gd` — extended with: `signal unit_placed/unit_killed`, friendly_units typed `Array[UnitInstance]`, `is_tile_occupied / is_tile_in_range / first_empty_tile / place_unit / cull_dead_units / unit_count`. _to_string updated to include unit count.
+- `game/src/main.gd` — added 4th `_run_dev_test` line for `card_play_test.gd`.
+
+**Validation rule order (fail-fast, no state mutation on any rejection):**
+1. card non-null
+2. card in hand
+3. cost ≤ GameState.mana
+4. type-specific target validation (UNIT lane+tile, TRAP lane, SPELL no-validate)
+5. type-specific resolution
+
+If validation passes but a downstream call (hand.remove / lane.place_unit) returns null due to a race, the resolver refunds mana + re-adds card to hand and returns failure. Idempotent on retry.
+
+**Verification:** Python mirror with simplified Card/Lane/UnitInstance/Hand/Discard. All 19 assertions PASS — final state mana=3, hand empty, discard=4, lane 0 has 1 unit (auto-tile placement), lane 1 has 1 unit (tile 3), lane 2 has 0. Engine syntax untestable headless; Paul to confirm in Godot.
+
+**Hand-off to next slice (B2.6 UI):**
+- Need a CardView Control (one card visual — Label name/cost + tap-to-drag input).
+- Need a HandView Control (HBoxContainer of CardViews wired to GameState.hand signals — `added` / `removed`).
+- Need lane drop targets — Area2D children on Lane{0,1,2}Vis in combat.tscn, hit-tested on drag-release.
+- On drop: build target dict `{lane: int, tile: int}`, call `CardPlay.play_card`. On success: refresh hand/lane visuals from signals. On failure: bounce card back to hand position + flash a "not enough mana" / "tile occupied" toast.
+- The B2.6 stub for SPELL/TRAP means UI can ship without effect-engine wiring — they just animate the card to discard. Effects fire in B2.7.
+
+**Open Qs surfaced:**
+1. Default tile for UNIT placement when player just taps (no specific tile chosen) — currently auto-picks back rank (tile 1, closest to base, defensive). Alternative: front rank (tile_count-1, aggressive). Lean defensive for accessibility — front-rank choice is one Q for Paul once we see it on screen.
+2. Card-target-required spells (e.g. Self-Scourge needs a unit to target) vs no-target spells (e.g. Iron Cohort buffs whole side) — B2.6 stub treats all spells as no-target. The effect engine in B2.7 will need a per-card targeting flag on the Card resource. Flag for next pass.
+
+## B2.6 (UI slice) — drag-drop hand + lane targets (heartbeat 2026-05-02 15:35 UTC)
+
+Push-on after Paul confirmed all 4 dev tests PASS in Godot 4.6.2.
+
+**New files (5):**
+- `game/src/ui/card_view.gd` — Control extending CardView. Holds Card ref; draws name/cost/type/stats over a faction-tinted ColorRect BG. Implements `_get_drag_data` returning `{kind: "card", card: <Card>, source_view: <self>}`. Drag preview = duplicated translucent self. CARD_WIDTH × CARD_HEIGHT = 200×280.
+- `game/scenes/card_view.tscn` — placeholder visual with BG ColorRect + 4 Labels (Name/Cost/Type/Stats).
+- `game/src/ui/hand_view.gd` — Control extending HandView. On _ready (or manual `rebind()`) connects to GameState.hand `added` / `removed` signals; populates one CardView per card in an HBoxContainer child. CARD_VIEW_SCENE preloaded.
+- `game/scenes/hand_view.tscn` — Control 1080×320 with translucent BG + centred HBoxContainer.
+- `game/src/ui/lane_drop_zone.gd` — ColorRect-extending script. Exports `lane_index: int`. `_can_drop_data` accepts any `kind == "card"` payload. `_drop_data` calls `combat_root.handle_drop(lane_index, card, at_position)` — combat_root auto-discovered by walking up the tree until a node with `handle_drop` is found.
+- `game/src/runtime/sandbox.gd` + `game/scenes/sandbox.tscn` — manual playground launcher. Loads cards, kicks GameState.start_run + start_combat, force-bumps mana to 8, draws 5 starter UNITs into hand, instances combat.tscn, listens to `card_play_attempted` and prints "PLAY OK" / "PLAY REJECTED" on each drop attempt.
+
+**Edits:**
+- `game/src/runtime/combat.gd` — added `signal card_play_attempted(result: Dictionary)` and `func handle_drop(lane_idx, card, _drop_position) -> Dictionary`. handle_drop builds the CardPlay target dict (currently `{lane: lane_idx}` only — auto-tile picks back rank), invokes CardPlay, emits result signal, returns it.
+- `game/scenes/combat.tscn` — Lane{0,1,2}Vis ColorRects now carry `lane_drop_zone.gd` script + `lane_index` 0/1/2. Added HandView child (instance of hand_view.tscn) at y=1300 spanning the full width below the player base. Updated status label text to "drag a card from hand to a lane".
+
+**Drag-drop wiring (Godot Control API):**
+1. Player presses mouse on a CardView → CardView._get_drag_data fires → returns dict + sets translucent preview.
+2. Mouse moves over a LaneDropZone → _can_drop_data fires → returns true (any "card") → cursor signals "valid drop".
+3. Mouse-up over the LaneDropZone → _drop_data fires → forwards to combat.handle_drop.
+4. combat.handle_drop calls CardPlay.play_card with auto-tile target → returns result dict.
+5. On success: card already removed from GameState.hand by CardPlay (which also bumped discard); HandView's `removed` signal handler queues_free's the visual.
+6. On failure: no state mutation; visual stays in HandView (no bounce-back animation yet — that's polish).
+7. card_play_attempted signal emits → sandbox.gd prints to console for visual debug.
+
+**Untested-in-sandbox:** the .tscn / drag-drop API surface is the most engine-coupled code in the project so far and cannot be Python-mirrored. Paul's visual smoke test is the verification path.
+
+**Hand-off to next heartbeat (B2.7 turn engine):**
+- Drop _position currently ignored; per-tile drop targeting (e.g. drop at the front of the lane to push forward, drop at the back to defend) is a polish item — open Q for Paul once playtested.
+- HUD lacks a mana counter / turn counter / hp counter widget. The labels exist as placeholder strings; B2.7 should bind them to GameState signals so the player sees state.
+- Failed-drop bounce-back animation: nice-to-have, not required for B2.7.
+- Card cooldown_counter and lane unit attacks fire from B2.7's turn engine.
+
+**Open Qs surfaced:**
+1. Per-tile drop targeting vs auto-tile back-rank — needs visual playtest. Could feel "magic" (auto) or "fiddly" (manual).
+2. Mana counter visibility — currently tucked into console only. Heartbeat-suitable: a small Label child on HandView showing mana would close the loop without scope creep.
+3. Faction tint palette — placeholder, will be replaced by B3 art. But interim: the 5 tinted backgrounds make hand legibility instant during dev — keep through internal MVP.
+
+## D-LORA-1 — Civitai LoRA URL hunt + verification (heartbeat 2026-05-04 14:18 UTC)
+
+Resolved all 8 LoRA slots from `pipeline_spec.md` §2.2 to canonical Civitai URLs (or documented substitutes). Full mapping + rationale lives in `pipeline_setup/loras_resolved.md`.
+
+**Headline findings:**
+
+- 3 of the 8 original placeholder slugs reference WotC IP (`mtg-style`, `phyrexian-corruption`, `lorwyn-folkloric`) — no public Civitai LoRA exists for any of them (DMCA history). Substituted with style-adjacent LoRAs that hit the same aesthetic axis without naming the IP.
+- 1 exact match found: `Elden Ring Style` v1.0 (Civitai 457103) for the `elden-ring-concept-sdxl` slot.
+- 5 close-match substitutes resolved on first 4 web searches — search efficiency was high because Civitai's SEO surfaces SDXL fantasy LoRAs cleanly.
+
+**Resolved stack (final):** ClassipeintXL + Dark Fantasy LORA + Elden Ring Style (style); RPGNightmareXL (Penitents); gothic cathedral interior + Dark Gothic Fantasy (Mourners); Swamp people + Mythical Forest Style (Coven); ArmorSentinel medieval armor (Legion); Mythical Forest Style + Mythical Creatures (Skinward Pact). Total disk ≈ 1.5–2 GB inside the 30 GB budget.
+
+**Open follow-ups (deferred — none block 9-tile sheet):**
+
+1. License audit per LoRA (Phase 4 legal pass — `pipeline_spec.md` §10 Q4).
+2. Trigger-word capture per LoRA — append to §3.2 once Paul has installed and run one to confirm activation tokens.
+3. Exact-version pinning once LoRA files are on disk and we can read metadata.
+4. Backup-LoRA verification (Painterly Fantasia + Eldritch Impressionism) — only if a primary gets yanked.
+
+Files touched this heartbeat: `pipeline_setup/loras_resolved.md` (created), `pipeline_setup/README.md` (step 3 LoRA list rewritten with URLs), `pipeline_spec.md` §2.2 (placeholder slugs replaced with resolved names + Civitai IDs + weights).
+
+D-LORA-1 ticked. Next D-WORKFLOW-1 (author the ComfyUI workflow JSON) is the natural successor — it now has all the LoRA names it needs as LoRA-loader node inputs.
+
+## D-WORKFLOW-1 — ComfyUI workflow JSON authored (heartbeat 2026-05-04 21:30 UTC)
+
+Authored `pipeline_setup/workflow_gallowfell_card.json` — the ComfyUI graph every Gallowfell card image generates through. Validated: parses cleanly + all 17 nodes / 29 links cross-reference consistently in both directions (subagent ran the audit, all checks PASSED).
+
+**Graph shape:** CheckpointLoaderSimple → 10× LoraLoader chain (3 style + 7 faction) → 2× CLIPTextEncode (positive + negative) → KSampler → VAEDecode → SaveImage. EmptyLatentImage feeds the KSampler latent slot in parallel; checkpoint VAE pipes directly to VAEDecode (skipping the LoRA chain — LoRAs don't touch VAE). Loaded via ComfyUI's browser **Load** button per `pipeline_setup/README.md` step 5.
+
+**Locked parameters (hardcoded in widget values, never edit):**
+
+- Sampler `dpmpp_2m` / scheduler `karras` (= "DPM++ 2M Karras" per §2.3)
+- Steps 30, CFG 6.5, denoise 1.0
+- Latent dimensions 832 × 1216 (0.685 portrait card ratio)
+- Seed control = `fixed` — NOT randomized between runs (reproducibility rule §7.4)
+- Default seed 4242 — placeholder; per-card spec files override per `art_specs/_template.md` deterministic seed rule
+- Negative prompt = full §3.6 text baked into node 13's widget (node title says "do not edit")
+- Checkpoint filename `juggernautXL_v9.safetensors`
+
+**Player-editable surfaces (the only things meant to change per card):**
+
+- Node 12 positive prompt — paste resolved prompt from the card's `art_specs/<faction>/<id>.md` file
+- Each LoraLoader's `strength_model` + `strength_clip` weights, per the protocol baked into the workflow's `extra.lora_weight_protocol`: keep style LoRAs (nodes 2-4) at spec defaults always; for faction LoRAs (nodes 5-11), keep only the active card's faction at spec defaults and zero out every other faction's weights before queueing.
+
+**LoRA node mapping** (per `loras_resolved.md`, weights per `pipeline_spec.md` §2.2):
+
+| Node | LoRA filename (in widget) | Default weight | Layer |
+|---|---|---|---|
+| 2 | classipeintXL_v21.safetensors | 0.8 / 0.8 | Style — always on |
+| 3 | DarkFantasyLora_v1.safetensors | 0.8 / 0.8 | Style — always on |
+| 4 | EldenRingStyle_v10.safetensors | 0.5 / 0.5 | Style — always on (also = Last Legion knight axis) |
+| 5 | RPGNightmareXL_v10.safetensors | 0.4 / 0.4 | Iron Penitents (capped 0.4 for PEGI 12) |
+| 6 | gothicCathedralInterior_v10.safetensors | 0.6 / 0.6 | Ash-Mourners environment |
+| 7 | DarkGothicFantasy_v301.safetensors | 0.5 / 0.5 | Ash-Mourners figures |
+| 8 | swampPeople_sdxl.safetensors | 0.5 / 0.5 | Coven |
+| 9 | MythicalForestStyle_sdxl.safetensors | 0.5 / 0.5 | Coven + Skinward Pact (shared environment LoRA) |
+| 10 | ArmorSentinel_v2.safetensors | 0.6 / 0.6 | Last Legion |
+| 11 | MythicalCreatures_sdxl.safetensors | 0.5 / 0.5 | Skinward Pact |
+
+**Filename gotcha for Paul (likely first failure mode at install time):** Civitai downloads land with whatever filename the model author uploaded — usually versioned + slugified, but inconsistent. The names baked into the workflow above are educated guesses at the most common default. If after Step 5 of the README ComfyUI throws "Lora not found" or "Could not load LoRA" errors when queueing the test prompt, the fix is one of:
+
+1. **Rename the .safetensors file** in `C:\ComfyUI\models\loras\` to match the filename listed above. Cheap and reproducible — recommended. Every future ComfyUI install on any machine will then match this workflow without edits.
+2. **Edit the workflow** — open `workflow_gallowfell_card.json` in a text editor, find the offending LoraLoader node's widgets_values, swap the filename. Don't do this if anyone else will share the workflow — it locks reproducibility to your exact filename set.
+
+Recommend option 1.
+
+**SD 1.5 fallback (D-WORKFLOW-2) still queued.** Same graph minus the SDXL-only LoRAs (RPGNightmareXL is SDXL-native; ArmorSentinel SDXL only; Mythical Forest Style SDXL/Illustrious only) — the SD 1.5 workflow drops those three and leans on prompt engineering to carry the missing faction silhouettes. Authored as a separate file once Paul confirms ComfyUI installs cleanly with the SDXL workflow first.
+
+**Cheap validation path:** Paul runs the README's Step 4 + 5 install + the §"Smoke test" prompt. If a recognisable hooded brass-mask figure renders, the wiring is provably correct on his RTX 2050. After that, A-SPEC-1 onward can begin populating the ~220 per-card spec files knowing the prompts will drop straight into node 12 unchanged.
+
+Files touched this heartbeat: `pipeline_setup/workflow_gallowfell_card.json` (created — 17 nodes, 29 links, ~9 KB).
+
+D-WORKFLOW-1 ticked. Next eligible: A-SPEC-1 (per-card art spec files for Iron Penitents). Recommend Paul runs the ComfyUI install + smoke test first to surface any wiring/filename issues before we commit ~220 spec files against an unverified workflow — one heartbeat to fix the workflow is much cheaper than re-authoring 220 specs to a different LoRA stack.

@@ -58,6 +58,8 @@ func _init_lanes(tiles_per_lane: int) -> void:
 	for i in range(LANE_COUNT):
 		var lane := Lane.new(i, tiles_per_lane)
 		lane.enemy_reached_base.connect(_on_enemy_reached_base)
+		lane.unit_placed.connect(_on_unit_placed)
+		lane.unit_killed.connect(_on_unit_killed)
 		lanes.append(lane)
 
 
@@ -122,6 +124,33 @@ func _on_enemy_reached_base(enemy: EnemyInstance, damage: int) -> void:
 
 
 # ============================================================================
+# Friendly unit visuals (B2.6 UI)
+# ============================================================================
+
+## Track UnitView instances by the UnitInstance they represent so we can
+## clean them up when the unit dies. Held weakly by reference; UnitView
+## queue_frees itself on _on_unit_killed.
+var _unit_views: Dictionary = {}  ## { UnitInstance -> UnitView }
+
+func _on_unit_placed(unit: UnitInstance) -> void:
+	if unit == null:
+		return
+	var uv: UnitView = UnitView.new()
+	uv.bind(unit)
+	add_child(uv)
+	_unit_views[unit] = uv
+
+
+func _on_unit_killed(unit: UnitInstance) -> void:
+	if unit == null or not _unit_views.has(unit):
+		return
+	var uv: UnitView = _unit_views[unit]
+	_unit_views.erase(unit)
+	if is_instance_valid(uv):
+		uv.queue_free()
+
+
+# ============================================================================
 # Cleanup
 # ============================================================================
 
@@ -152,6 +181,36 @@ func total_enemy_count() -> int:
 
 func has_ended() -> bool:
 	return is_over
+
+
+# ============================================================================
+# Drag-drop entry point (B2.6 UI)
+# ============================================================================
+
+## Called by LaneDropZone when the player drops a card on a lane. Translates
+## the drop into a `CardPlay.play_card` call and surfaces the result via the
+## `card_play_attempted` signal so the HUD can react (mana update, error
+## toast, etc).
+##
+## `drop_position` is the local position inside the lane visual. For B2.6
+## we ignore it and auto-place at the back rank — per-tile drop targeting
+## is a polish item the layout review will decide.
+signal card_play_attempted(result: Dictionary)
+
+func handle_drop(lane_idx: int, card: Card, _drop_position: Vector2) -> Dictionary:
+	if lane_idx < 0 or lane_idx >= lanes.size():
+		var fail := {"success": false, "reason": "lane out of range", "unit": null}
+		card_play_attempted.emit(fail)
+		return fail
+	var hand: Hand = GameState.hand
+	var discard: Discard = GameState.discard
+	if hand == null or discard == null:
+		var fail2 := {"success": false, "reason": "no run in progress", "unit": null}
+		card_play_attempted.emit(fail2)
+		return fail2
+	var result: Dictionary = CardPlay.play_card(card, {"lane": lane_idx}, hand, discard, lanes)
+	card_play_attempted.emit(result)
+	return result
 
 
 ## Detach this combat from GameState. Idempotent; safe to call after a

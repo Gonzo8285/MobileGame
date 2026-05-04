@@ -68,10 +68,37 @@ flowchart TD
   - **Meta-currency grind** (Marrow Shards, ~10–15 hours of play). Keeps non-payers progressing.
 - **MVP:** Only 3 free Warlords playable. No paid Warlords yet.
 
-### 5. Cosmetic skins
-- **Where:** Hub > Warlord screen, and BP premium-track rewards. Pure cosmetic — Warlord re-skins, board skins, card-back frames, summon VFX recolours.
-- **Pricing:** $2.99 common skin, $9.99 epic, $14.99 legendary. Limited skins via live-ops only.
-- **MVP:** No.
+### 5. Cosmetic system — Snap-style card treatments + Warlord skins (EXPANDED 2026-05-02)
+
+**Major direction shift: card-treatment economy is now the primary cosmetic surface, not Warlord skins.** Driven by Paul's Marvel Snap reference in `art_direction.md` §2 — Snap's treatment system has demonstrated $40-100M+ ARR purely from cosmetic-frame whales. Each card supports stacked cosmetic treatments with zero gameplay impact.
+
+**Card treatments (per card):**
+| Treatment | Effect | Acquisition | Price tier |
+|---|---|---|---|
+| Default | base frame | free | — |
+| Faction frame (×5) | base re-styled per-faction | faction-loyalty milestones | free, 1/faction |
+| Foil | static sparkle | gacha + low IAP | $2.99 |
+| Gold | metallic gold treatment | mid IAP + season pass | $9.99 |
+| Ink | monochrome alt-art | season pass premium | $14.99 |
+| Prism | rainbow-shimmer animated | high IAP + BP+ | $19.99 |
+| Cursed (ltd) | green-pyre Hanging Hour event | 14-day event | $14.99 ltd |
+| Ultimate | combo Gold + Prism + animated | whale SKU | $49.99 |
+
+**Why this works:**
+- Pure cosmetic — anti-P2W untouched
+- Per-card LTV stacks: a Gold + Prism + Foil treatment on Penance-Captain Vyrrun = $32 of cosmetic spend on ONE card
+- Whales who want their entire 30-card deck in Gold ≈ $300 zero-power-impact spend
+- Future: 3 alt-art variants × 7 treatments = 21 cosmetic versions per card — infinite content vertical
+- Authoring cost: most treatments are shaders, written once, applied to every card automatically
+
+**Warlord skins (now secondary):**
+- 1 mastery skin per Warlord earned via Tier 4 unlock (free, see `warlord_tiers_v0.md`)
+- Limited paid skins via live-ops, $14.99 — uncommon, scarcity-priced
+
+**Board / card-back / summon-VFX skins:**
+- Defer to v1.1. Treatments and Warlord skins are enough cosmetic surface for soft-launch.
+
+**MVP:** No (all cosmetics post-soft-launch). Engine-side: card-treatment shader stack must be designed *into* CardView from B3 onward so retrofitting later is cheap.
 
 ### 6. Battle Pass (30-day season, "Marrow Pass")
 - **Where:** Permanent BP tab, persistent banner on Hub.

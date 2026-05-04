@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"P33"
+display_name = "Headsman of the Long Aisle"
+faction = 0
+card_type = 0
+rarity = 2
+cost = 5
+hp = 5
+attack = 4
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([0])
+effect_text = "Cleave-3 (hits the entire row tier). On play: enemies in lane take 1 damage."
+flavour_text = "When he walks the aisle, the pews lean away."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

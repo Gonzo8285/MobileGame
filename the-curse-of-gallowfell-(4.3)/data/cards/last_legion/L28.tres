@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L28"
+display_name = "Banner-Bearer Acolyte"
+faction = 3
+card_type = 0
+rarity = 0
+cost = 2
+hp = 2
+attack = 1
+attack_range = 2
+cooldown = 1
+keywords = Array[int]([])
+effect_text = "While alive: friendly Legion in row gain +1 ATK on first attack each turn."
+flavour_text = "The pole is heavier than the man. The man does not put it down."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""
