@@ -1138,3 +1138,28 @@ Recommend option 1.
 Files touched this heartbeat: `pipeline_setup/workflow_gallowfell_card.json` (created — 17 nodes, 29 links, ~9 KB).
 
 D-WORKFLOW-1 ticked. Next eligible: A-SPEC-1 (per-card art spec files for Iron Penitents). Recommend Paul runs the ComfyUI install + smoke test first to surface any wiring/filename issues before we commit ~220 spec files against an unverified workflow — one heartbeat to fix the workflow is much cheaper than re-authoring 220 specs to a different LoRA stack.
+
+## A-SPEC-1 — Iron Penitents art specs (heartbeat 2026-05-05)
+
+- 40 spec files authored at `art_specs/iron_penitents/p{n}_<snake_name>.md` (P1–P40)
+- All files follow `art_specs/_template.md` format exactly
+- Resolved prompts = §3.1 global + §3.2 Iron Penitents faction + §3.3 subject + §3.4 composition + §3.5 quality
+- Seed formula: 40000 + 101 × card_number (verified P25 → 42525)
+- Unit cards use portrait composition; spell/trap/relic cards use wide establishing shot
+- Iron Penitents faction LoRA: RPGNightmareXL @ 0.4 (capped for PEGI 12)
+- idle_loop_frames = 2 for all (no Warlords in this pool; Warlords get 4 at A-SPEC-6)
+
+---
+
+## A-SPEC-2 — Ash-Mourners art-spec population (heartbeat 2026-05-05)
+
+- **Output:** 40 markdown spec files under `art_specs/ash_mourners/` (M1–M40, lowercase-id snake_case filenames matching Iron Penitents convention).
+- **Card-type split:** 24 UNIT (§3.4 portrait composition) / 10 SPELL + 4 TRAP + 2 RELIC (§3.4 environment composition). Mirrors `cards_ash_mourners_v1.md` distribution exactly.
+- **Subject descriptions:** ~25–30 words each, pulled from card mechanic in v1.0 doc + Ash-Mourners motif vocabulary from `lore_gallowfell.md` (court-shroud, raven-quill, censer-smoke, catacomb-vault, ink-stained, no-shadow, dusk-purple). Each card's description is mechanic-coherent (e.g. M21 Wraith-Caller shows the Wraith forming in violet smoke; M11 Funeral Bell shows the bell-rope coiled into a snare).
+- **Faction LoRA stack:** ClassipeintXL@0.8 + Dark Fantasy@0.8 + Elden Ring Style@0.5 + gothic cathedral interior@0.6 + Dark Gothic Fantasy@0.5 (faithful to `pipeline_spec.md` §2.2 resolved 2026-05-04).
+- **Seed formula:** 50000 + 101 × N (Ash-Mourners faction tag = 5). Mirrors Iron Penitents' 40000 + 101 × N pattern → no cross-faction collisions, every seed unique up to ~999 cards per faction. M1=50101, M5=50505, M40=54040.
+- **Validation checklist:** faction-specific palette line tightened to "dusk-purple accent, not blue or fuchsia" (Iron Penitents version reads "rust-red, not magenta or pink") so Paul's per-faction QA pass is unambiguous at sign-off.
+- **Pattern parity with Iron Penitents:** verified by spot-comparison — file naming (lowercase id), output_path (lowercase), iterations_path (uppercase id), all five locked layers in §3 order, same template skeleton.
+- **Next heartbeat hop:** A-SPEC-3 — Coven of the Black Mire (~40 cards, C1–C40) using bog-green accent + swamp/lorwyn faction style + Swamp People + Mythical Forest + Witch Style LoRA stack.
+
+Heartbeat 2026-05-05 — A-SPEC-2 complete, advancing.
