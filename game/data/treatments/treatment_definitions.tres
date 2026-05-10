@@ -1,0 +1,212 @@
+[gd_resource type="Resource" script_class="TreatmentCatalog" load_steps=15 format=3]
+
+[ext_resource type="Script" path="res://src/data/treatment_catalog.gd" id="1_cat"]
+[ext_resource type="Script" path="res://src/data/card_treatment.gd" id="2_treat"]
+
+[sub_resource type="Resource" id="t_default"]
+script = ExtResource("2_treat")
+id = &"default"
+display_name = "Default"
+tier = 0
+price_usd = 0.0
+unlock_method = "free"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 5
+stack_layer = 0
+animated = false
+combines = Array[StringName]([])
+description = "Base frame. Every card resolves to this when no other treatment is set. Free."
+
+[sub_resource type="Resource" id="t_frame_iron_penitents"]
+script = ExtResource("2_treat")
+id = &"frame_iron_penitents"
+display_name = "Iron Penitents Frame"
+tier = 1
+price_usd = 0.0
+unlock_method = "faction-loyalty milestone (Iron Penitents)"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 0
+stack_layer = 10
+animated = false
+combines = Array[StringName]([])
+description = "Brass execution-mask top-arch with hammer-and-rope corner motif. Earned by Iron Penitents loyalty milestone."
+
+[sub_resource type="Resource" id="t_frame_ash_mourners"]
+script = ExtResource("2_treat")
+id = &"frame_ash_mourners"
+display_name = "Ash-Mourners Frame"
+tier = 1
+price_usd = 0.0
+unlock_method = "faction-loyalty milestone (Ash-Mourners)"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 1
+stack_layer = 10
+animated = false
+combines = Array[StringName]([])
+description = "Shroud-pleat top with raven-quill flourish; corroded silver, ink-stain bleed. Earned by Ash-Mourners loyalty milestone."
+
+[sub_resource type="Resource" id="t_frame_coven"]
+script = ExtResource("2_treat")
+id = &"frame_coven"
+display_name = "Coven of the Black Mire Frame"
+tier = 1
+price_usd = 0.0
+unlock_method = "faction-loyalty milestone (Coven of the Black Mire)"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 2
+stack_layer = 10
+animated = false
+combines = Array[StringName]([])
+description = "Briar-tangle corners, bog-iron green-rust accents, three-shadow under name bar. Earned by Coven loyalty milestone."
+
+[sub_resource type="Resource" id="t_frame_last_legion"]
+script = ExtResource("2_treat")
+id = &"frame_last_legion"
+display_name = "The Last Legion Frame"
+tier = 1
+price_usd = 0.0
+unlock_method = "faction-loyalty milestone (The Last Legion)"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 3
+stack_layer = 10
+animated = false
+combines = Array[StringName]([])
+description = "Foundry-rivet top, soot-smear edges, smoked brass with chain-link border. Earned by Last Legion loyalty milestone."
+
+[sub_resource type="Resource" id="t_frame_skinward_pact"]
+script = ExtResource("2_treat")
+id = &"frame_skinward_pact"
+display_name = "Skinward Pact Frame"
+tier = 1
+price_usd = 0.0
+unlock_method = "faction-loyalty milestone (Skinward Pact)"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 4
+stack_layer = 10
+animated = false
+combines = Array[StringName]([])
+description = "Antler-arch top, bark-grain edges, bone-white plus bark with ivy-leaf corners. Earned by Skinward Pact loyalty milestone."
+
+[sub_resource type="Resource" id="t_foil"]
+script = ExtResource("2_treat")
+id = &"foil"
+display_name = "Foil"
+tier = 2
+price_usd = 2.99
+unlock_method = "gacha drop + low-tier IAP bundle"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 5
+stack_layer = 20
+animated = false
+combines = Array[StringName]([])
+description = "Static sparkle highlight overlay. Lowest paid tier — entry-point cosmetic."
+
+[sub_resource type="Resource" id="t_gold"]
+script = ExtResource("2_treat")
+id = &"gold"
+display_name = "Gold"
+tier = 3
+price_usd = 9.99
+unlock_method = "mid-tier IAP + season pass"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 5
+stack_layer = 15
+animated = false
+combines = Array[StringName]([])
+description = "Metallic gold HSV-shift across the art with metallic mask. Mid-tier whale-bait."
+
+[sub_resource type="Resource" id="t_ink"]
+script = ExtResource("2_treat")
+id = &"ink"
+display_name = "Ink"
+tier = 4
+price_usd = 14.99
+unlock_method = "season pass premium track"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &"_ink"
+faction_filter = 5
+stack_layer = 5
+animated = false
+combines = Array[StringName]([])
+description = "Monochrome alt-art version. Different texture, not a shader effect — alt_art_id binds to a parallel art asset."
+
+[sub_resource type="Resource" id="t_prism"]
+script = ExtResource("2_treat")
+id = &"prism"
+display_name = "Prism"
+tier = 5
+price_usd = 19.99
+unlock_method = "high-tier IAP + battle pass premium track"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 5
+stack_layer = 30
+animated = true
+combines = Array[StringName]([])
+description = "Animated rainbow-shimmer overlay. High-tier; animated cost may downgrade to static on low-power mode."
+
+[sub_resource type="Resource" id="t_cursed"]
+script = ExtResource("2_treat")
+id = &"cursed"
+display_name = "Cursed"
+tier = 6
+price_usd = 14.99
+unlock_method = "Hanging Hour event exclusive"
+is_event_limited = true
+event_window_days = 14
+shader_path = ""
+alt_art_id = &""
+faction_filter = 5
+stack_layer = 30
+animated = true
+combines = Array[StringName]([])
+description = "Animated green-pyre flame overlay. Event-only; 14-day acquisition window. Limited print serials enabled."
+
+[sub_resource type="Resource" id="t_ultimate"]
+script = ExtResource("2_treat")
+id = &"ultimate"
+display_name = "Ultimate"
+tier = 7
+price_usd = 49.99
+unlock_method = "top-tier whale SKU"
+is_event_limited = false
+event_window_days = 0
+shader_path = ""
+alt_art_id = &""
+faction_filter = 5
+stack_layer = 40
+animated = true
+combines = Array[StringName]([&"gold", &"prism"])
+description = "Gold base + Prism overlay + an extra animated highlight layer. Top of the cosmetic ladder. Combo treatment — engine resolves the combines list and stacks layers in stack_layer order."
+
+[resource]
+script = ExtResource("1_cat")
+treatments = Array[Resource]([SubResource("t_default"), SubResource("t_frame_iron_penitents"), SubResource("t_frame_ash_mourners"), SubResource("t_frame_coven"), SubResource("t_frame_last_legion"), SubResource("t_frame_skinward_pact"), SubResource("t_foil"), SubResource("t_gold"), SubResource("t_ink"), SubResource("t_prism"), SubResource("t_cursed"), SubResource("t_ultimate")])

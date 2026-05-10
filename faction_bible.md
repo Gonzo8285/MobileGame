@@ -21,7 +21,7 @@ Each faction = **vibe** (one line) + **visual cue** (silhouette + colour + motif
 - **Vibe:** Necromancer-aristocrats — the Monarchy's last court, clinging to power by draining the death-essence of the gallows-town's ceaseless executions. Imperial decay, perfumed rot, polite menace. Control through warrant and grave.
 - **Visual cue:** Black brocade court-wear gone half-rotten; gilt-bone masks; signet rings on skeletal fingers; ravens on every shoulder; ink-stained gloves. Palette: bruise-purple, tarnished gold, grave-grey.
 - **Motif:** Crown + warrant. Black writs. Sealed bone.
-- **Mechanical role:** **Control / debuff.** Slow-Root-Smoke-Fear chains; raise-from-dead synergies (hook into the lore Reanimation curse).
+- **Mechanical role:** **Control / debuff.** Slow-Root-Smoke-Fear chains; raise-from-dead synergies (hook into the lore Reanimation curse). **Primary keyword: PERSIST** (M1, 2026-05-10) — Ash-Mourner units that die return at end-of-turn at -1 ATK, once per combat. Stacks alongside existing Smoke / Resurrect. See `keywords/persist_v0.md`.
 - **Flagship unit:** _Lord-Justiciar Vey, Witness in Black_ — 4-cost, when an enemy dies in your lane, summon a 1/1 Withered Servant on the same tile.
 - **Biome:** Catacombs. The Monarchy's mass grave; corridors of standing dead, sealed with court signets.
 - **Why they march on Gallowfell:** They *are* the Monarchy's last court. Returning to reclaim the death-essence they've drained for centuries. Without it, the court ends.

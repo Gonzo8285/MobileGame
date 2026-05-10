@@ -215,3 +215,19 @@ Five splash hooks → meets C7's "≥2 splash hooks per faction" target.
 - **Same heartbeat:** `.tres` files for M12–M40 generated under `game/data/cards/ash_mourners/`. M5.tres updated in place with promoted statline + R rarity.
 
 _Next backlog hop: C4 — Coven of the Black Mire full pool (~40 cards). C6 Mother Quag stays as a single dual-archetype card per Paul's 2026-05-01 lock; new cards Witch of the Bound Coin, Brood-Mother of the Mire, Ferryman of the Drowned Coin, Drowning of the Demon-Coin authored fresh._
+
+---
+
+## Persist candidates (M1, heartbeat 2026-05-10)
+
+PERSIST keyword authored this heartbeat (`keywords/persist_v0.md`, `GFEnums.Keyword.PERSIST` added). 5 existing Ash-Mourner cards flagged as good Persist-tagging candidates — design suggestion only, **no `.tres` edits this pass**. Tagging happens at M2 (sacrifice-and-return loop hardening) once Paul confirms direction.
+
+| # | Card | Why it fits | Risk note |
+|---|---|---|---|
+| M5 | **Last Censer-Bearer** (4c R, Smoke-Fear identity) | Persist on the Smoke-Fear payoff means the Dread aura keeps ticking. Reinforces "the curse keeps the dead from staying dead." | Most powerful candidate — watch for Smoke-stack ceiling abuse. |
+| M12 | **Necrologist of the Catacombs** (4c U, Resurrect-Spam identity) | Persist + own death-trigger = self-fueling. On its own death it triggers another draw + Wraith for itself. Engine-pillar fit. | Could over-snowball; cap by once-per-combat lock already in spec. |
+| M20 | **Bone-Shroud Acolyte** (2c C) | Already a death-trigger card (cost-reduction on death). Persist gives you a second body to chain the discount. Clean common-tier teaching card. | None — low-power, intentionally sticky. |
+| M22 | **Hollow Mortician** (3c C) | Gains +1 ATK on Mourner death; Persist means it can witness its own death and come back stronger. Thematic + mechanical fit. | -1 ATK on Persist offsets the on-death buff cleanly. Self-balancing. |
+| M24 | **Choir of the Long Dead** (5c U) | Aura-giver; Persist makes the Wraith-HP buff sticky across one wipe. Resurrect-Spam payoff worth defending. | Aura is lost on death even with Persist (per spec); the body returns stripped, then re-applies the aura on next-turn tick. Confirm tick-order in B2.7. |
+
+Anti-synergy reminder: if a Persist-tagged Ash-Mourner is also Resurrect-eligible (M6 Pyre-Priest field), Resurrect wins (replaces the death). Spec'd in `keywords/persist_v0.md` Interactions block.

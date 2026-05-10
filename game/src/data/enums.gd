@@ -53,6 +53,22 @@ enum Keyword {
 	DREAD,        ## Court debuff aura, stacks with Smoke
 	SMOKE,        ## Zone status — Fear-1 + ATK debuff while in zone
 	SLOW,         ## Movement -X, stacks up to Slow-3 (= rooted)
+	PERSIST,      ## On death: return to lane at end-of-turn at -1 ATK (floor 0), once per combat. See keywords/persist_v0.md.
+}
+
+## Cosmetic treatment tiers — the Marvel-Snap-style upgrade system.
+## See art_direction.md §2 for visual spec, and backlog.md Phase 2.10 for engine work.
+## Authored entries live in `game/data/treatments/treatment_definitions.tres`.
+## VISUAL ONLY — never branch combat code on these. Anti-P2W invariant.
+enum TreatmentTier {
+	DEFAULT,         ## Base frame — every card resolves to this when no other treatment is set
+	FACTION_FRAME,   ## 5 entries (1 per faction); earned by faction-loyalty milestones
+	FOIL,            ## Static sparkle highlight — gacha + low-tier IAP ($2.99)
+	GOLD,            ## Metallic gold treatment — mid-tier IAP + season pass ($9.99)
+	INK,             ## Monochrome alt-art version — season pass premium ($14.99)
+	PRISM,           ## Animated rainbow-shimmer overlay — high-tier IAP + battle pass+ ($19.99)
+	CURSED,          ## Animated green-pyre overlay — Hanging Hour event 14-day window ($14.99 ltd)
+	ULTIMATE,        ## Gold + Prism + animated highlight combo — top-tier whale SKU ($49.99)
 }
 
 ## Where in the run this scene/screen sits. Drives the meta navigator.

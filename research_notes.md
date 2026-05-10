@@ -1,5 +1,69 @@
 # Research notes — Gaming app
 
+## T3 — Faction-frame author spec (heartbeat 2026-05-09 23:19 UTC)
+
+- **Output:** `faction_frames_v0.md` (~180 lines) — PSD-template authoring spec for the 5 free faction-themed card frames. T3's contract is "B3.2 frame author can execute against this without re-deriving anything"; actual PNG authoring is downstream.
+- **Approach locked:** master `frame_master.psd` template + 5 swappable border-asset packs. 90% of frame structure (UI chrome anchors, transparent windows, name plate region) shared across factions; only border decoration / top arch / corner motifs swap. Cuts authoring divergence risk.
+- **Canvas locked:** 832 × 1166 px, 2:3-ish aspect (≈5:7 to match CardView 200×280). PNG-24 with alpha, sRGB, 8-bit. Filenames `iron_penitents.png` / `ash_mourners.png` / `coven.png` / `last_legion.png` / `skinward_pact.png` (Track-A names) → `res://game/art/frames/`. Already wired by T1's `treatment_definitions.tres` per-faction `frame_path` fields.
+- **Slot map locked (10 zones, absolute px anchors):** ART_WINDOW (full bleed, frame must NOT cover) / TOP_ARCH 220px tall / LEFT+RIGHT_BORDER 56px wide / BOTTOM_PLATE 146px tall (faction-tinted translucent name+desc bar) / COST_BADGE_HOLE 128px transparent cutout / STATS_BADGE_HOLE 128px cutout / FACTION_SIGIL_NICHE 96px / 4× corner accents 80px. Centre 720×800 region MUST stay clean — treatment shaders (Foil/Gold/Prism/Ultimate) operate on the art layer below it. Coven granted the only exception: thorns may project ≤6px into art region.
+- **PSD layer structure:** smart-object slots for the 7 swappable PNGs + 2 vector-mask hole groups + guides/preview layers (export-hidden). Smart objects mean swapping a faction = 7 PNG drops + bottom-plate re-tint, ≤5 min/faction once the pack is drawn.
+- **Per-faction packs spec'd to motif level for all 5:** Iron Penitents (brass exec-mask arch + rope-twist borders + hammer-spike corners + warrant-vellum bottom plate), Ash-Mourners (shroud-pleat asymmetric arch + corroded silver chain + ink-stain bleeding bottom plate + raven-quill nibs), Coven (briar-tangle arch with 3 demon coins + briar+bog-iron borders + 3-shadow-cast bottom plate + thorned-root corners), Last Legion (foundry-rivet plate arch + chain-link borders with engraved sigils + scorch-marked bottom plate + crossed-baton/broken-chain corners), Skinward Pact (antler-arch with bone shards + bark-grain+bone-sliver borders + smoke-trail bottom plate + ivy/bone-shard corners). Each gets a locked accent hex pulled from `art_direction.md` §0 palette.
+- **Tooling note:** Paul has no Photoshop; all 3 free alternatives (Photopea browser-based, Krita, GIMP) covered with recommended split — Photopea for master template (best smart-object support), Krita for per-faction art passes, Photopea for export. All FOSS / free.
+- **Budget honest call:** master template ≈ 2 hrs, per-faction pack ≈ 3-4 hrs × 5 = ~20 hrs total hand-paint art time. Recommendation in Open Q3: defer hand-paint, try AI-assisted frame generation via SDXL ornate-border LoRA after D-VALIDATE-1 ships. Even 30% AI hit-rate would cut ~14 hrs.
+- **Shader-stack integration:** FrameDecal at layer 15 per `shader_stack_design.md` §3.6, texture-swap (no material) — CPU+GPU cost ≈ free. Frame artists assume Foil/Prism/Ultimate will sparkle/shimmer/sheen the centre region; visual interest must live in borders + top arch + bottom plate, never in centre.
+- **4 open Qs for Paul (none block T4):** (Q1) Aspect ratio: rebase CardView from 200×280 to 200×292 to match SDXL native 832×1216 and skip a crop step? Recommendation YES. (Q2) Stick with PSD master via Photopea or skip indirection and flatten? Recommendation PSD/Photopea. (Q3) Try AI-generated frames via SDXL ornate-border LoRA before hand-paint? Recommendation YES (defer hand-paint pipeline). (Q4) Long-name overflow on BOTTOM_PLATE — flagged for B2.6 UI hardening, not a frame-author concern.
+
+---
+
+## T2 — Shader stack design (heartbeat 2026-05-09 19:17 UTC)
+
+- **Output:** `shader_stack_design.md` (~200 lines) — full shader pipeline spec.
+- **Architecture locked:** CardView scene tree gets a fixed slot per layer (Art, FrameDecal, OverlayStatic, OverlayAnimatedA, OverlayHighlight, ChromeUI). Pre-allocated slots; treatments toggle visible + rebind uniforms (no per-card node spawn — collection screen 200 cards would thrash).
+- **Layer order locked:** Ink=0 (texture swap, not shader) → Gold=10 (HSV-shift on art) → Frame=15 (faction decal) → Foil=20 (static sparkle) → Prism/Cursed=30 (one slot, mutually exclusive animated overlay) → Ultimate sheen=40 → ChromeUI=100 (always above, stat readability sacred).
+- **Per-treatment shader specs:** uniforms + technique + ALU cost + animated flag for all 5 shaders (Gold, Foil, Prism, Cursed, Ultimate-sheen). Faction frames are PNG decals not shaders. Default = all slots off.
+- **Combo algo:** `combines: Array[StringName]` expands at apply-time; sorted by `stack_layer` ascending; binds each into its slot. Ultimate = Gold + Prism + own layer-40 sheen, all three render.
+- **Low-power downgrade:** animated speed → 0 on `OS.is_in_low_processor_usage_mode()` or player toggle. Shader still binds + visible (paid players still see the cosmetic), just static.
+- **Performance budget:** worst case 7× Ultimate visible = ~28 shader passes/frame, ~11M ALU ops, well under mobile GPU envelope. Stress-test gated before B4.
+- **Scope deliberately stopped at design:** shader bodies not authored — they need real card-art textures (sparkle density, metallic mask threshold, flame shape) to tune against, which is a B3 dependency. T2.1–T2.9 follow-up tickets enumerated for when art lands.
+- **One layer-rebalance flagged for Paul (Open Q1):** swap Frame/Gold layers in the existing `treatment_definitions.tres` so Gold's HSV-shift only touches the art and faction frames stay their native colour. Recommendation: yes, alternative breaks faction identity on Gold cards.
+- **Three other open Qs:** (Q2) Cursed × Frame stacking, (Q3) Prism vs Cursed mutual exclusivity policy, (Q4) Ink + Gold combo tint behaviour. None block T3/T4.
+
+---
+
+## T1 — Card treatment data model (heartbeat 2026-05-09)
+
+- **Outputs (5 files):**
+  - `game/src/data/card_treatment.gd` — `CardTreatment` Resource class (catalog entry).
+  - `game/src/data/treatment_catalog.gd` — `TreatmentCatalog` Resource (holds Array[CardTreatment]; lookup by id / tier / faction; validate hook).
+  - `game/src/runtime/card_instance.gd` — `CardInstance` RefCounted runtime concept (`card` ref + `treatment_id` + `alt_art_id` + acquisition metadata + `to_dict()` for save).
+  - `game/data/treatments/treatment_definitions.tres` — populated catalog: 12 entries (1 Default + 5 Faction frames + Foil + Gold + Ink + Prism + Cursed + Ultimate).
+  - `game/src/data/enums.gd` — added `TreatmentTier` enum (8 values: DEFAULT, FACTION_FRAME, FOIL, GOLD, INK, PRISM, CURSED, ULTIMATE).
+- **Anti-P2W invariant preserved:** `Card` Resource (`card.gd`) was NOT touched. Cosmetic state lives on `CardInstance` only. Combat code reads `instance.card`, never `instance.treatment_id`. Whale who owns Ultimate-everything has identical gameplay power to F2P. Matches `art_direction.md` §2 audit.
+- **Layer-stack defaults set on each treatment** (revisit in T2 when shaders ship): default 0, ink 5 (alt-art swap, applied early), faction_frame 10, gold 15 (HSV-shift on art), foil 20, prism / cursed 30 (animated overlays), ultimate 40 (top + combines [gold, prism] + own animated highlight).
+- **Combo system:** Ultimate uses `combines: [&"gold", &"prism"]` — engine resolves the list against the catalog and stacks layers in `stack_layer` order. `combines` references validated by `TreatmentCatalog.validate()` (catches typos / stale refs). All other treatments have empty combines.
+- **Faction-frame routing:** 5 entries with `tier = FACTION_FRAME` differentiated by `faction_filter`. `TreatmentCatalog.get_faction_frame(faction)` does the lookup. Engine constants used (IRON_PENITENTS=0, WITHERED_COURT=1, HOLLOW_PACT=2, FERRUM_HOST=3, SABLE_WILDS=4) — internal-only per L2; player-facing strings use the Track-A names.
+- **Cursed-tier:** `is_event_limited=true`, `event_window_days=14`, `serial` field on `CardInstance` ready for limited-run print numbering (collector flex). Validate gates on window_days>0 when event_limited.
+- **Save-game ready:** `CardInstance.to_dict()` round-trips `card.id` (not the resource), `treatment_id`, `alt_art_id`, `acquired_at`, `acquired_via`, `serial`. Card resolution on load happens against the global card pool — no gameplay state ever persisted in cosmetic dicts.
+- **Validation surface:** `CardTreatment.validate()` checks id/name/price/event-window/faction-frame consistency. `TreatmentCatalog.validate()` adds dup-id detection, missing-default detection, and combo-reference resolution. Both safe to wire into a CI smoke test (cheap, no I/O).
+- **Sandbox status:** Godot syntax untestable in the Cowork sandbox (no engine available). Schema mirrors existing `card.gd` style (validate hook, _group exports, GFEnums references). Logic verified via mental walkthrough of validate() against the 12 catalog entries: 0 errors expected. Paul to confirm in editor — open `treatment_definitions.tres` and check resource opens without parse errors, then call `catalog.validate()` from a test scene.
+- **Open Q for T2:** `shader_path` left as empty strings on all entries — populated when shader pipeline lands. Layer-stack numerics may shift once Ink's alt-art-swap-vs-frame interaction is shader-tested. No retrofits required to the data shape; only the values change.
+- **Open Q for T4:** `acquired_via` enum-of-strings (&"starter", &"reward_pick", &"shop", &"gacha", &"battle_pass", &"event_cursed") set as a documented contract. Worth promoting to a real `GFEnums.AcquisitionSource` enum once T4 collection-screen filtering needs it — deferred to keep this heartbeat small.
+
+## D-WORKFLOW-2 — SD 1.5 fallback ComfyUI workflow (heartbeat 2026-05-09)
+
+- **Output:** `pipeline_setup/workflow_gallowfell_card_sd15.json` — 7 nodes / 9 links.
+- **Topology:** Checkpoint → CLIPTextEncode (positive) + CLIPTextEncode (negative, locked) → EmptyLatentImage → KSampler → VAEDecode → SaveImage. LoRA chain removed.
+- **Locked params (matched to SDXL workflow for spec portability):** sampler `dpmpp_2m`, scheduler `karras`, steps 30, CFG 6.5, seed 4242, denoise 1.0. Negative prompt verbatim from SDXL workflow.
+- **Dimensions:** 512×768 (SD 1.5 native portrait, same 2:3 ratio as SDXL's 832×1216).
+- **Checkpoint default:** `v1-5-pruned-emaonly.safetensors`. Operator-swappable finetune list in `extra.expected_checkpoint`: RealisticVision_v51 / DreamShaper_v8 / RevAnimated_v122 / AbsoluteReality_v18 (any of these will outperform base SD 1.5 on Gallowfell-grimdark output).
+- **LoRA decision:** dropped entirely. 4 of the 10 SDXL LoRAs are SDXL-explicit by name (ClassipeintXL, RPGNightmareXL, Swamp people SDXL, Mythical Forest [SDXL]); the other 6 have unverified SD 1.5 availability. Cheapest path = run base SD 1.5 + prompt-only style targeting (named-artist + named-aesthetic tags in §3.1/§3.2 carry the load). Don't pre-optimise an unused fallback.
+- **Spec-file compatibility:** per-card art specs under `art_specs/<faction>/` paste into node 2 (positive prompt) unchanged. Seeds in spec files honoured the same way at KSampler. Faction LoRA-zeroing protocol from SDXL workflow is N/A here (no LoRAs).
+- **One prompt-tag tweak:** `8k` (SDXL-effective tag) → `highres` (SD-1.5-effective). Single-token swap, doesn't affect the 5-layer prompt template.
+- **Validation:** subagent confirmed JSON parses, all 9 links cross-reference symmetrically in both directions, KSampler has all 4 required inputs wired, SaveImage receives IMAGE input.
+- **Quality expectation:** SD 1.5 + base prompt < SDXL + 10-LoRA stack. This workflow is for hardware that can't run SDXL (Paul's RTX 2050 ~4GB VRAM is borderline). When real output quality matters, SDXL stays the primary; SD 1.5 is an emergency lane.
+- **Follow-up to queue only if needed:** `D-LORA-SD15` — research SD 1.5 equivalents for the 10 LoRAs. Trigger condition: a real operator hits this fallback AND base output proves insufficient.
+
+
 _(False alarm cleared 2026-04-28 — file exists, heartbeat was using a relative path. Fixed: backlog now uses absolute path. Next heartbeat will verify.)_
 
 Heartbeat appends findings here, newest at the bottom.
@@ -1163,3 +1227,138 @@ D-WORKFLOW-1 ticked. Next eligible: A-SPEC-1 (per-card art spec files for Iron P
 - **Next heartbeat hop:** A-SPEC-3 — Coven of the Black Mire (~40 cards, C1–C40) using bog-green accent + swamp/lorwyn faction style + Swamp People + Mythical Forest + Witch Style LoRA stack.
 
 Heartbeat 2026-05-05 — A-SPEC-2 complete, advancing.
+
+## A-SPEC-3 — Coven of the Black Mire spec files (heartbeat 2026-05-08 09:20 UTC)
+
+- **Output:** 40 markdown spec files written under `art_specs/coven/c1_…c40_…`. One per card from `cards_coven_v1.md` v1.0 (C1–C40). Folder created from scratch this run.
+- **Composition split:** UNIT cards (24) use §3.4 portrait composition; SPELL (10), TRAP (4), and RELIC (2) cards (16) use §3.4 environment composition. C1 Bog-Spawn flagged as the §5 reference-tile-7 candidate (validates "ugly little creature without making it cute").
+- **Subject descriptions:** ~25–30 words each, pulled from card mechanic in v1.0 doc + Coven motif vocabulary from `lore_gallowfell.md` and `pipeline_spec.md` §3.2 (swamp-witch silhouette, demon-coin wreath, three-shadows-cast, green pyre eyes, briar-tangled cloak, bog-green accent, fungal-grove background, lorwyn-folkloric grotesque). Each card's description is mechanic-coherent (e.g. C24 Quag-Mother's Daughter cradles three newborn spawn at once mirroring her on-play summon-3; C29 Drowning of the Demon-Coin shows three coins sinking with bog-green discharge mirroring its 3-sacrifice payoff).
+- **Faction LoRA stack:** ClassipeintXL@0.8 + Dark Fantasy@0.8 + Elden Ring Style@0.5 + Swamp people@0.5 + Mythical Forest Style [SDXL]@0.5 (faithful to `pipeline_spec.md` §2.2 resolved 2026-05-04). Optional `Witch Style` @ 0.4 NOT included in default stack — flagged for Paul's call if reference-sheet tile 7 (Bog-Spawn) reads too clean and needs the witch-aesthetic boost. Trigger word `ral-mytfrst` baked into LoRA-loader chain via Mythical Forest's documented activation; not duplicated in prompt body since LoRA at 0.5 fires reliably without the textual trigger on SDXL.
+- **Seed formula:** 60000 + 101 × N (Coven faction tag = 6). Range 60101–64040. Mirrors Iron Penitents' 40000+101×N and Ash-Mourners' 50000+101×N → 0 cross-faction collisions, every seed unique up to ~999 cards per faction.
+- **Validation checklist:** faction-specific palette line set to "bog-green accent, not lime green or neon" (Iron Penitents reads "rust-red, not magenta or pink"; Ash-Mourners reads "dusk-purple accent, not blue or fuchsia") so Paul's per-faction QA pass is unambiguous at sign-off. Body-horror line widened to "Phyrexian / lorwyn-grotesque undertone" since Coven leans Lorwyn-grotesque (witches, three-shadows) rather than Phyrexian-corporeal.
+- **Pattern parity with prior factions:** verified by spot-comparison — file naming (lowercase id), output_path (lowercase), iterations_path (uppercase id), all five locked layers in §3 order, same template skeleton, RELIC card_type used (matches Ash-Mourners M39/M40 convention).
+- **Generated by:** `outputs/gen_coven_specs.py` — script not committed; per-card spec files are the source of truth (per `pipeline_spec.md` §7).
+- **Open Q for Paul (non-blocking):**
+  1. Optional `Witch Style` @ 0.4 LoRA — keep out of default stack (current state) or add per-spec for the witch-heavy cards (C11 Witch of the Bound Coin, C17 Witch of the Slow Decay, C23 Sigil-Drawn Bog-Witch)?
+  2. C29 Drowning of the Demon-Coin is the faction's flagship spell — escalate composition to "warlord_signature" tier so it gets the same iteration budget as a free Warlord? Currently set to "event" tier.
+- **Next heartbeat hop:** A-SPEC-4 — The Last Legion (~40 cards, L1–L40) using brass accent + soot-blackened cuirass faction style + ArmorSentinel medieval armor LoRA on top of the locked style trio.
+
+---
+
+## A-SPEC-4 — The Last Legion spec files (heartbeat 2026-05-08)
+
+- **Done:** 40 spec files written to `art_specs/last_legion/l1_…l40_…` (one per card, L1–L40, lowercase ids, snake-cased display names with apostrophes/commas/hyphens collapsed to `_`).
+- **Composition split:** UNIT cards (24) use §3.4 portrait composition; SPELL (10), TRAP (4), and RELIC (2) cards (16) use §3.4 environment composition. L7 Sergeant-Smith Vikar / L18 Echo-Sergeant / L33 Banner-Captain of the Crowned Anvil = the 3 portrait Rares (archetype identities); L34 Crowned Anvil Standard = the 4th Rare, kept on portrait composition (artifact-unit but card_type stays UNIT, mirrors how aura-pieces L29 Iron Wardrum / C29-style Coven tokens were handled).
+- **Subject descriptions:** ~25–30 words each, mechanic-coherent: L7 Vikar holds an ironwood baton signalling lockstep (matches his identity buff); L9 Iron Standard Unfurled is a wide unfurling banner over the lane (matches "all friendly Legion in lane gain +2 ATK"); L18 Echo-Sergeant has a ghost-after-image of the second strike (matches Echo replay); L25 Hammer-Stroke Doctrine shows a battalion of synchronised hammer-blows across the row (matches "all Legion attacks this turn trigger Echo"); L34 Crowned Anvil Standard is a towering hammered-brass anvil on ironwood pole with brass-glow aura (matches its 8 HP / 0 ATK / persistent +1 ATK aura).
+- **Faction LoRA stack:** ClassipeintXL@0.8 + Dark Fantasy@0.8 + Elden Ring Style@0.5 + ArmorSentinel medieval armor style@0.6 (faithful to `pipeline_spec.md` §2.2 — only 4 LoRAs total, vs 5 for Mourners/Coven, since the Elden Ring style LoRA already covers the decayed-knight axis natively per §2.2 note).
+- **Seed formula:** 70000 + 101 × N (Last Legion faction tag = 7). Range 70101–74040. Mirrors Penitents (40000+101×N), Mourners (50000+101×N), Coven (60000+101×N) → 0 cross-faction collisions. Faction tag 7 leaves 8/9 free for Skinward Pact (next heartbeat hop) and any future faction.
+- **Validation checklist:** faction-specific palette line set to **"brass accent, not gold or copper"** (gold = too sunlit-noble; copper = too pinkish-warm; the Last Legion needs hammered-brass cool with forge-glow). Body-horror line softened to **"decayed-knight elden-ring scale present, no explicit gore"** — the Last Legion is the least body-horror of the five factions; they're broken imperial soldiers, not flagellants/witches/bog-things, so the Phyrexian undertone gets dialled down in QA criteria.
+- **Echo soft-keyword:** ~10 cards in the pool reference Echo in card text (L9, L14, L16, L20, L21, L22, L23, L24, L25, L26, L39 by name or function). Per `cards_last_legion_v1.md` Q1, Echo is text-only — not in `GFEnums.Keyword` yet. No spec-file impact: the visual is just "ghost-after-image / twin-strike" in the subject text, no special composition or seed treatment.
+- **Pattern parity with prior factions:** verified by spot-comparison of L7 + L9 against C1 (Coven UNIT) + C9 (Coven SPELL) — file naming (lowercase id), output_path (lowercase), iterations_path (uppercase id), all five locked layers in §3 order, same template skeleton, RELIC card_type used for L39/L40 (matches Ash-Mourners M39/M40 + Coven C39/C40 convention).
+- **Generated by:** `outputs/gen_last_legion_specs.py` — script not committed; per-card spec files are the source of truth (per `pipeline_spec.md` §7).
+- **Next heartbeat hop:** A-SPEC-5 — Skinward Pact (~40 cards, W1–W40). Faction style §3.2: antler-crown + hide cloak + druidic-with-phyrexian-undertones + bark-brown accent + cinderwood-grove. LoRA stack: Mythical Forest Style [SDXL]@0.5 (shared with Coven) + Mythical Creatures SDXL@0.5. Seed formula: 80000 + 101 × N (faction tag = 8). Will close out the 5-faction card-art spec pass; Warlords (A-SPEC-6) and enemies (A-SPEC-7) come after.
+
+---
+
+## A-SPEC-5 — Skinward Pact spec file population (heartbeat 2026-05-08)
+
+40 spec files authored under `art_specs/skinward_pact/w1_…w40_…`.
+
+- **Composition split:** UNIT × 24 → §3.4 portrait composition; SPELL × 10 + TRAP × 4 + RELIC × 2 → §3.4 environment composition.
+- **Distribution check:** 24/10/4/2 type split + 24C/12U/4R rarity skew — both hit exactly, matches `cards_skinward_pact_v1.md` v1.0 spec.
+- **Subject vocabulary:** pulled from `cards_skinward_pact_v1.md` mechanics + `pipeline_spec.md` §3.2 Skinward Pact motif (antler-crown sprouting through bone, hide cloak layered, mismatched eyes, smoke-trailing fingers, druidic shaman with phyrexian undertones, bark-brown accent, cinderwood-grove background). All subjects 25–30 words.
+- **Faction LoRA stack** (per `pipeline_spec.md` §2.2): ClassipeintXL@0.8 + Dark Fantasy LORA@0.8 + Elden Ring Style@0.5 + Mythical Forest Style [SDXL]@0.5 + Mythical Creatures SDXL@0.5. Mythical Forest is shared with Coven — same LoRA, different per-card prompts drive the divergence.
+- **Seed formula:** 80000 + 101 × N (faction tag = 8). Range 80101–84040. Verified no collisions with Penitents (40101–44040), Mourners (50101–54040), Coven (60101–64040), Last Legion (70101–74040).
+- **Validation checklist:** palette line set to "bark-brown accent, not red-brown or olive"; body-horror line set to "druidic-with-phyrexian-undertones present, no explicit gore" (Skinward Pact's phyrexian undertone is faction-canonical per §3.2, unlike Last Legion which is decayed-knight scale-only).
+- **RELIC card_type** used for W39 Antler-Crown Sigil + W40 Wolf-Pelt Sigil (matches the Penitents/Mourners/Coven/Last Legion convention; relic-slot system still pending Paul's call from the upstream C-series Q).
+- **Token spec rule:** W27 Cub-Token + W28 Wolf-Token authored as `card_type=UNIT` with portrait composition, role=standard (mirrors C1 Bog-Spawn pattern from Coven). They're draftable 0c per the cards file, even though they're also runtime-generated by other cards.
+- **Soft-keyword note:** Transformation appears in subject text on 9 cards (W14, W15, W17, W18, W19, W20, W21, W22, W23, W24, W25) but no engine impact this pass — text-only per `cards_skinward_pact_v1.md` Q1, mirrors C5 Echo handling. Engine enum addition `TRANSFORM = 15` still queued for Paul's call before B2.5 wave-spawner work.
+- **Generation script:** `outputs/gen_skinward_specs.py` — not committed; per-card spec files are the source of truth.
+
+**Phase 2.11 milestone:** A-SPEC-1..5 now complete. All 5 factions × ~40 cards = 200 per-card spec files are populated and pipeline-ready. Remaining Phase 2.11 work: A-SPEC-6 (11 Warlords, flagship-tier seeds), A-SPEC-7 (5 enemies + future bosses), D-WORKFLOW-2 (SD 1.5 fallback workflow JSON), D-VALIDATE-1 (9-tile reference sheet — gated on Paul's local ComfyUI install + B3.0a smoke test).
+
+
+---
+
+## A-SPEC-6 — Warlord art-spec files (heartbeat 2026-05-09)
+
+11 spec files written under `art_specs/warlords/w1_…w11_….md`. Phase 2.11 spec-file population for the Warlord roster is now complete; only A-SPEC-7 (5 placeholder enemies) remains in the spec-population sub-phase.
+
+### Mapping (Warlord → primary faction → seed)
+
+| # | Warlord | Primary faction | LoRA stack | Seed |
+|---|---|---|---|---|
+| 1 | Penance-Captain Vyrrun | iron_penitents | Penitents stack (ClassipeintXL+DarkFantasy+EldenRing+RPGNightmareXL@0.4) | 14242 |
+| 2 | Court-Necromant Sieren | ash_mourners | Mourners stack (+gothic_cathedral@0.6 + DarkGothicFantasy@0.5) | 24242 |
+| 3 | Marsh-Mother Eddra | coven | Coven stack (+Swamp_people@0.5 + MythicalForest@0.5) | 34242 |
+| 4 | Forge-Marshal Veska | last_legion | Legion stack (+ArmorSentinel@0.6) | 44242 |
+| 5 | Tree-Walker Mhar | skinward_pact | Pact stack (+MythicalForest@0.5 + MythicalCreatures@0.5) | 54242 |
+| 6 | The Vow-Broken Magus | iron_penitents (× ash_mourners hybrid) | Penitents stack — court-shroud motif via subject text | 64242 |
+| 7 | Warden Caspar Voll | last_legion | Legion stack | 74242 |
+| 8 | The Saint of Gallowsmoke | coven (× ash_mourners hybrid) | Coven stack — censer-chains motif via subject text | 84242 |
+| 9 | The Brass-Crowned Whelp | skinward_pact (× iron_penitents hybrid) | Pact stack — brass-crown motif via subject text | 94242 |
+| 10 | The Last Confessor | ash_mourners (faction-flex, deviation note) | Mourners stack | 104242 |
+| 11 | The Saint That Should Not Hang | ash_mourners (curse-bound, deviation note) | Mourners stack | 114242 |
+
+### Reproducibility checks
+
+- **Seed-collision audit:** all 11 warlord seeds clear of every faction common-card range. Faction ranges are 40101–44040 / 50101–54040 / 60101–64040 / 70101–74040 / 80101–84040; warlord seeds 14242, 24242, 34242, 44242, 54242, 64242, 74242, 84242, 94242, 104242, 114242 either fall under (1–5 × 10000+4242) or above the corresponding range (44242 > 44040 etc). 0 collisions.
+- **Composition tier:** warlord_signature → uses `pipeline_spec.md` §3.4 portrait variant (warlords are character cards). No new composition variant introduced. Validation checklist gets one extra line — "Warlord-signature flagship presence: silhouette readable from across the screen, costume / props clearly faction-coded" — to enforce the flagship bar.
+- **idle_loop_frames=4** on all warlords per `art_direction.md` §3.
+- **alt_arts=["mastery_skin"]** placeholder slot for the Tier-4 mastery cosmetic per `warlord_tiers_v0.md` (W1).
+- **PEGI-12 guard** sharpened on W11 only: rope-mark MUST read as iconography, not injury — flag for re-roll if first pass produces visible bruising or trauma. The negative-prompt baseline (`severed limbs, exposed organs, blood pools`) does the heavy lifting; W11's per-card validation catches the residual edge case.
+
+### Open Q raised for Paul (non-blocking)
+
+- **Hybrid warlord rendering:** W6/W8/W9 use primary-faction LoRA + secondary-faction motif via subject text. If the first 9-tile reference sheet shows them under-reading as hybrids (e.g. W6 looks 100% Penitent with no Court overlay), the spec files document the escalation path: add the secondary faction's faction-LoRA at 0.3–0.4 weight, file as a flagged proposal in `pipeline_spec_proposals.md`, await Paul. Default = single-faction LoRA stack for cleanest reproducibility.
+- **Neutral warlords (W10/W11):** mapped to Ash-Mourners as closest-existing pipeline_spec faction style. Cleanly justified for both (W10 = cathedral-confessor / Victorian mourning aesthetic, W11 = no-shadow-figure / mourning-Saint-iconography), but they're the only specs in the project carrying a `Deviation note` block. If Paul wants a true neutral faction style added to `pipeline_spec.md` §3.2 (sixth entry), that's a flagged-proposal heartbeat — does NOT block first generation pass.
+
+### Pattern parity with prior A-SPEC heartbeats
+
+Same template, same prompt-layer concatenation, same locked sampler/CFG/steps. Only deltas vs A-SPEC-1..5: seed formula (warlord-specific), card_type (WARLORD vs UNIT/SPELL/TRAP/RELIC), rarity (LEGENDARY vs COMMON/UNCOMMON/RARE), idle_loop_frames (4 vs 2), alt_arts (mastery_skin slot vs []), and the warlord-signature flagship-presence validation line. Generated by `outputs/gen_warlord_specs.py` — same author-pattern as A-SPEC-2 through A-SPEC-5, script not committed, per-spec files are the source of truth.
+
+## A-SPEC-7 — Enemy spec files (heartbeat 2026-05-09 04:19 UTC)
+
+5 spec files written under `art_specs/enemies/e1_…e5_…`. Mirrors the per-faction spec convention: subject ~25–30 words from each enemy's `.tres` flavour + faction motif vocabulary; pipeline parameters fully resolved per `pipeline_spec.md`.
+
+**Faction routing** (enemy.faction enum → art_specs/<faction-style>):
+| Card | display_name | enemy.faction | Pipeline faction style | LoRA stack |
+|---|---|---|---|---|
+| E1 | Cathedral Flagellant | 0 (Iron Penitents) | iron_penitents | ClassipeintXL+DarkFantasy+EldenRing + RPGNightmareXL@0.4 |
+| E2 | Carrion Hound | 2 (Coven) | coven | + Swamp people@0.5 + Mythical Forest@0.5 |
+| E3 | Bog-Lurker | 2 (Coven) | coven | + Swamp people@0.5 + Mythical Forest@0.5 |
+| E4 | Ash-Wraith | 1 (Ash-Mourners) | ash_mourners | + gothic_cathedral_interior@0.6 + Dark Gothic Fantasy@0.5 |
+| E5 | Reaper-Bell | 1 (Ash-Mourners) | ash_mourners | + gothic_cathedral_interior@0.6 + Dark Gothic Fantasy@0.5 |
+
+**Seed range** = 90000 + 101 × N (range 90101–90505). Enemy tag = 9, distinct from Penitents 4 / Mourners 5 / Coven 6 / Last Legion 7 / Skinward 8 / Warlords (N×10000+4242). No collisions (90101–90505 vs 40101–84040 vs 14242–114242).
+
+**Composition deviations:**
+- E1–E4 use §3.4 portrait composition (humanoid focal figures).
+- E5 Reaper-Bell uses §3.4 environment-led wide-shot variant — it's a siege-object on a frame, not a humanoid; the procession is dressing, the bell is the hero. Override documented in spec file.
+
+**Rarity assignment** (no card-side rarity exists for enemies; assigned for art-tier signalling):
+- E1–E3 = COMMON (basic mooks, low HP/ATK)
+- E4 = UNCOMMON (Smoke keyword, mid-game presence)
+- E5 = RARE (Reaper-Bell — siege-bell with Toll keyword, 15 HP / 5 base damage override, faction-defining unit)
+
+**idle_loop_frames** = 2 across all 5 (per `art_direction.md` §3 convention; bosses get 4 when added).
+
+Phase 2.11 spec-file population now complete for: 5 factions × 40 cards (Iron Penitents / Ash-Mourners / Coven / Last Legion / Skinward Pact) + 11 Warlords + 5 placeholder enemies = **216 spec files total**. D-WORKFLOW-2 (SD 1.5 fallback workflow) + D-VALIDATE-1 (9-tile reference sheet) still queued for next runs.
+
+
+---
+
+## M1 — Persist keyword design (heartbeat 2026-05-10)
+
+- **Outputs (4 files touched):**
+  - `keywords/persist_v0.md` — full keyword spec (one-line text, mechanics-locked block, interactions vs Resurrect/Sacrifice/DoT/board-wipe/Hanging-Hour/tokens, engine wiring sketch, anti-P2W invariant, 3 open Qs).
+  - `game/src/data/enums.gd` — `GFEnums.Keyword.PERSIST` added (15th keyword; doc-comment points at the spec).
+  - `faction_bible.md` — Ash-Mourners §2 mechanical-role line now names PERSIST as primary keyword alongside existing Smoke / Resurrect.
+  - `cards_ash_mourners_v1.md` — appended "Persist candidates" section flagging 5 cards (M5 / M12 / M20 / M22 / M24) with rationale + risk note. **No `.tres` edits** — tagging happens at M2.
+- **Locked design:** end-of-turn return, ATK-1 floor 0, once-per-combat (`CardInstance.has_persisted` flag, resets on `Combat.cleanup()`), tile-occupied → push to nearest empty in row, no empty tile = silent fail. Self-buffs/auras lost on Persist. Tokens cannot Persist (engine-side `is_token` early-out). Resurrect wins over Persist when both could fire on the same unit.
+- **Hanging Hour hook (M4):** Persist's once-per-combat lock + ATK-1 clause are both overridden during the Hanging Hour boss-escalation. M4 will spec the override flag formally — design contract reserved here so M4 doesn't have to renegotiate the keyword shape.
+- **Sacrifice synergy preserved:** sacrificed friendlies count as deaths → Persist fires on them. Coven sacrifice-combos + Iron Penitents Penance loops gain a free splash if a Persist-tagged Ash-Mourner is included. Intentional — matches Paul's MTG-references centred on persist/sac/graveyard-recursion.
+- **Anti-P2W note locked into the spec:** PERSIST is gameplay-only, never cosmetic. Restated in the spec because Persist is one of the most powerful effects in the pool and the IAP-temptation is real.
+- **Open Qs queued for Paul (none block M2):** ATK-floor (0 chump body vs hard-kill at ATK=0; default 0); Persist on enemy side (no on standard, yes on chapter bosses recommended); UI display (silhouette behind cost vs icon next to keyword text — defer to B3.2).
+- **Sandbox note:** GDScript syntax untestable in Cowork sandbox; the enum addition is a single-token append after `SLOW`, no risk to existing call sites that branch on `Keyword`. Paul to confirm the project still parses in Godot. No engine-wide rename; existing keyword constants untouched.
+- **Next M-track hop:** M2 (sacrifice-and-return loop hardening). Will revisit the 5 candidate cards then and decide which 2-3 actually get the keyword + author 2-3 missing combo enablers (sacrifice outlet, return-to-hand, sacrifice-payoff).
