@@ -1,5 +1,17 @@
 # Research notes — Gaming app
 
+## D-VALIDATE-1 reframed — Warlord-anchor first (Paul direction 2026-05-11)
+
+- **Paul's call:** "Warlords thematically will be the reference points for their factions and once we have a solid design for each, we can lock that in as reference for any further build or dev around aesthetics." Pull-forward request, approved in chat.
+- **Edits made:**
+  - `pipeline_spec.md` §5 rewritten — was a single 9-tile sheet (5 Warlords + 4 commons mixed), now two-stage:
+    - **Stage A** = 5-tile Warlord-anchor sheet (W1 Vyrrun / W2 Sieren / W3 Eddra / W4 Veska / W5 Mhar). Locks faction palette + motif + brushwork + atmospheric density. Outputs canonical reference to `art/warlords/` + `art_specs/_anchors/`.
+    - **Stage B** = 4-tile common-card supporting sheet (P1 Cathedral Brother / Self-Scourge / M Pall-Bearer / C1 Bog-Spawn). Only fires AFTER Stage A signoff — tests whether commons read as belonging to the world the anchors locked.
+  - `backlog.md` D-VALIDATE-1 reworded to reflect the two-stage flow + the "anchors land in `art/warlords/` + `art_specs/_anchors/` as canonical reference" piece.
+- **Why this matters:** in MTG / Hearthstone / League, the legendary/hero art is the visual vocabulary the rest of the set is judged against. Mixing Warlords with commons in one validation sheet meant we couldn't tell "fix the Warlord" vs "fix the common pipeline" if the sheet landed soft. Two-stage forces the question into the right order: lock the anchor first, then judge the common against it. Total GPU spend roughly the same (~£0.25, ~30 min); validation framework dramatically cleaner.
+- **Still gated on:** B3.0a first-pod smoke test (Paul-runnable from `MORNING_PLAYBOOK.md`, ~£0.15, ~15-25 min). D-VALIDATE-1 cannot fire until a RunPod pod has confirmed it can wget juggernautXL + run the default workflow end-to-end.
+- **Files written this run:** none new. **Files modified:** `pipeline_spec.md`, `backlog.md`, `research_notes.md`.
+
 ## W5 — Warlord tier engine wiring closed out (heartbeat 2026-05-11)
 
 - **Brief:** Phase 2.7's last open item — extend `Warlord` Resource with `tier_unlocks: Array[Resource]`; add XP store + tier machinery to `GameState`. Already partially-implemented across prior heartbeats; this run closed the last loose wire.

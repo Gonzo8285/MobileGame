@@ -175,35 +175,58 @@ See `art_specs/_template.md` for the format. Worked example: `art_specs/iron_pen
 
 ---
 
-## 5. The 9-tile reference sheet — first commit point
+## 5. Reference-sheet validation — two-stage commit point
 
-Before generating ANY production art, generate this 9-tile sheet. It's the cheapest way to confirm style coherence across factions. ~30 minutes of GPU time.
+Before generating ANY production art, run this two-stage validation. Stage A locks **faction-aesthetic anchors** via the 5 free Warlords — these become the reference points every subsequent batch (commons, tokens, spells, alt-art treatments, future Warlords, future bosses) is judged against. Stage B then confirms the locked anchors hold up at the composition + thumbnail + atmospheric-spell axes the Warlord portraits don't exercise.
 
-**The 9 cards:**
+Total GPU time across both stages: ~25-35 min. Stage A is the cheaper commit (5 tiles, ~15 min) — if Stage A fails the validation checklist, regenerate the failing Warlord(s) BEFORE running Stage B. Don't burn pod time on commons against an unlocked anchor.
 
-| Tile | Card | Faction | Why this card |
+### Stage A — Warlord-anchor sheet (5 tiles, faction reference lock)
+
+| Tile | Card | Faction | What this anchor locks |
 |---|---|---|---|
-| 1 | Penance-Captain Vyrrun | Iron Penitents | Free Warlord, signature card, MUST land |
-| 2 | Cathedral Brother (P1 unit) | Iron Penitents | Lowest-cost common unit — tests at small thumbnail size |
-| 3 | Self-Scourge (P spell) | Iron Penitents | Tests spell-card composition (no central figure) |
-| 4 | Court-Necromant Sieren | Ash-Mourners | Free Warlord — must hit Liliana-of-the-Veil aesthetic |
-| 5 | Pall-Bearer (M unit) | Ash-Mourners | Smoke-leaving unit, tests atmospheric haze |
-| 6 | Marsh-Mother Eddra | Coven of the Black Mire | Free Warlord — must hit Lorwyn folkloric grotesque |
-| 7 | Bog-Spawn (C1 token) | Coven | Lowest-tier token, tests if our pipeline can do "ugly little creature" without making it cute |
-| 8 | Forge-Marshal Veska | The Last Legion | Free Warlord — must hit Elden Ring decayed-knight |
-| 9 | Tree-Walker Mhar | Skinward Pact | Free Warlord — must hit druidic-with-phyrexian-undertones |
+| A1 | Penance-Captain Vyrrun (W1) | Iron Penitents | Rust-red palette, brass execution-mask top-arch motif, flagellant/MTG-painterly readability |
+| A2 | Court-Necromant Sieren (W2) | Ash-Mourners | Dusk-purple palette, Liliana-of-the-Veil tone, court-shroud + raven-quill motif, atmospheric haze |
+| A3 | Marsh-Mother Eddra (W3) | Coven of the Black Mire | Bog-green palette, Lorwyn folkloric-grotesque without crossing cute, three-shadows-cast motif |
+| A4 | Forge-Marshal Veska (W4) | The Last Legion | Brass palette, Elden Ring decayed-knight scale, foundry-rivet armour, smoke-and-coal background |
+| A5 | Tree-Walker Mhar (W5) | Skinward Pact | Bark-brown palette, druidic-with-phyrexian-undertones, antler-crown-through-bone, cinderwood-grove |
 
-**Validation checklist** (done by Paul + Cowork together when sheet renders):
+**Anchor validation checklist** (Paul + Cowork co-review when Stage A renders):
 
-- [ ] Are all 9 readable as Gallowfell? (i.e. they all look like they belong to the same game)
-- [ ] Do faction palettes hold? (rust-red Penitents distinct from dusk-purple Mourners distinct from bog-green Coven distinct from brass Legion distinct from bark-brown Pact)
-- [ ] At thumbnail size (200×280 px, the in-hand card size), are units distinguishable from each other?
-- [ ] Body-horror tolerance — does Phyrexian undertone show up without crossing the PEGI 12 line?
-- [ ] Composition: does the focal figure dominate? Is there atmospheric depth in the background?
-- [ ] Brushwork — does it READ as oil painting, not as 3D render or anime?
+- [ ] Do all 5 read as the same game? (Cross-faction coherence: same brushwork era, same painterly density, same atmospheric depth)
+- [ ] Do faction palettes separate cleanly? Rust-red ≠ brass ≠ bark-brown without bleed; dusk-purple ≠ bog-green even at thumbnail.
+- [ ] Does each Warlord lock the faction's visual vocabulary clearly enough that a future common can be judged against it? (The test: could you describe "looks like a Vyrrun-faction card" to a contractor and they'd know what palette + motif + tone to hit?)
+- [ ] Body-horror tolerance — does Phyrexian undertone (Mhar, Eddra) and rope-mark-as-iconography (future W11) hold without crossing PEGI 12?
+- [ ] Composition tier — does the focal figure dominate? Painterly oil texture readable as oil, NOT as 3D render or anime.
+- [ ] Brushwork — visible brush strokes, MTG-painterly density, NOT smooth gradient-render.
 
-If yes to all → lock the pipeline, batch-generate full set.
-If no to any → identify the failing axis, modify the relevant section of THIS doc, regenerate the failing tile.
+**If yes to all → lock the 5 anchors. Save them to `art/warlords/` AND copy to `art_specs/_anchors/` as the canonical faction reference. Proceed to Stage B.**
+**If no to any → identify which Warlord (or axis) failed, modify the relevant section of THIS doc, regenerate the failing tile only. Do NOT proceed to Stage B until all 5 anchors are signed off.**
+
+### Stage B — Common-card supporting sheet (4 tiles, post-anchor validation)
+
+Runs ONLY after Stage A anchors are locked. Tests whether the pipeline produces commons / spells / tokens that look like they belong in the world the anchors established.
+
+| Tile | Card | Faction | What this tile tests against anchors |
+|---|---|---|---|
+| B1 | Cathedral Brother (P1 unit) | Iron Penitents | Lowest-cost common — does it read at 200×280 thumbnail size AND look like it belongs to Vyrrun's faction? |
+| B2 | Self-Scourge (P spell) | Iron Penitents | Spell-card composition (environment-led, no central figure) — does the Penitents palette still anchor it? |
+| B3 | Pall-Bearer (M unit) | Ash-Mourners | Smoke-leaving unit — does the atmospheric haze read against Sieren's locked tone? |
+| B4 | Bog-Spawn (C1 token) | Coven | Lowest-tier 0-cost token — "ugly little creature" without making it cute, against Eddra's grotesque vocabulary |
+
+**Stage-B validation checklist:**
+
+- [ ] Does each tile sit inside its faction's locked anchor vocabulary? (Hold the anchor PNG next to the new tile — same palette, same brushwork, same atmospheric density.)
+- [ ] At thumbnail size (200×280 px), are commons distinguishable from each other AND from their faction's Warlord?
+- [ ] Does the spell-card composition (no central figure) hold the faction palette as authoritatively as a unit composition does?
+- [ ] Does the token-tier "ugly creature" register as ugly without crossing cute or crossing the PEGI 12 line?
+
+**If yes to all → pipeline is locked, both Resource-shape and aesthetic. Batch-generate the full faction pools.**
+**If no to any → the anchor and the common DISAGREE. Identify whether the anchor needs tightening (re-run Stage A for that faction) or the prompt scaffold for commons needs adjusting (modify §3.3 / §3.4 of this doc).**
+
+### Why two stages, not nine tiles in one batch
+
+Pulled forward by Paul 2026-05-11: Warlord-anchor priority. Reasoning: in MTG / Hearthstone / League, the legendary/hero art is the visual vocabulary the rest of the set is judged against. If we render 9 mixed tiles and the Warlords land soft, the commons land harder — and we've burned the validation pass on a sheet that can't tell us "fix the Warlord" vs "fix the common pipeline". Two-stage forces the question into the right order: lock the anchor first, then judge the common against it.
 
 ---
 
