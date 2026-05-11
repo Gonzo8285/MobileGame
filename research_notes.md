@@ -1,5 +1,19 @@
 # Research notes — Gaming app
 
+## W5 — Warlord tier engine wiring closed out (heartbeat 2026-05-11)
+
+- **Brief:** Phase 2.7's last open item — extend `Warlord` Resource with `tier_unlocks: Array[Resource]`; add XP store + tier machinery to `GameState`. Already partially-implemented across prior heartbeats; this run closed the last loose wire.
+- **Audit of pre-existing state on entry:**
+  - `game/src/data/warlord.gd` — `tier_unlocks: Array[Resource] = []` already exported, `get_tier_content(tier)` accessor present, `validate()` covers the 0-or-4-entries contract + per-TierContent sub-validation. ✅ done.
+  - `game/src/data/tier_content.gd` — full T1/T2/T3/T4 shape (variant_passives / alt_fire_spell / mastery_skin_id / mastery_lore_string / mastery_title / ascension_mod_id) + tier-relative `validate()`. ✅ done.
+  - `game/src/runtime/game_state.gd` — `TIER_THRESHOLDS = [0, 1800, 4800, 10800]`, `XP_MULTIPLIER_CAP = 3.0`, `warlord_xp` Dictionary, `xp_multiplier_sources` Dictionary, `_xp_pending_consume` queue, 4 signals (warlord_xp_gained / warlord_tier_changed / xp_multiplier_changed / xp_multiplier_consumed), plus `gain_warlord_xp` / `set_xp_multiplier_source` / `clear_xp_multiplier_source` / `mark_one_shot_for_consume` / `get_effective_xp_multiplier` / `get_warlord_tier` / `get_warlord_xp` / `get_xp_to_next_tier` / `_tier_for_xp` / `_drain_pending_consumes`. Anti-P2W guards: rejects zero/negative/empty-id grants; multiplier clamped server-side at gain time; no public set_tier API. ✅ done.
+  - `game/src/runtime/warlord_test.gd` — 30+ assertions covering tier-boundary math at all 4 thresholds, empty-registry / single-source / stacked / clamped / cleared / one-shot-consume flows, tier-cross signal emission (single fire on cross), skip-tier (T1→T4 in one massive gain → one signal with final tier in payload), get_xp_to_next_tier at all bands, anti-P2W invariants, TierContent.validate shape checks across all 4 tiers, Warlord.validate shape checks (free-no-tiers ✅, paid-no-unlock-path fails). ✅ done.
+- **Gap this run closed:** `warlord_test.gd` existed but was NOT wired into the dev-test runner. Added one line to `game/src/main.gd` after the B2.7 turn_engine_test line: `_run_dev_test("res://src/runtime/warlord_test.gd")   # W5`. Now `RUN_DEV_TESTS=true` exercises the full Warlord tier suite on every editor launch.
+- **What W5 is NOT:** authoring actual Warlord .tres files (none exist under `game/data/warlords/` — IMV-1 trim in `internal_mvp_scope.md` defers per-Warlord content authoring to a later heartbeat batch). The W5 contract is *engine wiring* — the Resource shape, the XP machinery, the signals, the tests. All present. .tres authoring is a separate IMV-1 task pulling from `warlord_tiers_full.md`.
+- **Sandbox cannot run Godot syntax;** Paul to confirm `[warlord_test] PASS` line appears in the editor console alongside the four B2.x suites on next launch. If FAIL fires, the assertion line + expected/actual values print to stderr — debuggable in place.
+- **Files modified this run:** `game/src/main.gd` (one line added). `research_notes.md` (this entry). `backlog.md` — W5 ticked.
+- **Phase 2.7 status: COMPLETE.** W1 ✅ W2 ✅ W3 ✅ W4 ✅ W5 ✅. Next eligible Phase-2 item is `L3` (Phase 2.8 — re-export pitch .docx after Track-A rename). After that, Phase 3 build resumes at `B2.8` (reward screen).
+
 ## W4 — Warlord-select UI mock (heartbeat 2026-05-11)
 
 - **Brief:** wireframe the Warlord-select screen + tier ladder + variant/alt-fire pickers + mastery payoff + XP-booster surface, so an engineer can build against a single layout and the W3 open Qs (display string, cap clamp surfacing) can be closed at the UI layer.

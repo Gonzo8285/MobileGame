@@ -20,6 +20,7 @@ func _ready() -> void:
 		_run_dev_test("res://src/runtime/combat_test.gd")        # B2.5
 		_run_dev_test("res://src/runtime/card_play_test.gd")     # B2.6
 		_run_dev_test("res://src/runtime/turn_engine_test.gd")   # B2.7
+		_run_dev_test("res://src/runtime/warlord_test.gd")       # W5
 
 
 func _run_dev_test(path: String) -> void:

@@ -60,6 +60,41 @@ signal mana_changed(new_mana: int, ceiling: int)
 signal hp_changed(new_hp: int, max_hp: int)
 signal node_advanced(new_node: int, chapter_num: int)
 
+# Warlord XP + tier system (W5) — see warlord_tiers_v0.md, monetisation_map.md §13,
+# and warlord_select_ui_v0.md §8 for the contract these signals fulfil.
+signal warlord_xp_gained(warlord_id: StringName, amount: int, multiplier_applied: float)
+signal warlord_tier_changed(warlord_id: StringName, new_tier: int)
+signal xp_multiplier_changed(source_id: StringName, value: float)
+signal xp_multiplier_consumed(source_id: StringName)
+
+
+# ---------- Warlord XP + tier registry (W5) --------------------------------
+
+## Cumulative XP thresholds per warlord_tiers_v0.md §2.2.
+## Index = tier; value = cumulative XP needed to *reach* that tier.
+## T1 at 0 XP. T2 at 1,800. T3 at 4,800. T4 at 10,800.
+const TIER_THRESHOLDS: Array[int] = [0, 1800, 4800, 10800]
+
+## XP-booster cap per warlord_tiers_v0.md §2.3 + monetisation_map.md §13.
+## Multipliers stack multiplicatively; effective = min(this cap, product).
+## Whale ceiling ~25 wins to T4 vs free floor ~72 — same destination, different speed.
+const XP_MULTIPLIER_CAP: float = 3.0
+
+## warlord_id (StringName) → cumulative XP earned (int).
+## Initialised lazily on first gain_warlord_xp() call for that Warlord.
+var warlord_xp: Dictionary = {}
+
+## source_id (StringName) → multiplier value (float, e.g. 1.25 for +25% XP).
+## See monetisation_map.md §13 for canonical source IDs:
+##   "battle_pass_premium" / "battle_pass_free_lvl25" / "daily_quest_warlord_<id>"
+##   / "starter_bundle" / "event_weekend" / "equipped_skin_<warlord_id>"
+var xp_multiplier_sources: Dictionary = {}
+
+## One-shot sources flagged to self-unregister after the next gain_warlord_xp().
+## Used by daily-quest one-shots (per monetisation_map.md §11 + §13).
+## Internal — callers use mark_one_shot_for_consume() / consume happens in _drain.
+var _xp_pending_consume: Array[StringName] = []
+
 
 func _ready() -> void:
 	print("[GameState] autoload ready")
@@ -239,3 +274,141 @@ func debug_summary() -> String:
 	return ("turn=%d  mana=%d/%d  hp=%d/%d  ash=%d  keys=%d  phase=%s  warlord=%s" %
 			[turn, mana, max_mana, base_hp, max_base_hp, ash, keys,
 			GFEnums.RunPhase.keys()[current_phase], active_warlord_id])
+
+
+# ============================================================================
+# Warlord XP + tier system (W5)
+# ============================================================================
+#
+# Wins-only XP. Multiplier boosters stack multiplicatively, clamp at
+# XP_MULTIPLIER_CAP. Tier thresholds in TIER_THRESHOLDS. Calling
+# gain_warlord_xp() applies the active stack, updates the per-Warlord total,
+# emits warlord_xp_gained (always) and warlord_tier_changed (only on a
+# threshold cross), then drains any one-shot sources flagged by
+# mark_one_shot_for_consume() so they self-unregister.
+#
+# Anti-pay-to-win invariants (audit-tested in warlord_test.gd):
+#   - gain_warlord_xp REJECTS negative or zero `base_amount` — no IAP path that
+#     grants flat XP can exist by construction. Boosters multiply only.
+#   - The effective multiplier is server-authoritative (clamped) at gain time.
+#     Even if the client tampers with xp_multiplier_sources to insert a 99×
+#     entry, get_effective_xp_multiplier() will clamp to 3.0.
+#   - Tier transitions are computed from cumulative XP only. There is no
+#     set_tier() / unlock_tier() API on this autoload.
+
+
+## Award base XP for a win with this Warlord. Applies the current effective
+## multiplier (clamped to XP_MULTIPLIER_CAP), updates the per-Warlord total,
+## emits warlord_xp_gained, fires warlord_tier_changed if a tier was crossed,
+## then drains any one-shot sources flagged for consumption.
+##
+## Per warlord_tiers_v0.md §2.1: wins-only by default. Losses give 0 XP — the
+## caller (run-victory handler) decides whether to call this. No partial-XP path.
+func gain_warlord_xp(warlord_id: StringName, base_amount: int) -> void:
+	if warlord_id == &"" or base_amount <= 0:
+		return  # anti-P2W: silently reject flat-XP grants and uninitialised callers
+	var mult: float = get_effective_xp_multiplier()
+	var awarded: int = int(round(float(base_amount) * mult))
+	var before: int = int(warlord_xp.get(warlord_id, 0))
+	var tier_before: int = _tier_for_xp(before)
+	var after: int = before + awarded
+	warlord_xp[warlord_id] = after
+	warlord_xp_gained.emit(warlord_id, awarded, mult)
+	var tier_after: int = _tier_for_xp(after)
+	if tier_after != tier_before:
+		warlord_tier_changed.emit(warlord_id, tier_after)
+	_drain_pending_consumes()
+
+
+## Register or update an XP-multiplier source. Idempotent — calling with the
+## same (source_id, value) is fine; the signal still fires so UI listeners
+## can refresh on every claim (e.g. BP unlock writes 1.25 once at season start).
+##
+## See monetisation_map.md §13 for the canonical source-ID registry.
+func set_xp_multiplier_source(source_id: StringName, value: float) -> void:
+	if source_id == &"" or value <= 0.0:
+		return
+	xp_multiplier_sources[source_id] = value
+	xp_multiplier_changed.emit(source_id, value)
+
+
+## Remove a multiplier source (BP season ended, starter bundle expired, etc.).
+## Safe to call for a source that isn't registered — no-op.
+func clear_xp_multiplier_source(source_id: StringName) -> void:
+	if not xp_multiplier_sources.has(source_id):
+		return
+	xp_multiplier_sources.erase(source_id)
+	# Emit with 0.0 to signal "this source is now gone" — UI distinguishes
+	# from a value-change by inspecting xp_multiplier_sources after the signal.
+	xp_multiplier_changed.emit(source_id, 0.0)
+
+
+## Flag a multiplier source for one-shot consumption: it stays active for the
+## NEXT gain_warlord_xp() call, then self-unregisters. Used by daily-quest
+## one-shots ("win with Warlord X" awards a ×1.5 multiplier that consumes on
+## the first qualifying win — see monetisation_map.md §11). Idempotent.
+func mark_one_shot_for_consume(source_id: StringName) -> void:
+	if not xp_multiplier_sources.has(source_id):
+		return
+	if not _xp_pending_consume.has(source_id):
+		_xp_pending_consume.append(source_id)
+
+
+## Effective stacked multiplier across all registered sources, clamped to
+## XP_MULTIPLIER_CAP. Returns 1.0 if no sources registered. Used by the
+## warlord-select UI booster strip (warlord_select_ui_v0.md §7) AND by
+## gain_warlord_xp internally — single source of truth for "what's the
+## current XP boost?"
+func get_effective_xp_multiplier() -> float:
+	var product: float = 1.0
+	for v in xp_multiplier_sources.values():
+		product *= float(v)
+	return minf(XP_MULTIPLIER_CAP, product)
+
+
+## Current tier (1..4) for the given Warlord based on cumulative XP.
+## Returns 1 for any Warlord with no XP recorded yet.
+func get_warlord_tier(warlord_id: StringName) -> int:
+	return _tier_for_xp(int(warlord_xp.get(warlord_id, 0)))
+
+
+## XP earned by the given Warlord (cumulative). 0 if no XP recorded yet.
+func get_warlord_xp(warlord_id: StringName) -> int:
+	return int(warlord_xp.get(warlord_id, 0))
+
+
+## XP delta from current cumulative to the next tier threshold.
+## Returns 0 if the Warlord is already at T4 (no further tier to reach).
+func get_xp_to_next_tier(warlord_id: StringName) -> int:
+	var xp: int = int(warlord_xp.get(warlord_id, 0))
+	var tier: int = _tier_for_xp(xp)
+	if tier >= 4:
+		return 0
+	return TIER_THRESHOLDS[tier] - xp
+
+
+# Internal: cumulative XP → tier (1..4) per TIER_THRESHOLDS.
+func _tier_for_xp(xp: int) -> int:
+	if xp >= TIER_THRESHOLDS[3]:
+		return 4
+	if xp >= TIER_THRESHOLDS[2]:
+		return 3
+	if xp >= TIER_THRESHOLDS[1]:
+		return 2
+	return 1
+
+
+# Internal: drain queued one-shot multipliers AFTER the gain has been applied.
+# Emits xp_multiplier_consumed per source so UI plays the consumed animation,
+# then emits xp_multiplier_changed(source, 0.0) for the registry-watcher path
+# (warlord_select_ui_v0.md §7 booster drawer).
+func _drain_pending_consumes() -> void:
+	if _xp_pending_consume.is_empty():
+		return
+	var to_consume: Array[StringName] = _xp_pending_consume.duplicate()
+	_xp_pending_consume.clear()
+	for sid in to_consume:
+		if xp_multiplier_sources.has(sid):
+			xp_multiplier_sources.erase(sid)
+			xp_multiplier_consumed.emit(sid)
+			xp_multiplier_changed.emit(sid, 0.0)
