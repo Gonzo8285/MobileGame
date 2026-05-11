@@ -73,7 +73,11 @@ func _build_visuals() -> void:
 	name_l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(name_l)
 	var stats_l := Label.new()
-	stats_l.text = "%d/%d" % [unit.card_data.attack, unit.current_hp]
+	# B2.7: read current_attack() not card_data.attack — Persist (M1) and
+	# Banner-buffs (Last Legion future work) layer ATK modifiers per-instance
+	# via UnitInstance.atk_offset. Reading the Card directly here would make
+	# a persisted unit display its base ATK and confuse the player.
+	stats_l.text = "%d/%d" % [unit.current_attack(), unit.current_hp]
 	stats_l.position = Vector2(6, UNIT_HEIGHT - 30)
 	stats_l.size = Vector2(UNIT_WIDTH - 12, 24)
 	stats_l.add_theme_color_override("font_color", Color.BLACK)

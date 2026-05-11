@@ -1,5 +1,141 @@
 # Research notes — Gaming app
 
+## W4 — Warlord-select UI mock (heartbeat 2026-05-11)
+
+- **Brief:** wireframe the Warlord-select screen + tier ladder + variant/alt-fire pickers + mastery payoff + XP-booster surface, so an engineer can build against a single layout and the W3 open Qs (display string, cap clamp surfacing) can be closed at the UI layer.
+- **Output:** `warlord_select_ui_v0.md` — 6 screens (A roster grid, B detail panel, C T2 variant picker, D T3 alt-fire picker, E T4 mastery one-shot, F XP-booster drawer), engine-signal handoff for W5, full anti-P2W audit at the UI layer, 5 open Qs.
+- **Display-string locked: `+X% XP`** (additive-percentage form), with `×N` multiplier notation only appearing in a small "math" explainer footer on Screen F. Closes W1 Q5 + W3 §13 Q3 *pending Paul's explicit sign-off* — flagged as Open Q5 in the spec because the call propagates to W3 doc + W5 engine + B4 SDK, so worth confirming before W5 wires it up. Reasoning: Slay-the-Spire / Marvel-Snap / Hearthstone all surface percentage uplift; multiplier notation reads as "math" to the casual end of the audience.
+- **Cap-clamp surface designed** (closes W3 §13 Q1): when stacked multipliers exceed ×3.0, Screen F shows `+200% XP (max)` at the top and tags the overflow rows with a `— capped —` chip. Stack-overflow contribution sources stay visible-but-greyed, not hidden — the player can see *what* they lost to the cap. Anti-frustration design: the cap exists; we don't pretend it doesn't.
+- **Anti-P2W audit re-applied at the UI layer** (the doc has a dedicated §9): tier ladder is dots, not stats; T2 picker shows default + A/B side-by-side with same-cost on every row; T3 alt-fire shows mana cost in equal type weight on both rows; T4 mastery headline is cosmetic + *harder* Ascension slot, never a stat boost; locked paid Warlords show price chips never stat previews; booster cap is visible to all players. UI is where players *feel* P2W — passing data-layer audit isn't enough.
+- **Engine handoff for W5 (no Resource shape changes):** 4 signals on `GameState` — `warlord_xp_gained(warlord_id, amount, multiplier_applied)`, `warlord_tier_changed(warlord_id, new_tier)`, `xp_multiplier_changed(source_id, value)`, `xp_multiplier_consumed(source_id)`. State the UI reads on-mount: `warlord_xp` Dictionary, `xp_multiplier_sources` Dictionary (per W3), `warlord_loadout` Dictionary, `Warlord.tier_unlocks` Array. The W1 §5 Resource shape is unchanged — wireframe slots into it 1:1.
+- **W11 secret-Warlord lore-lock surface:** Screen A shows `???` text + heavy-veil silhouette + unlock hint phrase ("Beat all 10"). No price, no tier, no stat preview. Keeps the lore-locked W11 alluring without leaking the curse-mechanics reveal that lives in `art_specs/warlords/w11_…`'s PEGI-12 guard.
+- **Scope discipline:** the doc is wireframes + signals + rules. Colour, fonts, motion, faction skinning of the panels, real card art, accessibility audit — all explicitly deferred to B3.x art pass + B5 device-test pass. This avoids the trap where a "UI mock" doc spirals into a B3-tier asset specification before the art pipeline (D-VALIDATE-1) is even hot.
+- **Files written this run:** `warlord_select_ui_v0.md`.
+- **Files modified this run:** `backlog.md` — W4 ticked. `research_notes.md` — this entry.
+- **Open Qs for Paul (logged in spec §10):**
+  1. T2 variant picker (Screen C) as radio-list cards vs. dedicated full-screen variant-comparison view. Lean: cards for v0, full-screen at B3.x if needed.
+  2. Mastery payoff (Screen E) — all four blocks land at once vs. 3-second staggered reveal sequence. Lean: stagger, defer timing tuning to B3.x.
+  3. Booster strip on in-run HUD vs. meta-screens only. Lean: meta-only (HUD clutter risk).
+  4. W10 silhouette-lock-or-standard on Screen A. Lean: standard locked-paid card (W10 is paid-but-not-lore-locked).
+  5. **Display-string lock confirmation** — `+X% XP` form. Carries propagation cost to W3 doc + W5 engine + B4 SDK, so confirm before W5 wires it.
+- **None block** W5 (engine wiring is the next eligible Phase 2.7 item; signal list above is the contract). Phase 2.7 now sits at W1 ✅ / W2 ✅ / W3 ✅ / W4 ✅ / W5 open.
+
+## W3 — XP-booster economy integration (heartbeat 2026-05-11)
+
+- **Brief:** wire battle-pass and daily-quest XP boosters into the Warlord-tier system per `warlord_tiers_v0.md` §2.3. Reflect in `monetisation_map.md` so the engine-side multiplier registry has a single source of truth before W4 UI mock and W5 engine wiring start.
+- **Output:** edits to `monetisation_map.md` only. No new files. Pure integration / bookkeeping pass — the booster mechanics themselves were locked in W1.
+- **Edits made:**
+  - **§2 Starter bundle** — clarified the 7-day +50% Warlord-XP booster is a *multiplier*, counted toward the ×3.0 cap. Reframed why it's the cheapest legitimate "feels like progress" hook (mastery cosmetics, never raw power).
+  - **§6 Battle Pass** — added free-track ×1.10 multiplier from level 25 onwards + premium-track ×1.25 for the season; locked the booster mechanics (multiplier-only, ×3.0 cap, server-side enforcement); added engine note that BP claim must call `GameState.set_xp_multiplier_source("battle_pass_premium", 1.25)` once at unlock.
+  - **§11 Daily reward calendar** — expanded into "Daily reward calendar + daily quests"; spec'd 3 quest slots (generic-win, win-with-Warlord-X with one-shot ×1.5 multiplier, faction-objective); explained why one-shot ×1.5 is new-player-friendly (stacks with BP +25% to ×1.875 without hitting the cap).
+  - **§13 Warlord-XP booster economy** — new section. Master registry table (BP premium / BP free past lvl 25 / daily quest / starter bundle / event weekend / equipped skin) with multiplier, duration, stack-toward-cap flag, MVP flag, doc cross-ref. Worked stack examples for F2P / standard payer / whale (whale ceiling holds at ~25 wins to T4 per the W1 audit, ×3.0 cap clamps a raw ×5.91). Engine handoff sketch for B4 + W5: `xp_multiplier_sources: Dictionary[StringName, float]`, `min(3.0, prod(values))` computed at run-end (not cached, sources expire mid-run), one-shot sources self-unregister + `xp_multiplier_consumed(source_id)` signal.
+  - **Anti-P2W guardrails** — added rule 6 explicitly naming the multiplier-only / no-flat-XP / no-tier-skip / ×3.0 cap constraint with cross-refs to `warlord_tiers_v0.md` §6 + this doc §13.
+  - **MVP-vs-later table** — new row for Warlord XP boosters (post-soft-launch, alongside BP + quests).
+- **Anti-P2W audit (re-applied):** registry is multiplier-only across every source; cap is server-enforced (not client-trusted); no IAP grants flat XP; no IAP tier-skips. Whale ceiling ~25 wins to T4 vs free floor ~72 — same destination, different speed. Passes the W1 §6 audit clean.
+- **Engine handoff sketched (no .gd / .tres edits this run):** the multiplier registry pattern (Dictionary keyed by source ID, computed not cached, signal-emitting on one-shot consume) is the contract B4 SDK wiring + W5 tier engine should build against.
+- **Files written this run:** none.
+- **Files modified this run:**
+  - `monetisation_map.md` — §2, §6, §11 edits + new §13 + new anti-P2W rule 6 + MVP table row.
+  - `backlog.md` — W3 ticked.
+  - `research_notes.md` — this entry.
+- **Open Qs for Paul (logged in `monetisation_map.md` §13):**
+  1. Daily-quest booster stacking with equipped-skin booster — keep stacking and surface the cap visually (greyed-out source row) when stack overflows? Lean yes.
+  2. Free-track booster threshold — locked at lvl 25; push to lvl 30 to give premium more daylight at the early-mid-season conversion window?
+  3. Multiplier display — `+25% XP` or `×1.25 XP`? (Carries from `warlord_tiers_v0.md` Open Q5; locking the answer here unblocks W4.)
+- **None block** W4 (Warlord-select UI mock — wireframe-only, can use either display string and update once Q3 lands) or W5 (engine wiring after C1 — registry contract is stable). Phase 2.7 now sits at W1 ✅ / W2 ✅ / W3 ✅ / W4 W5 open.
+
+## W2 — Warlord tier content for all 11 (heartbeat 2026-05-11)
+
+- **Brief:** author Tier 2 variant passives (×2 each), Tier 3 signature alt-fires, Tier 4 mastery payoffs for the full 11-Warlord roster, applying the `warlord_tiers_v0.md` template. Anti-P2W invariant must hold — no raw stat unlocks; A/B variants are sidegrades; T3 alt-fires same-cost shape-rotations; T4 is cosmetic + lore + harder-challenge-slot only.
+- **Output:** `warlord_tiers_full.md` — ~210 lines. Full content for all 11 Warlords across the 4 tiers, plus anti-P2W audit, MVP-slice trim recommendation, and 6 open Qs.
+- **Per-Warlord pattern applied:** Default re-stated → T2 Variant A (offence-leaning, pays a cost — HP / hand-size / draw / scope) → T2 Variant B (defence/utility, drops a feature for a different feature) → T3 alt-fire (same mana cost, one design axis rotated: dmg→buff, single→AoE, immediate→delayed, offence→debuff, lane-control→resource conversion) → T4 mastery (skin name + 1-line visual cue, ≤30-word in-fiction lore reveal, mastery title string, Ascension modifier as 1-line mechanical text).
+- **Pre-existing spec reuses (no double-authoring):**
+  - **Sieren T3 alt-fire = Glean** (per M3; spec lives in `sieren_t3_glean_v0.md`).
+  - **Pall Writ reassigned from Sieren to Saint of Gallowsmoke (W8) T3** (per M3 thematic-fit call; canon spell, kept at original 3-mana cost).
+- **Campaign-tier Ascension slots:** per W1 Open Q4 lean, only W10 (Last Confessor) + W11 (Saint That Should Not Hang) get campaign-tier slots instead of standard A11. W6–W9 hybrids stay on A11. Flagged for confirmation in spec Open Q3.
+- **MVP-slice trim recommendation drafted:** Internal MVP-1 ships Vyrrun + Sieren + Mhar — recommend full T1+T2 authored, T3 .tres written-but-locked, T4 deferred to IMV-2 after B3.x cosmetic-skin pipeline lands. Trims engine-wiring scope from ~66 pieces to ~9 for IMV-1. Slots cleanly into `internal_mvp_scope.md`'s Tier-system-deferred line.
+- **Engine handoff (for W5):** none this run. The W1 spec §5 Resource shape (`tier_unlocks: Array[Resource]` with TierContent sub-Resource holding variant_passives / alt_fire_spell / mastery_skin_id / mastery_lore_string / mastery_title / ascension_mod_id) is unchanged. W2's content slots into it 1:1 — no new fields required.
+- **Anti-P2W audit re-applied:** all T2 variants are real-cost sidegrades; all T3 alt-fires are same-mana rotations; all T4 mastery is cosmetic + lore + harder-challenge. Spec passes the W1 §6 audit clean.
+- **Files written this run:**
+  - `warlord_tiers_full.md`
+- **Files modified this run:**
+  - `backlog.md` — W2 ticked.
+- **Open Qs for Paul (logged in spec §"Open questions"):**
+  1. Sieren T2 Variant A (`Sworn in Ink`) HP cost — does the 2-HP-per-raise stack within a wave? Lean yes.
+  2. Whelp T2 Variant A — Bleed-2 stack risk on Iron-Penitents Bleed-stack archetype. Flag for C7-redux balance pass, non-blocking.
+  3. W10/W11-only campaign-tier slots, or do W6–W9 paid hybrids also get them? Lean no (keep hybrids on A11).
+  4. Vyrrun T3 (`Bone-Pageant`) forces a Persist trigger — does it consume the once-per-combat lock (read a) or run as parallel pathway (read b)? Lean (a).
+  5. Variant-passive names ("Flagellant Rite," "Twelvebirth," etc.) — first-pass; flag any that don't earn their slot before W4 UI work.
+  6. Tier-3 unlock UX — togglable button on Warlord card vs separate spell-variant sub-screen? Decision lives with W4 UI mock.
+- **None block** W3 (XP-booster economy integration into `monetisation_map.md`), W4 (Warlord-select UI mock), or W5 (engine wiring after C1 lands). Phase 2.7 now sits at W1 ✅ / W2 ✅ / W3 W4 W5 open.
+
+## M4 — Hanging Hour × Persist interaction (heartbeat 2026-05-10)
+
+- **Brief:** spec the Hanging Hour override on Persist — at midnight, every PERSIST-tagged unit that died this combat returns at full stats, ignoring -1 ATK and the once-per-combat lock. Boss-escalation made even more terrifying.
+- **Spec authored:** `keywords/hanging_hour_persist_v0.md` — full M4 deliverable. Mirrors `persist_v0.md` format.
+- **One-line:** at the Hanging Hour turn (default 5 standard combat, 4 boss combat), TURN-START phase drains a `hanging_hour_persist_queue` built from `Combat.corpses`. Filtered to PERSIST + non-token + dedup-by-instance-id-latest-death. Resolves to full base ATK (no -1 floor) and bypasses `has_persisted` lock once; sets the lock true after.
+- **Symmetry call:** applies to friendlies AND enemies. Combined with persist_v0 Q2 (PERSIST allowed on chapter bosses), this is the design's terror moment — a near-killed PERSIST boss returns to full HP at midnight. Standard enemies still don't carry PERSIST, so it's a boss-encounter escalator, not a wave-grind hostility multiplier.
+- **W11 Saint × Hanging Hour ordering locked:** Persist drain runs at TURN-START *before* Speak the Name's freeze takes effect. Without this, W11's lore-payoff turn would brick. Critical ordering note.
+- **Anti-P2W bound restated:** Hanging Hour Persist override is gameplay-only. Cursed treatment (animated green-pyre overlay, IAP) shares the curse flavour but is **visual only** — combat code MUST NOT branch on `treatment_id == CURSED`.
+- **Engine wiring:** no changes this run. Sketch'd in spec §"Engine wiring" — adds `hanging_hour_turn` + `hanging_hour_fired` + `corpses` + `hanging_hour_struck` signal to `Combat.gd`, plus a new `TurnEngine.drain_hanging_hour_persists` static method. Defer to B2.7+ balance pass and B2.9 boss-encounter spec.
+- **Files written this run:**
+  - `keywords/hanging_hour_persist_v0.md`
+- **Open Qs for Paul (logged in spec §"Open questions"):**
+  1. Default trigger turn = 5/4 — ship as-is or pull tighter to 4/3?
+  2. Reuse `has_persisted` lock vs add separate `hanging_hour_persist_used` flag (matters only if a future relic ever needs to reset the locks selectively)?
+  3. Boss with PERSIST: returns at base stats — confirm phase-state (phase-1 vs phase-2 enrage) is tracked separately from `CardInstance` so this works cleanly. Will revisit in B2.9 boss-encounter design.
+  4. VFX / SFX budget for the Hanging Hour beat — rope creak + screen-pulse + corpse-light flicker. Owned by B3.2 frame-pass; non-blocking.
+- **None block** the next mechanical-mining pass or any Phase 3 build item. M4 is the last item in Phase 2.9.
+
+---
+
+## M3 — Graveyard-as-resource Warlord (heartbeat 2026-05-10 14:18 UTC)
+
+- **Brief:** design 1 new Warlord *or* repurpose an existing one's Tier-3 alt-fire so the discard pile is a usable resource. "Deathrite Shaman energy."
+- **Decision:** **repurpose**, don't add new Warlord. Roster locked at 11 in `warlords_v1.md`. Sieren (W2, Ash-Mourners, Control) is the canonical graveyard-recursion Warlord — faction-coherent fit.
+- **Spec authored:** `sieren_t3_glean_v0.md` — full Tier-3 alt-fire spec for **Glean**.
+- **Glean (one-line):** 3 mana + exhaust 2 discard cards + consume the targeted unit's discard entry → summon a copy of any UNIT in your discard to a friendly tile at -1 ATK (floor 0). Tokens excluded. Already-Persisted units excluded (snowball block).
+- **Anti-P2W bound:** same mana cost as Funeral Writ (3), same cooldown band (once/wave), opposite-axis effect (lane-control DoT → resource conversion). Locked-pattern compliant per `warlord_tiers_v0.md` §3.3. Not strictly better — Funeral Writ wins vs swarm pressure, Glean wins vs attrition with discard depth.
+- **Persist + Glean interaction (M1 hook):** Glean'd copy does NOT inherit Persist's once-per-combat lock. If the base card has PERSIST, the Glean'd copy can Persist normally on death. Already-Persisted bodies are excluded from Glean targeting — prevents perpetual recur.
+- **Sacrifice loop interaction (M2 hook):** Glean'd unit is a normal sacrifice target for Last Vows / Black Mire Pact. Combos intentional, contained by the 3-cards-per-Glean opportunity cost.
+- **W1 worked-example diff:** repurposes Sieren's illustrative "Pall Writ" alt-fire. Pall Writ flagged for reassignment to **Saint of Gallowsmoke (W8)** when W2 runs — better thematic fit (W8's faction is Coven × Court, Smoke pillar). M3 spec §6 Q3 details the swap.
+- **Files written this run:**
+  - `sieren_t3_glean_v0.md` — full M3 deliverable spec (decision, full Glean spec, anti-P2W audit, snowball checks, engine handoff, open Qs, W1 diff).
+- **Open Qs for Paul (logged in spec §6):**
+  1. Discard cost — 2 cards or 1? Currently 2. Tunable for soft-launch.
+  2. Glean'd copy consumes its discard entry? Currently yes (anti-perpetual-chain).
+  3. Pall Writ → W8 reassignment — confirm before W2 authors W8's T3.
+  4. MVP slice (Sieren ships in IMV-1) — Tier 3 deferred to IMV-2 per `internal_mvp_scope.md`. Glean is a v0 spec for IMV-2 build, not IMV-1. Authoring early is fine; engine wiring waits.
+  5. Naming — "Glean" vs "Reckoning"/"Recompense"/"Harvest the Dead"/"Cull the Mourners". Lock at W2 sign-off.
+- **Engine notes for W5:** new `Glean` resolver needs `discard_pile` filter (UNIT && !is_token && !persisted_this_combat), two-step UI picker (target tile → discard browser; discard browser is new — flag for B2.10 follow-up if Sieren is in MVP slice). Encoded as a non-draftable LEGENDARY SPELL .tres with `unlock_tag=&"warlord_t3_sieren"`. Full encoding in spec §5.
+- **Backlog status:** ticking M3. M4 (Hanging Hour × Persist) still queued — landed-cleanly hand-off for next heartbeat.
+
+## M2 — Sacrifice-and-return loop hardening (heartbeat 2026-05-10)
+
+- **Brief:** review Iron Penitents (self-damage = soft-sacrifice) + Coven (explicit sacrifice combos), identify 2–3 missing combo enablers (sacrifice outlet, return-to-hand, sacrifice-payoff), author them. Mechanically completes M1's Persist keyword by giving Persist somewhere to feed into and out of.
+- **Gap audit:**
+  - **Sacrifice outlet** — existing outlets (P22 Sin-Eater 2c, P25 Vow of Ash 2c, P26 Long Confession 4c) all charge mana on top of the unit cost. M1 Persist + a return-to-hand chain wants a tempo-neutral 0-cost outlet so the loop runs at break-even. Hole confirmed.
+  - **Return-to-hand (blink)** — pool had nothing. MTG canonical "blink" is the load-bearing piece of every Persist deck Paul referenced. Hole confirmed.
+  - **Sacrifice-payoff trap** — existing on-death effects all live ON the dying unit (M19/M20/etc.). No decoupled trigger that pays out per-death regardless of the corpse. Hole confirmed.
+- **Cards authored (3 total — one per gap):**
+  - **P41 Last Vows** (Iron Penitents, 0c C SPELL) — sacrifice outlet. `keywords=[SACRIFICE, BLEED]`. Sac a Penitent, Bleed-2 to up to 2 enemies. Mandatory sac means it does nothing without a body — strict combat-only utility, no hand-as-storage abuse. Up-to-2 cap stops one-button board-wipes on packed lanes.
+  - **C41 Bog-Bargain Recall** (Coven, 2c U SPELL) — return-to-hand. `keywords=[]` (no formal keyword; impl deferred to B2.7+). Choose a friendly unit, return to hand, **Persist marker resets**. The reset clause is the load-bearing rule — without it this is a vanilla blink; with it, the explicit Persist-recursion enabler. 2c (not 0c) keeps each loop turn a real mana commitment.
+  - **C42 Black Mire Pact** (Coven, 2c C TRAP, lane-wide) — sacrifice payoff. `keywords=[SUMMON]`. Each friendly death in lane spawns a 0/1 Bog-Spawn. 3 charges then expires. Decouples payoff from corpse so Penitent sacs / Coven trades / Mourner Resurrects all feed it.
+- **Files written this run:**
+  - `cards_iron_penitents_v1.md` — appended "M2 addition" §  (P41 + rationale + combo lines + anti-stack guard)
+  - `cards_coven_v1.md` — appended "M2 additions" § (C41 + C42 + rationale + combo lines + B2.7+ engine implication)
+  - `game/data/cards/iron_penitents/P41.tres` — authored
+  - `game/data/cards/coven/C41.tres` — authored
+  - `game/data/cards/coven/C42.tres` — authored
+- **Engine flag for B2.7+ (NOT a blocker, log only):** C42 is the first **lane-wide passive trap** in the pool. Existing trap pattern is "first enemy steps on tile" — single-trigger, tile-bound. C42 needs a new activation pattern: lane-bound, event-listening, charge-counted. Implement as a `LaneEffect` Resource separate from per-tile `Trap` instances when the trap engine lands. Already noted in `cards_coven_v1.md` §M2-additions; flagged here too so the B2.7+ heartbeat sees it without re-deriving.
+- **Anti-P2W invariant restated:** all 3 cards are gameplay cards with normal craft/draft availability. No IAP gate, no whale-only variant. Same rule as every M1/M2 design pass.
+- **Combo lines this opens (sample, not exhaustive):**
+  - Persist-tagged Mourner dies → Persists at end of turn → Recall to hand → replay → dies again → C42 fires → Bog-Spawn → Bog-Spawn dies → C42 fires again. Within C42's 3-charge window the lane never empties.
+  - P26 Long Confession (sac up to 3 → mana+draw) → P41 Last Vows on the 4th body if drawn → triple-sac into draw + Bleed clear is now a real Iron Penitent finisher pattern.
+  - Two-faction Penitent + Coven deck gets the strongest version of the loop: Penance feeds off the deaths, Black Mire pays Bog-Spawns, Recall + Last Vows keeps the engine ticking. Anti-synergy grid (Penance vs Sacrifice-Combo) becomes engine fuel rather than a soft conflict.
+- **Open Qs queued for Paul (none block M3):** (Q1) C41 Recall on a Persist-already-fired unit — should it un-flip `has_persisted` even if the unit hasn't died yet, or only restore it for re-death? Default: always reset on Recall (cleanest rule). (Q2) C42 lane-wide trap visual — how do we surface "3 charges left" in UI? Probably a small counter on the trap chrome; defer to B3.2 frame pass. (Q3) Last Vows + Persist combo: when the Persisted body is sacrificed by Last Vows, does it Persist again? Per M1 spec: no — `has_persisted=true` already, second death is normal death. Confirms M1's once-per-combat lock is the right shape.
+- **Next M-track hop:** M3 (Graveyard-as-resource Warlord — design 1 new Warlord or repurpose an existing Tier-3 alt-fire so the discard pile is a usable resource).
+
 ## T3 — Faction-frame author spec (heartbeat 2026-05-09 23:19 UTC)
 
 - **Output:** `faction_frames_v0.md` (~180 lines) — PSD-template authoring spec for the 5 free faction-themed card frames. T3's contract is "B3.2 frame author can execute against this without re-deriving anything"; actual PNG authoring is downstream.
@@ -1362,3 +1498,20 @@ Phase 2.11 spec-file population now complete for: 5 factions × 40 cards (Iron P
 - **Open Qs queued for Paul (none block M2):** ATK-floor (0 chump body vs hard-kill at ATK=0; default 0); Persist on enemy side (no on standard, yes on chapter bosses recommended); UI display (silhouette behind cost vs icon next to keyword text — defer to B3.2).
 - **Sandbox note:** GDScript syntax untestable in Cowork sandbox; the enum addition is a single-token append after `SLOW`, no risk to existing call sites that branch on `Keyword`. Paul to confirm the project still parses in Godot. No engine-wide rename; existing keyword constants untouched.
 - **Next M-track hop:** M2 (sacrifice-and-return loop hardening). Will revisit the 5 candidate cards then and decide which 2-3 actually get the keyword + author 2-3 missing combo enablers (sacrifice outlet, return-to-hand, sacrifice-payoff).
+
+---
+
+## Cloud smoke test PASSED — first Gallowfell render (heartbeat 2026-05-10)
+
+- **Output:** `art_iterations/_smoke/smoke_1778402592_iron_penitent.png` (832×1216, 1.45 MB).
+- **Subject:** Iron Penitents reference — hooded figure in oxblood/rust-red cloak, brass-mask silhouette under the hood, iron chains coiled at the feet, candle-yellow cathedral arch backlight, painterly oil-painting brushwork. **Matches `faction_bible.md` §1 palette + motif and `art_direction.md` §1c MTG-painterly + Elden-Ring-grandeur direction on first try.**
+- **Pipeline used:** RunPod community 3090 ($0.22/hr) → official ComfyUI template (cw3nka7d08, runpod/comfyui:latest, Manager V3.40 onboard) → Manager API installed `sd_xl_base_1.0.safetensors` from registry → submitted minimal 7-node SDXL workflow (KSampler dpmpp_2m karras 30 steps CFG 6.5 seed 4242) → downloaded via /view → pod terminated.
+- **Cost incurred:** ~£0.03 (pod was up ~10 min total: ~3 min idle test/teardown of 2 wrong-template pods + ~7 min for the working run).
+- **Total elapsed for working run:** ~7 min from deploy to image-in-folder.
+- **Path lessons (worth a research note for D-VALIDATE-1+):**
+  1. ComfyUI-Manager V3.40 install_model API rejects arbitrary URLs — payload must match its registry (`type: "checkpoint"` singular, `save_path` matching the registry entry). Civitai-only LoRAs in `loras_resolved.md` will need a different install path on cloud pods.
+  2. The proxy URL `<podid>-8188.proxy.runpod.net` is HTTP-only and works the moment ComfyUI binds — about 15-30s after pod RUNNING.
+  3. RunPod's pytorch templates expose only HTTP-proxy ports, no public TCP — direct SSH to a community pod is not available without secure-cloud upgrade. Stick with ComfyUI HTTP API for orchestration.
+  4. SDXL base alone (without LoRA stack) already produces strong painterly grimdark output on a single short prompt. The 10-LoRA stack from `pipeline_spec.md` is a quality-uplift layer, not a baseline requirement — useful framing for Phase 2.11 D-VALIDATE-1 expectations.
+- **Working automation script:** `pipeline_setup/runpod_smoke_test.py` (B3.0d) authored — needs minor fixes (registry-format install_model, log path to /tmp not OneDrive) before becoming the canonical re-runnable batch tool. Patches noted in head of file. Effectively this run = a partial B3.0d validation: 80% of the script ran as intended end-to-end this heartbeat.
+- **Next:** B2.7 turn engine + M2 sacrifice-loop hardening. D-VALIDATE-1 (9-tile reference sheet) now technically unblocked — a single tile cost £0.03 in 7 min, so 9 tiles = £0.27 and ~30 min once batch-submitting works. Defer until Paul confirms aesthetic on this single image.

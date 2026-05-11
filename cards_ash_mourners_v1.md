@@ -231,3 +231,24 @@ PERSIST keyword authored this heartbeat (`keywords/persist_v0.md`, `GFEnums.Keyw
 | M24 | **Choir of the Long Dead** (5c U) | Aura-giver; Persist makes the Wraith-HP buff sticky across one wipe. Resurrect-Spam payoff worth defending. | Aura is lost on death even with Persist (per spec); the body returns stripped, then re-applies the aura on next-turn tick. Confirm tick-order in B2.7. |
 
 Anti-synergy reminder: if a Persist-tagged Ash-Mourner is also Resurrect-eligible (M6 Pyre-Priest field), Resurrect wins (replaces the death). Spec'd in `keywords/persist_v0.md` Interactions block.
+
+---
+
+## M2 update (2026-05-10) — Persist tags applied
+
+Five M1-flagged cards have been keyword-tagged with PERSIST in their `.tres` files. No statline changes; just the keyword. Anti-P2W invariant preserved (Persist is gameplay, never cosmetic — see `keywords/persist_v0.md`).
+
+| Card | Keywords (after M2) | Why this card got Persist |
+|---|---|---|
+| M5 Last Censer-Bearer (4c R Smoke-Fear identity) | Dread + Persist | Persist on the Smoke-Fear payoff means the Dread aura keeps ticking through one death. Reinforces the Gallowfell through-line. |
+| M12 Necrologist of the Catacombs (4c U Resurrect-Spam identity) | Resurrect + Summon + Persist | Self-fueling: dies → triggers her own draw + Wraith summon (per her own ability), then Persists back at -1 ATK to keep the engine running. |
+| M20 Bone-Shroud Acolyte (2c C) | Persist | Already a death-trigger card (cost-reduction on death). Persist gives a second body to chain the discount. Clean common-tier teaching card. |
+| M22 Hollow Mortician (3c C) | Persist | Gains +1 ATK on Mourner death; Persist means it can witness its own death and come back with the buff stacked — though the buff resets, the on-death trigger still fires. |
+| M24 Choir of the Long Dead (5c U) | Persist | Aura-giver; Persist makes the Wraith-HP buff sticky across one wipe. Aura is lost on death even with Persist (per spec); the body returns stripped, then re-applies the aura on next-turn tick. |
+
+**Combo cross-references opened by M2 + M1:**
+- M5/M12/M22/M24 + Iron Penitents P41 Last Vows → sacrifice your Persist-tagged Mourner the turn it Persists back, get Bleed-2 on enemies. Lossy tempo conversion that works as a panic finisher.
+- Any Persist-tagged Mourner + Coven C41 Bog-Bargain Recall → return to hand, replay, Persist marker reset, infinite-ish loop bounded by mana cost.
+- All five + Coven C42 Black Mire Pact → each Persist death pops a 0/1 Bog-Spawn (3 charges). Mourner + Coven combo deck becomes a real shape.
+
+**Open Q for Paul (not blocking M3):** M22 Hollow Mortician's "+1 ATK this turn" on-death trigger interacts oddly with Persist — when the Mortician itself dies and Persists back, does its own death trigger fire and pre-buff its returning body? Engine answer is "no" (the buff is on the Mortician's instance, which is gone; the new instance is fresh). Design answer is unclear. Recommend keeping engine answer; revisit only if Mortician underperforms.

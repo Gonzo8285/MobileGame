@@ -211,3 +211,33 @@ Five splash hooks → meets C7's "≥2 splash hooks per faction" target.
 - **Same heartbeat:** `.tres` files for C11–C40 generated under `game/data/cards/coven/`. Existing C1–C10 files at `game/data/cards/` remain unchanged.
 
 _Next backlog hop: C5 — The Last Legion full pool (~40 cards). Net-new faction in the cards file (no v0 cards). All 40 cards to author. Identity/payoff cards from `archetypes_v0.md` (Sergeant-Smith Vikar, Echo-Sergeant, Banner-Captain, etc.) used as the spine._
+
+---
+
+## M2 additions (2026-05-10) — sacrifice loop hardening
+
+Two new cards that close the death-rebirth-loop holes flagged in M2: a return-to-hand effect that resets Persist markers, and a passive lane-wide sacrifice payoff trap.
+
+| # | Name | Cost | Type | Rarity | Effect |
+|---|---|---|---|---|---|
+| C41 | **Bog-Bargain Recall** | 2 | Spell | U | Choose a friendly unit. Return it to your hand. If it had Persist, that unit's Persist marker resets — it can Persist again this combat. |
+| C42 | **Black Mire Pact** | 2 | Trap (lane-wide) | C | Each time a friendly unit dies in this lane this combat, summon a 0/1 Bog-Spawn on that tile. (3 charges, then expires.) |
+
+**Why C41 Bog-Bargain Recall:**
+- The MTG-canonical "blink" effect, reframed as a bog bargain. Spec-bridges the central design fantasy: a unit dies, comes back diminished, gets bounced to hand, comes back fresh, dies again — the curse keeps the dead from staying dead, and the player keeps trading time for currency.
+- The Persist-reset clause is the load-bearing rule. Without it, this is just a normal blink card; with it, it's the explicit Persist-recursion enabler.
+- 2c cost balances against M1 Persist's "once per combat" rule — if Recall were 0c, the loop would be infinite. 2c keeps each loop turn a real mana commitment.
+- Splashes hard into Iron Penitents (recall + immediate Last Vows = sac the bounced body for value), Skinward Pact (recall a transformed unit to "untransform" by replaying), and Last Legion (Echo + Recall is a tempo loop).
+
+**Why C42 Black Mire Pact:**
+- Existing on-death effects all live ON the dying unit (M19 Catacomb Cherub, M20 Bone-Shroud Acolyte, etc.). Black Mire Pact decouples the trigger from the corpse, making any friendly death pay out — Iron Penitent sacrifices, Coven Bog-Spawn-trades, Ash-Mourner Resurrect-Spam loops all feed it.
+- Lane-wide passive (not tile-bound) is a new trap pattern — flagged below as an engine implication.
+- 3 charges keeps it bounded. With Long Confession (3 sacs in one turn) you'd consume the trap immediately for +3 Bog-Spawns; with a normal grind game you'd see a charge tick over 3 turns. Reasonable both ways.
+
+**Combo lines opened:**
+- Penitent Persist → dies → Bog-Spawn pops from C42 → Bog-Spawn dies → another Bog-Spawn pops → ... cap at 3 charges, but inside that window the lane never empties.
+- Persist unit dies → Recall it → replay it → it dies again → more Bog-Spawns. The Recall reset means this is one of the few real "infinite-ish" tempo pumps the engine permits.
+- Two-faction deck (Iron Penitents + Coven) gets the strongest version: Penance feeds off the deaths, Black Mire Pact pays out Bog-Spawns, Recall + Last Vows keeps the engine ticking. Anti-synergy grid still has Penance vs Sacrifice-Combo as a soft conflict, but with Recall in the deck the conflict turns into engine fuel.
+
+**Engine implication for B2.7+ (flagged, not blocked):** Black Mire Pact is a **lane-wide passive trap** that listens for friendly deaths over multiple turns. Existing trap pattern (per cards_v0.md) is "first enemy steps on tile" — single-trigger, tile-bound. C42 needs a new trap-activation pattern: lane-bound, event-listening, charge-counted. Recommend implementing this as a `LaneEffect` resource separate from per-tile `Trap` instances when the trap engine lands. Out of scope for M2; queued as a B2.7+ TODO once traps move from spec to code.
+

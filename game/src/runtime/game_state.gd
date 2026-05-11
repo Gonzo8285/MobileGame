@@ -115,8 +115,15 @@ func set_phase(new_phase: GFEnums.RunPhase) -> void:
 # ============================================================================
 
 ## Begin a combat encounter. Resets turn, refunds hand/discard back into the
-## deck so combat starts from a fresh shuffle, then advances to turn 1.
-func start_combat() -> void:
+## deck so combat starts from a fresh shuffle, draws an opening hand, then
+## advances to turn 1.
+##
+## `opening_hand_size` (B2.7): cards drawn from the freshly-shuffled deck into
+## hand BEFORE turn 1 fires. Defaults to 0 so existing callers (B2.5 combat_test)
+## see no behaviour change. Combat.start() passes Combat.OPENING_HAND_SIZE=5
+## per the Slay-the-Spire convention. If the deck is shorter than the request,
+## draws what's available; the player just opens with a thinner hand.
+func start_combat(opening_hand_size: int = 0) -> void:
 	set_phase(GFEnums.RunPhase.COMBAT)
 	turn = 0
 	mana = 0
@@ -129,6 +136,18 @@ func start_combat() -> void:
 			deck.add_to_top(c)
 	if deck != null:
 		deck.shuffle()
+
+	if opening_hand_size > 0 and hand != null and deck != null:
+		for _i in range(opening_hand_size):
+			var card: Card = deck.draw_one(discard)
+			if card == null:
+				break
+			# Hand.add returns false on overflow + emits overflowed; we route
+			# the overflow into discard here so the burn-mill rule applies
+			# even to the opening draw (edge case: a Warlord ability could
+			# pre-shrink the hand cap below opening_hand_size).
+			if not hand.add(card) and discard != null:
+				discard.add(card)
 
 	next_turn()
 

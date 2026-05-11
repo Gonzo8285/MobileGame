@@ -20,15 +20,26 @@ extends Node2D
 
 signal combat_started(wave: Wave)
 signal combat_ended(victory: bool)
+## Emitted at the end of `_on_turn_ended` after the TurnEngine has resolved
+## DoTs / attacks / Persist. Carries the merged result Dictionary from
+## TurnEngine for HUD + test consumption (see TurnEngine docstring for shape).
+signal turn_resolved(turn_num: int, summary: Dictionary)
 
 const LANE_COUNT: int = 3
 const DEFAULT_TILES_PER_LANE: int = 6
+const OPENING_HAND_SIZE: int = 5
 
 var lanes: Array[Lane] = []
 var spawner: WaveSpawner = null
 var current_wave: Wave = null
 var is_over: bool = false
 var ended_in_victory: bool = false
+
+# Persist (M1) queue — UnitInstances that died this turn AND carry the
+# PERSIST keyword AND haven't already persisted this combat. Captured via
+# the lane.unit_killed signal in `_on_unit_killed`. Drained at the end of
+# `_on_turn_ended` after enemy advance + cull, then cleared.
+var _pending_persists: Array[UnitInstance] = []
 
 # Connections we manage so we can disconnect cleanly on combat_ended.
 var _gs_turn_started_cb: Callable
@@ -69,6 +80,10 @@ func _init_lanes(tiles_per_lane: int) -> void:
 
 ## Begin the combat. Drives GameState into COMBAT phase, binds turn signals.
 ## Caller is expected to have already done `GameState.start_run(...)`.
+##
+## B2.7 added: opening-hand draw of 5 cards happens BEFORE GameState.start_combat
+## so the player faces turn 1 with their starting hand. Subsequent turns draw 1
+## via the TurnEngine.
 func start() -> void:
 	if current_wave == null:
 		push_error("[Combat] start() called with no wave set")
@@ -80,7 +95,19 @@ func start() -> void:
 	GameState.turn_started.connect(_gs_turn_started_cb)
 	GameState.turn_ended.connect(_gs_turn_ended_cb)
 
-	GameState.start_combat()
+	# Wire hand-overflow → discard so any turn-N draw on a full hand burns the
+	# overflow rather than dropping it on the floor (matches cards_v0.md
+	# "burn-mill" rule). Local lambda captures the discard reference; safe to
+	# leave bound across combats — Hand and Discard are recreated by start_run.
+	if GameState.hand != null and GameState.discard != null:
+		var d := GameState.discard
+		var overflow_cb := func(c: Card):
+			if c != null:
+				d.add(c)
+		if not GameState.hand.overflowed.is_connected(overflow_cb):
+			GameState.hand.overflowed.connect(overflow_cb)
+
+	GameState.start_combat(OPENING_HAND_SIZE)
 	combat_started.emit(current_wave)
 
 
@@ -91,17 +118,45 @@ func start() -> void:
 func _on_turn_started(turn_num: int) -> void:
 	if is_over or spawner == null:
 		return
+	# B2.7 turn-start phase: status duration decay + cooldown ticks + draw 1.
+	# Spawn happens AFTER so newly-spawned enemies don't get an immediate
+	# duration decay on turn-of-spawn (clean status semantics).
+	TurnEngine.process_turn_start(lanes, GameState.hand, GameState.deck, GameState.discard, turn_num)
 	spawner.tick(turn_num)
 
 
 func _on_turn_ended(turn_num: int) -> void:
-	# Move every enemy on every lane. Each lane reports any base damage via
-	# the connected `enemy_reached_base` signal, which routes through
-	# `_on_enemy_reached_base` and into GameState.
 	if is_over:
 		return
+	# B2.7 turn-end phase order — see TurnEngine docstring.
+	# 1-3: DoT tick → friendly attacks → cull dead enemies (player initiative).
+	var pre := TurnEngine.process_turn_end_pre_advance(lanes)
+
+	# 4: Enemies advance (Lane owns this; routes base-reach damage through the
+	# enemy_reached_base signal into GameState.take_damage).
 	for lane in lanes:
 		lane.advance_all()
+
+	# 5-6: Enemy stand-attacks vs friendlies on the same tile, then cull dead
+	# friendlies. The cull fires unit_killed → _on_unit_killed which captures
+	# Persist candidates into _pending_persists.
+	var post := TurnEngine.process_turn_end_post_advance(lanes)
+
+	# 7: Drain the Persist queue. Returns persisted units to origin tile (or
+	# nearest empty in row) at -1 ATK, marks has_persisted, clears the queue.
+	var persisted: int = 0
+	if not _pending_persists.is_empty():
+		persisted = TurnEngine.drain_persists(lanes, _pending_persists)
+		_pending_persists.clear()
+
+	# Surface a single summary signal for HUD + tests.
+	var summary := pre.duplicate()
+	summary["enemy_atk"] = post["enemy_atk"]
+	summary["kills_friend"] = post["kills_friend"]
+	summary["persisted"] = persisted
+	summary["turn"] = turn_num
+	turn_resolved.emit(turn_num, summary)
+
 	# Did the base just die?
 	if GameState.base_hp <= 0:
 		_finish(false)
@@ -110,9 +165,10 @@ func _on_turn_ended(turn_num: int) -> void:
 	if spawner != null and spawner.is_complete():
 		_finish(true)
 		return
-	# Otherwise the orchestrator (B2.7 turn engine, or the dev smoke test) is
-	# responsible for calling GameState.next_turn() — the scaffold deliberately
-	# does NOT self-drive, to avoid recursing through the turn-end signal.
+	# Otherwise the orchestrator (or test driver) is responsible for calling
+	# GameState.next_turn() — the engine deliberately does NOT self-drive, to
+	# avoid recursing through the turn-end signal and to give the UI a chance
+	# to render between turns.
 
 
 # ============================================================================
@@ -142,7 +198,20 @@ func _on_unit_placed(unit: UnitInstance) -> void:
 
 
 func _on_unit_killed(unit: UnitInstance) -> void:
-	if unit == null or not _unit_views.has(unit):
+	if unit == null:
+		return
+	# B2.7 / M1: capture Persist-eligible deaths for end-of-turn return.
+	# Conditions per `keywords/persist_v0.md`: card has PERSIST keyword, unit
+	# has not already persisted this combat, and the unit is not a token.
+	# Tokens are excluded because Persist returns the source Card to the lane
+	# — tokens have no playable Card to return to.
+	if unit.card_data != null \
+			and unit.card_data.has_keyword(GFEnums.Keyword.PERSIST) \
+			and not unit.has_persisted \
+			and not unit.is_token:
+		_pending_persists.append(unit)
+	# Clean up the visual.
+	if not _unit_views.has(unit):
 		return
 	var uv: UnitView = _unit_views[unit]
 	_unit_views.erase(unit)
@@ -213,11 +282,22 @@ func handle_drop(lane_idx: int, card: Card, _drop_position: Vector2) -> Dictiona
 	return result
 
 
+## End the current player turn. Public entry point for the UI's "End Turn"
+## button. Equivalent to `GameState.next_turn()` but lives on Combat for clean
+## API surface — UI talks to Combat, Combat talks to GameState. Idempotent on
+## a finished combat (no-op).
+func end_turn() -> void:
+	if is_over:
+		return
+	GameState.next_turn()
+
+
 ## Detach this combat from GameState. Idempotent; safe to call after a
 ## natural combat_ended already disconnected. Call before freeing the node
 ## if combat didn't run to completion (e.g. test tear-down, scene change).
 func cleanup() -> void:
 	is_over = true
+	_pending_persists.clear()
 	if _gs_turn_started_cb.is_valid() and GameState.turn_started.is_connected(_gs_turn_started_cb):
 		GameState.turn_started.disconnect(_gs_turn_started_cb)
 	if _gs_turn_ended_cb.is_valid() and GameState.turn_ended.is_connected(_gs_turn_ended_cb):

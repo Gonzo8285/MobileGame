@@ -20,6 +20,24 @@ var tile: int = 0       ## 1..tile_count-1 valid for friendlies. Tile 0 is the b
 var cooldown_counter: int = 0  ## decremented each turn until 0 ⇒ ready to attack
 var status: Dictionary = {}    ## { Keyword -> stack count }
 
+## Per-instance ATK modifier. Stacks with card_data.attack and is clamped at 0.
+## Persist (M1) writes -1 here when a unit returns from death. Other transient
+## buffs (Banner-buff aura, Penance triggers) write positive values. NEVER
+## persists across combats — `Combat.cleanup()` discards the instance entirely.
+var atk_offset: int = 0
+
+## True iff this instance has already been re-summoned via PERSIST this combat.
+## M1 lock: a unit can Persist at most once per combat. Reset between combats
+## along with the rest of the instance (a fresh `place_unit` makes a new one).
+var has_persisted: bool = false
+
+## True iff this unit was created by a SUMMON / RESURRECT effect (not played
+## from hand). Tokens cannot Persist, cannot drop loot, and don't count for
+## "play X cards"-style triggers. M1 spec: tokens are excluded from Persist
+## resolution. Set explicitly by the spawner; default false matches a normal
+## hand-played unit.
+var is_token: bool = false
+
 
 func _init(card: Card = null, place_tile: int = 1, place_lane: int = 0) -> void:
 	if card == null:
@@ -45,7 +63,16 @@ func is_alive() -> bool:
 
 
 func can_attack() -> bool:
-	return is_alive() and cooldown_counter <= 0
+	return is_alive() and cooldown_counter <= 0 and current_attack() > 0
+
+
+## Effective attack — base ATK from the Card resource plus any per-instance
+## modifier (Persist's -1, Banner buffs, etc.) clamped at 0. Use this whenever
+## resolving damage; never read `card_data.attack` directly from combat code.
+func current_attack() -> int:
+	if card_data == null:
+		return 0
+	return maxi(0, card_data.attack + atk_offset)
 
 
 # ============================================================================

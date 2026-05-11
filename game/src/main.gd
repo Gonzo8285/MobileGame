@@ -15,10 +15,11 @@ func _ready() -> void:
 	print("Engine: Godot 4 — hello world confirmed")
 
 	if RUN_DEV_TESTS:
-		_run_dev_test("res://src/runtime/card_zones_test.gd")  # B2.3
-		_run_dev_test("res://src/runtime/game_state_test.gd")  # B2.4
-		_run_dev_test("res://src/runtime/combat_test.gd")      # B2.5
-		_run_dev_test("res://src/runtime/card_play_test.gd")   # B2.6
+		_run_dev_test("res://src/runtime/card_zones_test.gd")    # B2.3
+		_run_dev_test("res://src/runtime/game_state_test.gd")    # B2.4
+		_run_dev_test("res://src/runtime/combat_test.gd")        # B2.5
+		_run_dev_test("res://src/runtime/card_play_test.gd")     # B2.6
+		_run_dev_test("res://src/runtime/turn_engine_test.gd")   # B2.7
 
 
 func _run_dev_test(path: String) -> void:

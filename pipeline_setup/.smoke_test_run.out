@@ -1,0 +1,29 @@
+[2026-05-10 08:33:50] === Gallowfell smoke test — start ===
+[2026-05-10 08:33:50] Output dir: /sessions/dazzling-great-hypatia/mnt/Gaming app/art_iterations/_smoke
+[2026-05-10 08:33:50] Deploying pod: gallowfell-smoke-1778402030 on NVIDIA RTX A5000 (community, ~$0.16/hr)
+[2026-05-10 08:33:50] !!! ERROR: HTTP Error 403: Forbidden
+[2026-05-10 08:33:50] === run end ===
+Traceback (most recent call last):
+  File "/sessions/dazzling-great-hypatia/mnt/Gaming app/pipeline_setup/runpod_smoke_test.py", line 345, in <module>
+    main()
+  File "/sessions/dazzling-great-hypatia/mnt/Gaming app/pipeline_setup/runpod_smoke_test.py", line 304, in main
+    pod_id = deploy_pod(api_key)
+  File "/sessions/dazzling-great-hypatia/mnt/Gaming app/pipeline_setup/runpod_smoke_test.py", line 120, in deploy_pod
+    data = gql(mutation, variables, api_key)
+  File "/sessions/dazzling-great-hypatia/mnt/Gaming app/pipeline_setup/runpod_smoke_test.py", line 85, in gql
+    status, body = http_request(GQL_URL, method="POST", data=payload, headers=headers, timeout=timeout)
+  File "/sessions/dazzling-great-hypatia/mnt/Gaming app/pipeline_setup/runpod_smoke_test.py", line 77, in http_request
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+  File "/usr/lib/python3.10/urllib/request.py", line 216, in urlopen
+    return opener.open(url, data, timeout)
+  File "/usr/lib/python3.10/urllib/request.py", line 525, in open
+    response = meth(req, response)
+  File "/usr/lib/python3.10/urllib/request.py", line 634, in http_response
+    response = self.parent.error(
+  File "/usr/lib/python3.10/urllib/request.py", line 563, in error
+    return self._call_chain(*args)
+  File "/usr/lib/python3.10/urllib/request.py", line 496, in _call_chain
+    result = func(*args)
+  File "/usr/lib/python3.10/urllib/request.py", line 643, in http_error_default
+    raise HTTPError(req.full_url, code, msg, hdrs, fp)
+urllib.error.HTTPError: HTTP Error 403: Forbidden

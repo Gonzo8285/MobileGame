@@ -52,8 +52,8 @@ flowchart TD
 
 ### 2. Starter bundle (one-time, $4.99)
 - **Where:** Pops once on Day 2 in the Hub. Single SKU, never repeats.
-- **Contains:** 1 paid Warlord (cheapest of the 5), gem stack, 7-day XP boost.
-- **Why it works:** Anchors the price ladder, converts D2 retained users into payers cheaply, gives flavour-of-paid-content without pay-to-win.
+- **Contains:** 1 paid Warlord (cheapest of the 5), gem stack, **7-day +50% Warlord-XP booster** (per `warlord_tiers_v0.md` §2.3 — multiplier, not flat XP grant; counts toward the ×3.0 stack cap).
+- **Why it works:** Anchors the price ladder, converts D2 retained users into payers cheaply, gives flavour-of-paid-content without pay-to-win. The XP booster is the cheapest legitimate "feels like progress" hook — it accelerates *mastery cosmetics*, never raw power.
 - **MVP:** No. Add at first commercial pass (post-soft-launch).
 
 ### 3. Weekly bundles (rotating)
@@ -103,10 +103,15 @@ flowchart TD
 ### 6. Battle Pass (30-day season, "Marrow Pass")
 - **Where:** Permanent BP tab, persistent banner on Hub.
 - **Structure:** 50 levels, dual track (free + premium). Premium = $4.99/season. "Pass+" tier at $9.99 grants +10 instant levels and an exclusive skin.
-- **Free track:** card unlocks, gold, single cosmetic.
-- **Premium track:** gems, paid-Warlord shards, epic/legendary skins, BP-exclusive card frames.
+- **Free track:** card unlocks, gold, single cosmetic. **Warlord-XP booster: +10% multiplier active from level 25 onwards** (per `warlord_tiers_v0.md` §2.3) — soft retention nudge for non-payers.
+- **Premium track:** gems, paid-Warlord shards, epic/legendary skins, BP-exclusive card frames. **Warlord-XP booster: +25% multiplier for the entire season**, active the moment the premium track is unlocked. This is the booster's primary surface.
+- **Booster mechanics (locked, anti-P2W):**
+  - Multiplier only — never flat XP. Cannot tier-skip.
+  - Counts toward the ×3.0 stack ceiling alongside daily-quest, starter-bundle, event, and skin boosters.
+  - Active per-account, applies to whichever Warlord finished the run.
+  - Server-side enforcement on the cap (per `warlord_tiers_v0.md` §6).
 - **Earn rate tuning target:** finishable in ~25 days at 1 hr/day to leave urgency without rage-gating.
-- **MVP:** No. Ship at first commercial pass.
+- **MVP:** No. Ship at first commercial pass. (Engine note: BP claim path must call `GameState.set_xp_multiplier_source("battle_pass_premium", 1.25)` so the multiplier registry can re-stack on every claim.)
 
 ### 7. Energy (provisional — A/B test on/off)
 - **Where:** Run-start gate. 5 charges, 1 charge per run-start, 30-min refill.
@@ -136,13 +141,48 @@ Strict cap: max 5 rewarded-ad views per session, max 8 per day. Frequency-cap he
 - **Why it matters:** keeps run economy interesting and creates demand pressure that *justifies* meta-currency without forcing IAP. **Pure design lever; no $$$.**
 - **MVP:** **Yes.**
 
-### 11. Daily reward calendar
+### 11. Daily reward calendar + daily quests
 - **Where:** Auto-popup on first daily login. 7-day loop, 28-day super-loop, BP XP on every claim.
-- **MVP:** Lite version — single daily chest, no calendar UI yet.
+- **Daily quests (3 slots, refresh 04:00 player-local):**
+  1. _"Win a run"_ — generic, awards BP XP + gold.
+  2. _"Win a run with Warlord X"_ — rotating Warlord; awards BP XP + **a one-shot ×1.5 Warlord-XP multiplier on the next win with that Warlord** (per `warlord_tiers_v0.md` §2.3). One-shot means it consumes on first qualifying win, not on every win that day. Stacks into the ×3.0 ceiling alongside BP and event boosters.
+  3. _"Faction objective"_ — e.g. "Apply 30 Bleed", "Persist 5 units" (M1) — awards BP XP + a small gold/shard payout.
+- **Why the one-shot ×1.5 works:** Players who don't own the rotating Warlord ignore it (no FOMO). Players who do get a *visible reason* to pick that Warlord today, which mirrors the daily-engagement loop without locking content. New-player-friendly: the ×1.5 stacks with BP +25% (=×1.875) without hitting the cap, so quest completion always feels like it did something.
+- **MVP:** Lite version — single daily chest, no calendar UI, no quest UI yet. (Quest engine plumbing comes alongside BP at first commercial pass.)
 
 ### 12. Live-ops bundles (returner / event / faction war)
 - **Where:** Push-driven banners on Hub. Limited-time offers gated to player segment (returner = absent 14+ days, whale = top 5% spend, etc.).
 - **MVP:** No.
+
+### 13. Warlord-XP booster economy (added 2026-05-11 — W3)
+
+Master registry of every surface that grants a Warlord-XP multiplier. Source of truth for the engine-side multiplier registry. **All boosters multiply only — never grant flat XP, never tier-skip.** Total stack hard-capped at **×3.0** (server-enforced, per `warlord_tiers_v0.md` §6).
+
+| Source | Multiplier | Duration | Stacks toward cap | MVP? | Where in this doc |
+|---|---|---|---|---|---|
+| Battle Pass — premium track | ×1.25 | season (30 days) | yes | No | §6 |
+| Battle Pass — free track, lvl 25+ | ×1.10 | until season end | yes | No | §6 |
+| Daily quest — "win with Warlord X" | ×1.50 | one-shot, next qualifying win | yes | No | §11 |
+| Starter bundle | ×1.50 | 7 days | yes | No | §2 |
+| Live-ops weekend event | ×2.00 | event window, capped 5 boosted wins | yes | No | (live-ops layer §12) |
+| Cosmetic skin equipped on Warlord | ×1.05 | as long as equipped | yes | No | §5 |
+
+**Worked stack examples:**
+- Free F2P player, no event: ×1.10 (BP free past lvl 25) only → 110 XP/win on a 100-base = ~65 wins to T4 instead of ~72.
+- Standard payer mid-season: ×1.25 (BP premium) × ×1.50 (daily-quest one-shot) = ×1.875 effective on that one win.
+- Whale on event weekend, skin equipped, daily quest, starter still active: ×1.25 × ×2.00 × ×1.50 × ×1.50 × ×1.05 = ×5.91 raw → **clamped to ×3.0**. Whale ceiling holds at ~25 wins to T4 per the W1 audit.
+
+**Engine handoff (for B4 SDK wiring + W5 tier engine):**
+- `GameState` exposes a multiplier registry: `xp_multiplier_sources: Dictionary[StringName, float]`.
+- Each source is registered/unregistered by ID (`battle_pass_premium`, `daily_quest_warlord_<id>`, `starter_bundle`, `event_weekend`, `equipped_skin_<warlord_id>`).
+- Effective multiplier = `min(3.0, prod(values))`. Computed at run-end, NOT cached — sources may expire mid-run (event windows, daily resets).
+- One-shot sources (daily quest) self-unregister on the consumed win; signal `xp_multiplier_consumed(source_id)` for UI.
+- BP claim writes `battle_pass_premium → 1.25` once at unlock; never recomputed per-claim.
+
+**Open Qs for Paul:**
+1. **Daily quest XP booster — does it stack with the equipped-skin booster?** Currently yes. Could feel mean if the player owns the skin AND completes the quest and the cap eats the skin contribution. Lean: keep it stacking, surface the cap visually (greyed-out source row).
+2. **Free-track booster lvl threshold** — set at lvl 25 (50% through the pass). Is that the right band, or push to lvl 30 to give premium more daylight at the early-mid-season conversion window?
+3. **Multiplier display string** — `+25% XP` or `×1.25 XP`? (Carries from `warlord_tiers_v0.md` Open Q5; confirming so W4 UI work has one canonical form.)
 
 ## Anti-pay-to-win guardrails (design constraint, do not break)
 
@@ -151,6 +191,7 @@ Strict cap: max 5 rewarded-ad views per session, max 8 per day. Frequency-cap he
 3. No energy in launch build (default off).
 4. No PvP — removes the largest pay-to-win pressure entirely (per Paul's design constraint, GDD line 71).
 5. Rewarded video never gates progress, only accelerates it.
+6. **Warlord XP boosters multiply only — never flat-XP grants, never tier-skip purchases. Total stack capped ×3.0 server-side.** Whale ceiling ~25 wins to T4; free floor ~72 wins. Same destination, different speed. (Per `warlord_tiers_v0.md` §6 + this doc §13.)
 
 ## What's in MVP vs later
 
@@ -166,6 +207,7 @@ Strict cap: max 5 rewarded-ad views per session, max 8 per day. Frequency-cap he
 | Energy | — | A/B test only |
 | Live-ops bundles | — | ✅ |
 | Starter bundle | — | ✅ (Day 2 trigger) |
+| Warlord XP boosters (BP / quest / event / skin) | — | ✅ (alongside BP+quests) |
 
 ## Open questions for Paul
 

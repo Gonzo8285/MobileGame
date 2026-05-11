@@ -177,3 +177,21 @@ Five splash hooks → meets the C7 cross-faction balance target ("≥2 cards spl
 - **v1.0 (2026-05-01)** — initial 40-card pool authored from C1 archetype briefs + `cards_v0.md` v1.0. Existing P1–P9 absorbed unchanged. 31 net-new cards (P10–P40). 60/25/10/5 distribution hit exactly. 4 Rares (3 identities + 1 payoff). 2 specials introduced (relics).
 
 _Next step: heartbeat authors `.tres` files for P10–P40 in `game/data/cards/iron_penitents/`. Existing P1–P9 may be migrated into the same subfolder for tidiness — flag for B2.x bookkeeping when the Iron Penitents pool is locked._
+
+---
+
+## M2 addition (2026-05-10) — sacrifice loop hardening
+
+Single new card, slotted as the cheapest sacrifice outlet in the pool.
+
+| # | Name | Cost | Rarity | Effect |
+|---|---|---|---|---|
+| P41 | **Last Vows** | 0 | C | Sacrifice a friendly Penitent. Apply Bleed-2 to up to 2 enemies in lane. |
+
+**Why this card:** existing sac outlets (P22 Sin-Eater Novice 2c, P25 Vow of Ash 2c, P26 Long Confession 4c) all charge mana on top of the unit cost. Persist (M1) + Bog-Bargain Recall (C41) chains want a free outlet so the loop runs at break-even tempo. Last Vows fills it without breaking the curve — 0c, but the sac is mandatory and the spell does nothing without a friendly Penitent to consume. Strict combat-only utility.
+
+**Combo lines opened:**
+- Persist Penitent → Last Vows it the turn it returns at -1 ATK → Bleed-2 stacks on enemies. Pure tempo conversion of "free body that died" into board-clear pressure.
+- P26 Long Confession (sac up to 3 → mana+draw) → Last Vows on the 4th if you have one. Triple-sac into draw + Bleed clear is a real Iron Penitent finisher pattern.
+
+**Anti-stack guard:** the up-to-2-enemies cap stops Last Vows from snowballing into a one-button board-wipe on a packed lane. Two stacks of Bleed on two targets = 4 DoT damage spread, comparable to a 2-mana spell, paid in flesh instead.
