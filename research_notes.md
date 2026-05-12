@@ -1605,6 +1605,17 @@ Phase 2.11 spec-file population now complete for: 5 factions × 40 cards (Iron P
 - **Working automation script:** `pipeline_setup/runpod_smoke_test.py` (B3.0d) authored — needs minor fixes (registry-format install_model, log path to /tmp not OneDrive) before becoming the canonical re-runnable batch tool. Patches noted in head of file. Effectively this run = a partial B3.0d validation: 80% of the script ran as intended end-to-end this heartbeat.
 - **Next:** B2.7 turn engine + M2 sacrifice-loop hardening. D-VALIDATE-1 (9-tile reference sheet) now technically unblocked — a single tile cost £0.03 in 7 min, so 9 tiles = £0.27 and ~30 min once batch-submitting works. Defer until Paul confirms aesthetic on this single image.
 
+## B2.10 — End-to-end smoke test (heartbeat 2026-05-12 19:20 UTC)
+
+- **Authored:** `game/src/runtime/e2e_smoke_test.gd` (~280 LoC, 27 assertions). Wired into `main.gd` dev-test runner after `map_test.gd` so `RUN_DEV_TESTS=true` exercises it on launch. Paul confirms via `[e2e_smoke_test] PASS` console line.
+- **Coverage:** composes B2.4 (GameState lifecycle) + B2.5 (Combat) + B2.7 (TurnEngine, via Combat hookup) + B2.8 (Reward) + B2.9 (Map graph nav). Each prior B2.x test exercised one system in isolation; this one verifies they hand off correctly across phase transitions.
+- **Walked flow:** `start_run → enter_chapter(1) → choose_next_node → setup+start combat → drive turns → combat_ended(true) → start_reward → offer.choose → choose_next_node → setup+start combat → defeat path → combat_ended(false) → run_ended(false) → phase == GAME_OVER`. The second combat uses `base_hp=2` + a killer wave to force the lethal-damage path that collapses out to GAME_OVER through `GameState.take_damage → end_run(false)`.
+- **Anti-P2W:** no monetisation state read anywhere in the test or the systems it composes.
+- **Signal-emit assertions:** `run_started`/`run_ended`/`chapter_started`/`map_node_entered`/`reward_offered`/`reward_resolved` each gated to exactly-one emit; `phase_changed` log scanned for both REWARD and GAME_OVER transitions. This catches signal-fan-out bugs where a phase transition forgets to emit, or a reward handshake double-fires.
+- **Helpers:** mirrored `_make_lonely_wave` + `_make_killer_wave` pattern from `combat_test.gd` (same field names — `on_turn` not `turn`, typed `Array[WaveSpawnEntry]` for `w.spawns`). Highest-damage enemy picked for killer wave so the 2-tile lane resolves to lethal on a single advance.
+- **NOT in scope (deliberate IMV-1 trim):** map_view.tscn UI scene, reward_view.tscn UI scene, shop/event/shrine/rest/boss nodes (only COMBAT exercised), chapter-2 generator (placeholder clone), run-victory variant (boss-defeated → run_ended(true)) — left to a future test once boss-node wave content lands.
+- **Sandbox can't run Godot syntax:** Paul to confirm `[e2e_smoke_test] PASS` line appears in Godot editor console on next `F5`. If the deck reshuffle or combat-2 signal disconnect quietly desyncs, the relevant assertion will surface (AS16 deck-grew-by-1, AS23 run_ended emit count). Phase 3 B2 parent item now has all 10 sub-items checked — B2 itself can tick once Paul has eyeballed PASS.
+
 _Claude-Code git heartbeat 2026-05-12 -- pushed 3138aa1 "feat(engine): game_state expansion + map_test and more"_
 
 ## B3.0b — LoRA HF mirror scan (heartbeat 2026-05-12 14:17 UTC)
