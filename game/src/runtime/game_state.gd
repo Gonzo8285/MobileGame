@@ -282,10 +282,63 @@ func heal(amount: int) -> int:
 ## sets up the next phase (combat / reward / shop / event / boss). This method
 ## just bumps the counter and re-enters MAP phase; the actual node selection
 ## UI is the map screen's job.
+##
+## Legacy int-counter path — kept for pre-B2.9 callers (B2.5 combat_test etc.).
+## Graph-aware callers should use enter_chapter() / choose_next_node() instead;
+## those still bump current_node so this method remains a valid manual-advance.
 func advance_node() -> void:
 	current_node += 1
 	node_advanced.emit(current_node, chapter)
 	set_phase(GFEnums.RunPhase.MAP)
+
+
+## Build the chapter map and seat the player at the start tile. Emits
+## chapter_started so the map-screen UI can render the graph. Does NOT fire
+## map_node_entered yet — the player is "at the start node" but hasn't
+## committed yet; the encounter resolves when they tap to advance.
+##
+## `chapter_num` defaults to the current `chapter` field. Pass an explicit
+## value when re-entering for tests or replay-from-save.
+func enter_chapter(chapter_num: int = 0) -> MapGraph:
+	if chapter_num <= 0:
+		chapter_num = chapter
+	chapter = chapter_num
+	current_map_graph = MapGenerator.generate(chapter_num, run_seed)
+	current_node_id = current_map_graph.start_id
+	current_node = 0
+	set_phase(GFEnums.RunPhase.MAP)
+	chapter_started.emit(chapter_num, current_map_graph)
+	return current_map_graph
+
+
+## Commit to a map node. Validates that `node_id` is a direct child of the
+## current tile (or that we're seating at the start tile). On success:
+##   - updates current_node_id
+##   - bumps current_node (legacy counter — still emitted via node_advanced)
+##   - emits map_node_entered(node) for graph-aware listeners
+## On failure (illegal jump, unknown node, no graph loaded), returns false and
+## emits no signals — caller shows a "can't go there" toast.
+##
+## The phase transition (combat / shop / event / etc.) is the CALLER's job —
+## this method only handles the navigation bookkeeping. That keeps the
+## "what scene runs" decision in one place (the map screen controller) instead
+## of branching here on NodeKind.
+func choose_next_node(node_id: StringName) -> bool:
+	if current_map_graph == null:
+		return false
+	var target: MapNode = current_map_graph.get_node_by_id(node_id)
+	if target == null:
+		return false
+	# Allow re-entering the start tile (e.g. first call after enter_chapter).
+	# Otherwise require child-of relationship.
+	var is_start_seat: bool = (current_node_id == current_map_graph.start_id and node_id == current_map_graph.start_id)
+	if not is_start_seat and not current_map_graph.is_child_of(current_node_id, node_id):
+		return false
+	current_node_id = node_id
+	current_node += 1
+	node_advanced.emit(current_node, chapter)
+	map_node_entered.emit(target)
+	return true
 
 
 # ============================================================================
@@ -465,4 +518,15 @@ func _tier_for_xp(xp: int) -> int:
 
 # Internal: drain queued one-shot multipliers AFTER the gain has been applied.
 # Emits xp_multiplier_consumed per source so UI plays the consumed animation,
-# then emits xp_multiplier_changed(source, 0.0) for the registry-watcher p
+# then emits xp_multiplier_changed(source, 0.0) for the registry-watcher path
+# (warlord_select_ui_v0.md §7 booster drawer).
+func _drain_pending_consumes() -> void:
+	if _xp_pending_consume.is_empty():
+		return
+	var to_consume: Array[StringName] = _xp_pending_consume.duplicate()
+	_xp_pending_consume.clear()
+	for sid in to_consume:
+		if xp_multiplier_sources.has(sid):
+			xp_multiplier_sources.erase(sid)
+			xp_multiplier_consumed.emit(sid)
+			xp_multiplier_changed.emit(sid, 0.0)

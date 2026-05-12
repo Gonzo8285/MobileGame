@@ -1,5 +1,27 @@
 # Research notes — Gaming app
 
+## B2.9 — Map screen branching node graph landed (heartbeat 2026-05-12)
+
+- **Brief:** Branching node graph data spine for the run map. 1 chapter / 5 nodes / seeds for testing. Logic-only landing (UI deferred to B2.10 smoke-test work), mirrors the B2.8 pattern.
+- **Chapter 1 shape (5 nodes, 1 branch, 1 merge):** `c1_start (COMBAT, d0) → [c1_left, c1_right] (d1, one EVENT + one COMBAT, order coin-flipped per seed) → c1_mid (ELITE or SHOP, d2) → c1_boss (BOSS, d3, terminal)`. Deliberately minimal — proves the branching mechanic without committing to a full STS 16-node chapter layout until UI lands.
+- **Files authored:**
+  - `game/src/runtime/map_node.gd` — RefCounted; `id / kind / depth / children: Array[StringName] / seed_offset` + `make_rng(run_seed)` using `seed ^ (seed_offset * 2654435761)` Knuth multiplicative hash. Per-node sub-RNG means combat/event/shop scenes reproduce deterministically on save/load without sibling nodes colliding.
+  - `game/src/runtime/map_graph.gd` — RefCounted holding `Dictionary<StringName, MapNode>` + `start_id / boss_id / max_depth / chapter / seed_value`. Public surface: `get_node_by_id / get_children / is_child_of / nodes_at_depth / size / validate`. `validate()` enforces 4 invariants: start+boss present, boss terminal (zero children), all child refs resolve, boss reachable + no orphans (BFS from start).
+  - `game/src/runtime/map_generator.gd` — pure-static `generate(chapter, seed) → MapGraph`. Mixes `seed ^ (chapter * MULT_KNUTH)` so chapter 1 and chapter 2 don't collide on identical run-seeds. Chapter 1 generator is the only real path today; chapters 2+ clone the prototype until per-chapter generators land.
+  - `game/src/runtime/map_test.gd` — 22-ish assertions across structural contracts (node count, kind/depth invariants, branch + merge children counts), determinism (same seed → byte-identical kinds + children + seed_offset across all 5 nodes), RNG variance (≥2 distinct graphs over 10 seeds; statistical floor since 2 binary decisions = 4 possible shapes, P(all-tie) ≈ 4e-6), per-node make_rng determinism + sibling distinctness, and GameState integration (enter_chapter signals, legal child-jump accepted, illegal start→boss skip rejected, unknown node id rejected, full legal walk start→left→mid→boss fires map_node_entered exactly 3×).
+- **Files modified:**
+  - `game/src/data/enums.gd` — added `NodeKind { COMBAT, ELITE, EVENT, SHOP, SHRINE, REST, BOSS }`. Distinct from `RunPhase` — phase tracks "which screen is up", NodeKind tracks "what kind of encounter this tile represents".
+  - `game/src/runtime/game_state.gd` — added `current_map_graph: MapGraph` + `current_node_id: StringName` fields, `chapter_started(chapter_num, graph)` + `map_node_entered(node)` signals, `enter_chapter(chapter_num = 0) → MapGraph` lifecycle method (builds graph from run_seed, seats player at start, emits chapter_started), `choose_next_node(node_id) → bool` (validates child-of relationship, returns false + no signal on illegal jumps / unknown ids — caller shows toast). Phase transition decision deliberately NOT made here — that's the map-screen controller's job, keeps "what scene runs next" out of GameState. Legacy `advance_node()` + `current_node: int` + `node_advanced` signal preserved for pre-B2.9 callers (B2.5 combat_test).
+  - `game/src/main.gd` — wired `map_test.gd` into the dev-test runner after `warlord_test`.
+- **Anti-P2W audit:** Generator reads zero monetisation state — pure (chapter, run_seed). No IAP path can bias which node kind appears where. Per-node sub-RNG (Knuth hash mix of run_seed + seed_offset) means even shop inventory rolls trace back to the run-seed alone.
+- **Sandbox limitation:** Godot syntax untestable in sandbox. Python mirror at `outputs/map_mirror.py` validates the structural graph contracts (BFS reachability + boss terminal + child-of legality rules) — PASSES. Godot's RNG sequence is xoshiro256** so the exact `randi()` output can't be mirrored in Python, but the SHAPE contracts are independent of RNG.
+- **Open questions for Paul (none block B2.10):**
+  - Chapter 1 sticking with 5 nodes for the prototype, or should the smoke test exercise a richer 7-9 node layout sooner? (Current call: keep minimal, expand when UI lands.)
+  - Should `c1_mid` ever be a SHRINE or REST tile, or are those reserved for later chapters? (Current call: ELITE/SHOP only at chapter 1 — they're the highest-information tiles for early playtesting.)
+  - When the player picks an EVENT or SHOP tile, should `choose_next_node` auto-transition phase to `EVENT` / `SHOP` for them, or stay phase-passive? (Current call: phase-passive — caller decides, keeps GameState clean.)
+- **Paul to confirm in editor:** `[map_test] PASS` line appears in Godot console on next launch (alongside the 7 existing `[*_test] PASS` lines).
+- **B2.9 UI scene (map_view.tscn):** Deliberately deferred. B2.10 end-to-end smoke test ("start run → play 1 combat → take reward → next node → die") needs the visual map screen — UI work folds into B2.10 rather than dragging B2.9 into its own UI heartbeat.
+
 ## B2.8 — Reward screen logic landed (heartbeat 2026-05-11)
 
 - **Brief:** Reward screen — pick 1 of 3 cards from a weighted faction pool. Logic-only this run (UI is later — full-art picker after B3.x; functional mock can layer on top of these signals when B2.10 smoke test needs it).
