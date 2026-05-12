@@ -1606,3 +1606,15 @@ Phase 2.11 spec-file population now complete for: 5 factions × 40 cards (Iron P
 - **Next:** B2.7 turn engine + M2 sacrifice-loop hardening. D-VALIDATE-1 (9-tile reference sheet) now technically unblocked — a single tile cost £0.03 in 7 min, so 9 tiles = £0.27 and ~30 min once batch-submitting works. Defer until Paul confirms aesthetic on this single image.
 
 _Claude-Code git heartbeat 2026-05-12 -- pushed 3138aa1 "feat(engine): game_state expansion + map_test and more"_
+
+## B3.0b — LoRA HF mirror scan (heartbeat 2026-05-12 14:17 UTC)
+
+- **Brief:** Scan Hugging Face for trustworthy mirrors of the 10 (+1 optional) LoRAs locked in `pipeline_setup/loras_resolved.md`. Contingency-only — RunPod pods aren't UK-IP'd, so pod-side Civitai wget already works for the primary install path.
+- **Method:** 2 broad web searches scanning for HF + LoRA-name + civitai cross-references. Did NOT chase 10 individual LoRA pages — diminishing returns vs the heartbeat budget, and per-LoRA HF re-scan only matters if a Civitai URL actually breaks.
+- **Result:** 1 of 10 + 1 optional has a confirmed HF mirror:
+  - **Dark Gothic Fantasy (293532)** → `https://huggingface.co/thwri/dark-gothic-fantasy-xl` (safetensors hosted, README cross-links the Civitai page).
+- **Other 9 (+ optional Witch Style):** `Civitai-only — pod-side download`. ClassipeintXL is referenced in `EldritchAdam/SDXL_Eldritch_LoRAs` but that repo doesn't host the .safetensors. RalFinger-authored LoRAs (Mythical Forest) have other style-LoRA mirrors on HF (chrome / alien) but Mythical Forest itself is not yet up.
+- **IP note:** Elden Ring Style is the most fragile slot — FromSoft-named LoRAs are DMCA-bait on HF specifically. If that Civitai URL ever 404s mid-batch, expect to re-resolve via author-feed (not by mirror-scan) or substitute with a generic decayed-knight LoRA.
+- **Implication for the install bat / D-WORKFLOW scripts:** zero changes required. Pod-side wget of the Civitai URLs (existing plan) is the cheap path. The single HF fallback (Mourners slot #2) is documented in `loras_resolved.md` so a future heartbeat hitting a Civitai failure has a one-line swap ready.
+- **Deferred:** per-LoRA HF scan (D-LORA-3-CONTINGENCY) only spawns if a pod-side Civitai download actually fails in B3.0a smoke-test or D-VALIDATE-1 batching. Don't pre-optimise — same rationale as `loras_resolved.md` §"Next heartbeat" list 4 (license audit also deferred).
+- **Next:** B3.0b ticked. First-unchecked-non-gated remaining: B3.0a (Paul-runnable RunPod first-pod smoke test) which the prior heartbeat already partially validated end-to-end. T4 collection-screen UI mock unlocks once B2.10 smoke test ships.

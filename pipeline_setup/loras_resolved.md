@@ -21,6 +21,30 @@ _Heartbeat D-LORA-1, 2026-05-04 14:18 UTC. Resolves the speculative LoRA names i
 | **Skinward Pact** `druidic-shaman-sdxl` | Mythical Forest Style [SDXL] | https://civitai.com/models/303030/mythical-forest-style-sdxl | SDXL | 0.5 | Substitute (shared with Coven). Druidic-grove background. Trigger: `ral-mytfrst`. |
 | **Skinward Pact** `nordic-mythology-sdxl` | Mythical Creatures [LoRA 1.5+SDXL] | https://civitai.com/models/218327/mythical-creatures-lora-15sdxl | SDXL | 0.5 | Substitute. No clean nordic/pagan SDXL LoRA found. Mythical Creatures covers beast/spirit-companion aesthetic; the antler-crown / hide-cloak nordic-pagan look is driven prompt-side via `pipeline_spec.md` §3.2 Skinward Pact block. |
 
+## HF mirror scan (B3.0b — 2026-05-12 14:17 UTC heartbeat)
+
+Contingency only — pod-side Civitai wget works because RunPod IPs are not UK-blocked. HF route exists as fallback if a Civitai page is yanked or rate-limits batch pulls.
+
+| LoRA | HF mirror status | URL / Notes |
+|---|---|---|
+| ClassipeintXL | Civitai-only — pod-side download | EldritchAdam/SDXL_Eldritch_LoRAs references it but doesn't host the .safetensors. No standalone HF mirror found. |
+| Dark Fantasy LORA (932379) | Civitai-only — pod-side download | No HF mirror surfaced. Author-only on Civitai. |
+| Elden Ring Style (457103) | Civitai-only — pod-side download | No HF mirror. **IP-sensitive (FromSoft)** — author is unlikely to mirror, would be DMCA-bait on HF. |
+| RPGNightmareXL (182002) | Civitai-only — pod-side download | No HF mirror found. Author-only on Civitai. |
+| gothic cathedral interior (1904235) | Civitai-only — pod-side download | No HF mirror found. Niche env LoRA. |
+| Dark Gothic Fantasy (293532) | **HF MIRROR CONFIRMED** | https://huggingface.co/thwri/dark-gothic-fantasy-xl — safetensors hosted, README cross-links to Civitai page. Use as primary if Civitai pod-side fails. |
+| Swamp people SDXL (2134348) | Civitai-only — pod-side download | No HF mirror found. |
+| Mythical Forest Style (303030) | Civitai-only — pod-side download | RalFinger has other style LoRAs on HF (chrome / alien) — Mythical Forest not among them. |
+| ArmorSentinel (643451) | Civitai-only — pod-side download | No HF mirror found. |
+| Mythical Creatures (218327) | Civitai-only — pod-side download | No HF mirror found. |
+| _(optional)_ Witch Style (262925) | Civitai-only — pod-side download | No HF mirror found. |
+
+**Outcome:** 1 of 10 (+ 1 optional) has an HF mirror. RunPod pod-side wget from Civitai stays the primary install path; thwri/dark-gothic-fantasy-xl is the only fallback that won't need a re-resolution if a Civitai URL goes stale.
+
+**Implication for the install bat / D-WORKFLOW scripts:** no change required. Pod-side `wget` of the Civitai URLs (the existing plan) is the cheap path. Only swap to HF when a Civitai page actually fails — and only the Mourners slot #2 (Dark Gothic Fantasy) has that contingency.
+
+**Searches used:** 2 (HF + LoRA name + civitai cross-search). Did not chase individual LoRA pages 1-by-1 — diminishing returns, and per-LoRA HF scan only kicks in if a Civitai URL actually breaks. Defer deeper-per-LoRA HF scan to D-LORA-3-CONTINGENCY (only spawn if a pod download fails in real use).
+
 ## Substitution rationale — the 3 IP-blocked slots
 
 Three of the original placeholder names in `pipeline_spec.md` §2.2 referenced Wizards of the Coast IP (`mtg-style`, `phyrexian-corruption`, `lorwyn-folkloric`). These slugs do not exist on Civitai because WotC has historically DMCA'd MTG-named models from public hosting. Substitutions above are picked to:
