@@ -1604,3 +1604,5 @@ Phase 2.11 spec-file population now complete for: 5 factions × 40 cards (Iron P
   4. SDXL base alone (without LoRA stack) already produces strong painterly grimdark output on a single short prompt. The 10-LoRA stack from `pipeline_spec.md` is a quality-uplift layer, not a baseline requirement — useful framing for Phase 2.11 D-VALIDATE-1 expectations.
 - **Working automation script:** `pipeline_setup/runpod_smoke_test.py` (B3.0d) authored — needs minor fixes (registry-format install_model, log path to /tmp not OneDrive) before becoming the canonical re-runnable batch tool. Patches noted in head of file. Effectively this run = a partial B3.0d validation: 80% of the script ran as intended end-to-end this heartbeat.
 - **Next:** B2.7 turn engine + M2 sacrifice-loop hardening. D-VALIDATE-1 (9-tile reference sheet) now technically unblocked — a single tile cost £0.03 in 7 min, so 9 tiles = £0.27 and ~30 min once batch-submitting works. Defer until Paul confirms aesthetic on this single image.
+
+_Claude-Code git heartbeat 2026-05-12 -- pushed 3138aa1 "feat(engine): game_state expansion + map_test and more"_
