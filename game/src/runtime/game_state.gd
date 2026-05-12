@@ -27,6 +27,16 @@ var current_phase: GFEnums.RunPhase = GFEnums.RunPhase.MAP
 var chapter: int = 1
 var current_node: int = 0
 
+# Map graph (B2.9). `current_map_graph` is built by MapGenerator.generate(chapter,
+# run_seed) when the chapter begins (enter_chapter()). `current_node_id` is the
+# StringName of the tile the player is currently AT — i.e. the node whose
+# encounter has just resolved; choose_next_node() picks one of its children.
+# Pre-B2.9 callers that only touched `current_node: int` keep working — that
+# field is now a co-maintained counter the UI can ignore once it switches to
+# the graph-aware path.
+var current_map_graph: MapGraph = null
+var current_node_id: StringName = &""
+
 # Player zones — created by start_run, mutated by combat / reward systems.
 var deck: Deck = null
 var hand: Hand = null
@@ -59,6 +69,19 @@ signal turn_ended(turn_num: int)
 signal mana_changed(new_mana: int, ceiling: int)
 signal hp_changed(new_hp: int, max_hp: int)
 signal node_advanced(new_node: int, chapter_num: int)
+
+# Map graph signals (B2.9). `chapter_started` fires once when the player enters
+# a chapter (graph is built; UI listens to render the map). `map_node_entered`
+# fires every time the player commits to a tile (replaces the old int-counter
+# `node_advanced` for graph-aware UIs; both still fire for back-compat).
+signal chapter_started(chapter_num: int, graph: MapGraph)
+signal map_node_entered(node: MapNode)
+
+# Reward screen (B2.8) — fired by start_reward() / when the player resolves the
+# offer. UI listens to `reward_offered` to show the picker; gameplay code
+# listens to `reward_resolved` for post-pick effects (e.g. analytics events).
+signal reward_offered(offer: RewardOffer)
+signal reward_resolved(card: Card)  ## card == null on skip
 
 # Warlord XP + tier system (W5) — see warlord_tiers_v0.md, monetisation_map.md §13,
 # and warlord_select_ui_v0.md §8 for the contract these signals fulfil.
@@ -266,6 +289,48 @@ func advance_node() -> void:
 
 
 # ============================================================================
+# Reward lifecycle (B2.8)
+# ============================================================================
+#
+# The map screen (B2.9) and combat-victory handler call `start_reward(offer)`
+# after a win. start_reward:
+#   1. transitions phase to REWARD
+#   2. emits `reward_offered(offer)` so the picker UI shows itself
+#   3. subscribes to the offer's `resolved` signal (one-shot)
+#
+# When the player taps a card (offer.choose) or skips (offer.skip), the
+# subscribed handler:
+#   - duplicates the chosen card and adds it to the top of the deck (skip = no-op)
+#   - emits `reward_resolved(card_or_null)` for downstream listeners
+#
+# The deck is mutated in place — the run continues with the new card available
+# from the next combat onwards. We don't reshuffle here; the next combat's
+# start_combat() does its own reshuffle in the standard flow.
+
+
+## Begin a reward pick. `offer` is built by RewardGenerator.generate_offer.
+## Returns the offer so callers can chain (e.g. tests).
+func start_reward(offer: RewardOffer) -> RewardOffer:
+	if offer == null:
+		return null
+	set_phase(GFEnums.RunPhase.REWARD)
+	# CONNECT_ONE_SHOT guarantees the handler fires exactly once even if
+	# external code accidentally re-emits resolved (RewardOffer already
+	# guards against this on its end; this is belt-and-braces).
+	offer.resolved.connect(_on_reward_resolved, CONNECT_ONE_SHOT)
+	reward_offered.emit(offer)
+	return offer
+
+
+func _on_reward_resolved(card: Card) -> void:
+	if card != null and deck != null:
+		# Duplicate so the deck owns a fresh instance — the pool's original
+		# Card resource stays untouched and can be offered again later.
+		deck.add_to_top(card.duplicate_card())
+	reward_resolved.emit(card)
+
+
+# ============================================================================
 # Debug / inspection
 # ============================================================================
 
@@ -400,15 +465,4 @@ func _tier_for_xp(xp: int) -> int:
 
 # Internal: drain queued one-shot multipliers AFTER the gain has been applied.
 # Emits xp_multiplier_consumed per source so UI plays the consumed animation,
-# then emits xp_multiplier_changed(source, 0.0) for the registry-watcher path
-# (warlord_select_ui_v0.md §7 booster drawer).
-func _drain_pending_consumes() -> void:
-	if _xp_pending_consume.is_empty():
-		return
-	var to_consume: Array[StringName] = _xp_pending_consume.duplicate()
-	_xp_pending_consume.clear()
-	for sid in to_consume:
-		if xp_multiplier_sources.has(sid):
-			xp_multiplier_sources.erase(sid)
-			xp_multiplier_consumed.emit(sid)
-			xp_multiplier_changed.emit(sid, 0.0)
+# then emits xp_multiplier_changed(source, 0.0) for the registry-watcher p

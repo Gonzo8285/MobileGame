@@ -1,5 +1,46 @@
 # Research notes — Gaming app
 
+## B2.8 — Reward screen logic landed (heartbeat 2026-05-11)
+
+- **Brief:** Reward screen — pick 1 of 3 cards from a weighted faction pool. Logic-only this run (UI is later — full-art picker after B3.x; functional mock can layer on top of these signals when B2.10 smoke test needs it).
+- **Files authored:**
+  - `game/src/runtime/reward_offer.gd` — RefCounted; holds `cards: Array[Card]` + `chosen_index` + `skipped`. Single-fire `resolved(Card)` signal (null on skip). Double-`choose`/`skip` is a no-op so a buggy UI can't double-grant.
+  - `game/src/runtime/reward_generator.gd` — pure-static module. `generate(pool, faction_bias, rng, count=3) → Array[Card]` + `generate_offer(...) → RewardOffer`. Weights: faction bias `BIAS=4.0 / OTHER=1.0 / NEUTRAL=2.0`, rarity `COMMON=10 / UNCOMMON=5 / RARE=2 / EPIC=0 / LEGENDARY=0`. EPIC + LEGENDARY excluded via zero-weight, not an explicit filter — keeps the "single contract" property. De-dups by `card.id` so an accidentally-double-loaded pool can't smuggle dupes. Tiny-pool fallback returns `min(count, |pool|)` rather than crashing. Includes `load_pool(roots)` convenience walker for the standard `res://data/cards/*` dirs.
+  - `game/src/runtime/reward_test.gd` — 14-ish assertions covering pool-load, distinct-3 contract, EPIC/LEGENDARY exclusion, determinism (same seed → same offer), faction-bias distribution floor (≥40% Penitents share across 200 rolls with 4× bias), tiny-pool fallback, LEGENDARY-only-pool returns empty, `choose()` + `skip()` signal semantics, double-resolve no-op, and full GameState integration (start_reward → choose grows deck by 1; start_reward → skip leaves deck unchanged).
+- **Files modified:**
+  - `game/src/runtime/game_state.gd` — added `reward_offered(offer)` + `reward_resolved(card)` signals, `start_reward(offer) → RewardOffer` lifecycle method (sets phase to REWARD, emits signal, connects to `offer.resolved` with `CONNECT_ONE_SHOT`), and `_on_reward_resolved(card)` handler that duplicates the chosen card via `Card.duplicate_card()` before adding to `deck.add_to_top()`. Deck mutation is in-place; next combat's `start_combat()` does the reshuffle.
+  - `game/src/main.gd` — wired `reward_test.gd` into the dev-test runner between `turn_engine_test` and `warlord_test`.
+- **Anti-P2W audit:**
+  - Generator never reads monetisation state (no XP boosters / no BP tier / no whale flag). Reward rolls are pure RNG + design weights.
+  - Generator never grants the card itself — it returns 3 candidates; the player's `choose()` is what mutates the deck.
+  - GameState duplicates the card before adding it, so the shared pool resource can never be mutated through a reward path.
+- **Python-mirror validation:** `outputs/reward_mirror.py` re-implements the weighting math in plain Python against a synthetic 100-card pool with the real faction/rarity shape. Run output: `Penitents share with 4x bias: 0.634` (test floor 0.40 — generous envelope leaves room for run-to-run variance). Determinism + exclusion + duplicate-prevention + tiny-pool + LEGENDARY-only-pool all pass. Logic is sound before Paul opens Godot.
+- **Engine-side untested in sandbox.** Paul to confirm `[reward_test] PASS` line appears in editor console on next launch (with the existing `RUN_DEV_TESTS=true` flag — same path as B2.3/B2.4/B2.5/B2.6/B2.7/W5).
+- **Deferred to later items:**
+  - **UI scene** — picker visual + tap-to-choose lives in B2.10 smoke test (rough mock) or later art-pass (final art). Logic exposes everything that scene needs: read `offer.cards`, call `offer.choose(idx)` on tap, listen to `GameState.reward_resolved` for post-pick navigation.
+  - **Reward-node integration** — B2.9 map screen will be the caller that builds the offer (via `RewardGenerator.generate_offer`) and calls `GameState.start_reward(offer)`.
+  - **Special-rarity / event rewards** — Hanging Hour curse-tier cards, Skin-stitcher pulls, etc. all bolt on as new weight tables in this module; the spine is in place.
+  - **Skip compensation** — a future "skip the reward for some ash" hook can read `offer.skipped` and award ash before the run continues. Not in MVP.
+- **Files modified this run:** `game/src/runtime/game_state.gd`, `game/src/main.gd`, `backlog.md` (B2.8 ticked), `research_notes.md` (this entry).
+- **Files written this run:** `game/src/runtime/reward_offer.gd`, `game/src/runtime/reward_generator.gd`, `game/src/runtime/reward_test.gd`.
+- **Phase 3 progress:** B1 ✅, B2.1 ✅, B2.2 ✅, B2.3 ✅, B2.4 ✅, B2.5 ✅, B2.6 ✅, B2.7 ✅, **B2.8 ✅** (this run), B2.9 next (map screen), B2.10 after (E2E smoke).
+- **Open Qs for Paul (non-blocking — none of these block B2.9):**
+  1. Faction-bias multiplier (4.0×) — feels right for a 5-faction roster but Slay-the-Spire-style games tend to use 3.0-3.5×. Easy single-constant tweak in `reward_generator.gd` if A/B tells us 4× over-concentrates.
+  2. Rarity curve — `10/5/2` produces ~75% commons / ~20% uncommons / ~5% rares in offers (rough math against the current pool). Soft-launch KPI will tell us if commons feel too dominant; defer the call until we have data.
+  3. Skip path — currently the player can `skip()` and lose the reward outright. StS-style "skip for relic" or "skip for ash" can layer on later — flagged as future work above.
+
+## L3 — Pitch .docx Track-A audit (heartbeat 2026-05-11 14:25 UTC)
+
+- **Brief:** Phase 2.8's last open item — re-export `The Curse of Gallowfell - Pitch.docx` after the Track-B → Track-A faction rename (L2) so the public-facing brief matches.
+- **Audit:** unzipped the docx's `word/document.xml` and grep'd for both naming tracks.
+  - Track-B mentions (Withered Court / Hollow Pact / Ferrum Host / Sable Wilds): **0**.
+  - Track-A mentions (Ash-Mourners / Coven of the Black Mire / The Last Legion / Skinward Pact): **18**, distributed across the faction list, the chapter-unlock paragraph, the sample-cards block, and the curse-mechanics paragraph. Spot-checked the §1 faction roster, §3 MVP scope paragraph, and §6 lore — all read clean.
+  - Docx mtime: 2026-04-30 18:28 UTC. That's the same day Paul locked Track-A names (L1, 2026-04-30) and predates L2's `.md` batch-rename (2026-05-01) — meaning whoever exported the docx in that 2026-04-30 live session was already working off the locked Track-A names. L2's sed pass cleaned the older `.md` files retroactively; the docx was authored clean to start.
+- **Build-script status:** the L3 line points at `…\local_96bb105c-…\outputs\build_pitch_doc.js`, an archived prior-session outputs folder. Not reachable from this sandbox. No in-repo copy archived either (`find` returns nothing). Not blocking — the docx is already current, so no re-export needed.
+- **Conclusion:** L3 is effectively no-op; tick it. If a *future* doc edit re-introduces faction churn, archive `build_pitch_doc.js` to the project folder first so the next re-export isn't bottlenecked on a vanished session.
+- **Files modified this run:** `backlog.md` — L3 ticked. `research_notes.md` — this entry.
+- **Phase 2.8 status: COMPLETE.** L1 ✅ L2 ✅ L3 ✅. Next eligible item: Phase 3 `B2.8` (reward screen — pick 1 of 3 cards from weighted faction pool), then `B3.0a` (first-pod smoke test, Paul-runnable).
+
 ## D-VALIDATE-1 reframed — Warlord-anchor first (Paul direction 2026-05-11)
 
 - **Paul's call:** "Warlords thematically will be the reference points for their factions and once we have a solid design for each, we can lock that in as reference for any further build or dev around aesthetics." Pull-forward request, approved in chat.

@@ -77,6 +77,9 @@ Full detail: `project_gaming_app_network.md` in memory folder.
 ### 4.1 Cowork side
 
 - **`gaming-app-heartbeat`** — cron `15 */5 * * *` (every 5 hours at :15 past). Picks the top unchecked item from `backlog.md`, does one bite-sized chunk, appends to `research_notes.md`, ticks the item, stops.
+- **`gaming-app-drive-mirror`** — cron `30 */6 * * *` (every 6 hours at :30 past). Public-safe rsync of this project folder into `G:\My Drive\ClaudeBridge\projects\gaming-app\` (excludes `secrets/`, `.git/`, `.secrets/`). Appends a one-line entry to `MIRROR-LOG.md` in the target. Silent on success.
+- **`claudebridge-poll`** — cron `*/2 * * * *` (every 2 minutes). Polls `G:\My Drive\ClaudeBridge\comms\from-151\` for messages from the FastForward Claude on `192.168.0.151`, replies + archives per the bridge protocol. Hard rule: does **not** touch the Gaming app workspace — that's Claude Code's domain.
+- **`claudebridge-status-morning` / `-evening` / `-weekly-review`** — daily 10:15 / 18:15 UK local + Fri 18:45. Update `G:\My Drive\ClaudeBridge\shared\status\paul-pc.md` so ff-151 can see what paul-pc is doing.
 
 ### 4.2 Claude Code side (on Paul's laptop)
 
@@ -89,6 +92,18 @@ Full detail: `project_gaming_app_network.md` in memory folder.
 - `phase3_scheduled_tasks\ci_watch.md` — GitHub Actions health (Cowork)
 
 To spin them up: each file contains an "install one-liner" for Cowork.
+
+### 4.4 The full propagation chain (so you know where edits land)
+
+```
+Cowork heartbeat writes file
+  → OneDrive sync (~30s) → laptop
+    → Claude Code git heartbeat (every 4h) → Gonzo8285/MobileGame on GitHub
+  → gaming-app-drive-mirror (every 6h) → G:\My Drive\ClaudeBridge\projects\gaming-app\
+    → ff-151 can read the mirror within ~10 min of Drive sync
+```
+
+Three storage locations end up with the same content (OneDrive workspace, GitHub repo, ClaudeBridge mirror) with staggered freshness. No single point of failure.
 
 ---
 
@@ -191,6 +206,17 @@ Live findings log: `C:\Users\Paul McCann\OneDrive - R.T. Keedwell Group\Document
 - `secrets/README.md` — secrets folder rules
 
 ---
+
+## 8.5 ClaudeBridge integration (added 2026-05-11)
+
+The Gaming app project is mirrored into the **ClaudeBridge** shared folder so the FastForward Claude (`ff-151` on `192.168.0.151`) can see it for cross-Claude context.
+
+- **Mirror location:** `G:\My Drive\ClaudeBridge\projects\gaming-app\`
+- **Mirror is read-only.** Edits to Gaming app go through Claude Code on paul-pc → GitHub. ff-151 reads for context only; it does **not** edit the mirror or the workspace folder.
+- **Suggesting changes from ff-151:** write a `decision-request` message into `G:\My Drive\ClaudeBridge\comms\from-151\`. Paul will route.
+- **Refresh:** `gaming-app-drive-mirror` scheduled task (every 6h). Log at `G:\My Drive\ClaudeBridge\projects\gaming-app\MIRROR-LOG.md`.
+- **Bridge protocol:** `G:\My Drive\ClaudeBridge\comms\PROTOCOL.md`. Bridge handoff: `G:\My Drive\ClaudeBridge\HANDOFF-TO-FF151.md`.
+- **Bridge poll task** (`claudebridge-poll`) explicitly does NOT touch the Gaming app workspace. That's a hard rule baked into its prompt. The bridge is for messaging + read-only mirroring, not co-authoring.
 
 ## 9. Backup commands — PowerShell, copy-paste-ready
 

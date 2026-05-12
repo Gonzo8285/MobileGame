@@ -82,3 +82,17 @@ enum RunPhase {
 	GAME_OVER,
 	VICTORY,
 }
+
+## Map node types (B2.9). Drives what scene loads when the player picks a node.
+## Distinct from RunPhase — RunPhase tracks "which screen is up right now",
+## NodeKind tracks "what kind of encounter does this map tile represent".
+## Generator (map_generator.gd) decides distribution per chapter.
+enum NodeKind {
+	COMBAT,        ## Standard wave-based fight (default node type)
+	ELITE,         ## Tougher fight with better reward roll
+	EVENT,         ## Narrative choice node (no combat)
+	SHOP,          ## Spend Ash for cards / removes / relics
+	SHRINE,        ## One-time blessing or curse (chapter-randomised)
+	REST,          ## Heal or upgrade-a-card pick
+	BOSS,          ## Chapter boss — Hanging Hour escalation guaranteed
+}
