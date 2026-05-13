@@ -1653,3 +1653,5 @@ _Claude-Code git heartbeat 2026-05-12 -- pushed 3138aa1 "feat(engine): game_stat
 Heartbeat 2026-05-13 04:17 — idle, awaiting Paul (B2 needs editor-PASS eyeball; B3.0a RunPod smoke test + B3.1 Apple Dev are Paul-runnable; B3.0c/B3.0d self-deferred until B3.0a result observed; D-VALIDATE-1 gated on B3.0a + ComfyUI confirm)
 
 Heartbeat 2026-05-13 09:17 — idle, awaiting Paul (B3.0a manual RunPod smoke test gates B3.0c/B3.0d/D-VALIDATE-1; B2 parent awaits Godot dev-test eyeball; B3.1 Apple Dev registration)
+
+Heartbeat 2026-05-13 15:23 — idle, awaiting Paul (3rd idle today; same gates: B3.0a Paul-runnable RunPod smoke test blocks B3.0c/B3.0d/D-VALIDATE-1; B2 parent awaits Godot dev-test eyeball PASS; B3.1 Apple Dev registration Paul-only)
