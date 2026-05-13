@@ -1,5 +1,25 @@
 # Research notes — Gaming app
 
+## T4 — Collection screen UI mock landed (heartbeat 2026-05-13)
+
+- **Brief:** Phase 2.10 closing item. Placeholder wireframe for the per-card treatment chooser. Mirrors W4's `warlord_select_ui_v0.md` format so both UI specs feel like one app.
+- **File authored:** `collection_ui_v0.md` (~7 KB, 5 ASCII screens + display-string conventions + engine-handoff sketch + 5 open Qs).
+- **Screens spec'd:**
+  - **A — Roster grid:** owned/locked tile grid, faction sections, ✦-pip treatment count, NEW corner badge for ≤24 h acquisitions, filter bar (faction / treated-only / sort). Unowned cards remain visible as silhouettes (collection-completion retention hook).
+  - **B — Card detail panel:** big-art preview rendered through the live T2 shader stack (proves the stack survives a full screen-redraw + frame-change + combine-resolution on the real scene), read-only rules text, owned/locked treatment counts, acquired_via + serial metadata.
+  - **C — Treatment chooser modal:** 7-tier grid (Default · Faction Frame · Foil · Gold · Ink · Prism · Cursed · Ultimate), live-preview-before-Apply, locked tiles show acquisition badges (💎 IAP / 🎟 Season Pass / 🎲 Gacha / 🏆 Loyalty / ⏳ Event), Ultimate prereq tile surfaces missing combines inline.
+  - **D — Unlock detail panel:** single-source-of-truth for storefront / season-pass / gacha / event-window routing; Cursed gets the countdown-clock variant; Ultimate's prereq pair tap through to their own Screen D until both owned then collapses to a single buy row.
+  - **Anti-P2W banner** (single-line, every chooser/unlock screen): "Cosmetic only. Treatments never change card stats or rules."
+- **Display-string conventions locked:** owned = solid border, locked = dashed + 🔒, NEW = corner pip on tiles acquired in last 24 h, tier ordering matches `GFEnums.TreatmentTier` enum order (0→7).
+- **Engine handoff sketch:** `GameState` gains a `collection: CardCollection` field + 3 signals (`treatment_applied / treatment_acquired / collection_filter_changed`). `CollectionView` pushes Apply → `CardCollection.set_treatment(instance, treatment_id)`. Storefront routing on Buy is out of scope — T4 hands the SKU id off and gets back a confirm-with-acquired-via callback.
+- **Anti-P2W invariants restated for the implementing engineer:**
+  1. Combat code (`combat.gd`, `turn_engine.gd`, `card_play.gd`, `reward_generator.gd`) never queries `CardInstance.treatment_id`. Stays on `card` only.
+  2. `set_treatment` writes to `CardInstance`, never to `Card`. Shared gameplay resource untouched.
+  3. Combo-treatment ownership is computed on-the-fly from `CardInstance` ownership — never persisted, never authoritative. Closes the save-edit Ultimate-mint exploit-path.
+- **Pure spec; no .gd / .tres / enum edits this run.** Real scenes (`collection_view.tscn`, `treatment_chooser.tscn`, `unlock_detail.tscn`) authored in B3.x once cards have real art to render through. Storefront wireframe deferred per Paul's IMV-1 trim (real ad/IAP SDK is IMV-2 work).
+- **5 open Qs for Paul** (none block downstream work — sensible defaults shipped in the doc): filter precedence (AND vs OR), silhouette acquisition-hint loudness, storefront route style (modal-over vs scene swap), Cursed serial visibility default, multi-faction frame UX branch retention.
+- **Backlog impact:** Phase 2.10 now complete — T1 ✅ T2 ✅ T3 ✅ T4 ✅. No new tasks queued.
+
 ## B2.9 — Map screen branching node graph landed (heartbeat 2026-05-12)
 
 - **Brief:** Branching node graph data spine for the run map. 1 chapter / 5 nodes / seeds for testing. Logic-only landing (UI deferred to B2.10 smoke-test work), mirrors the B2.8 pattern.
@@ -1629,3 +1649,7 @@ _Claude-Code git heartbeat 2026-05-12 -- pushed 3138aa1 "feat(engine): game_stat
 - **Implication for the install bat / D-WORKFLOW scripts:** zero changes required. Pod-side wget of the Civitai URLs (existing plan) is the cheap path. The single HF fallback (Mourners slot #2) is documented in `loras_resolved.md` so a future heartbeat hitting a Civitai failure has a one-line swap ready.
 - **Deferred:** per-LoRA HF scan (D-LORA-3-CONTINGENCY) only spawns if a pod-side Civitai download actually fails in B3.0a smoke-test or D-VALIDATE-1 batching. Don't pre-optimise — same rationale as `loras_resolved.md` §"Next heartbeat" list 4 (license audit also deferred).
 - **Next:** B3.0b ticked. First-unchecked-non-gated remaining: B3.0a (Paul-runnable RunPod first-pod smoke test) which the prior heartbeat already partially validated end-to-end. T4 collection-screen UI mock unlocks once B2.10 smoke test ships.
+
+Heartbeat 2026-05-13 04:17 — idle, awaiting Paul (B2 needs editor-PASS eyeball; B3.0a RunPod smoke test + B3.1 Apple Dev are Paul-runnable; B3.0c/B3.0d self-deferred until B3.0a result observed; D-VALIDATE-1 gated on B3.0a + ComfyUI confirm)
+
+Heartbeat 2026-05-13 09:17 — idle, awaiting Paul (B3.0a manual RunPod smoke test gates B3.0c/B3.0d/D-VALIDATE-1; B2 parent awaits Godot dev-test eyeball; B3.1 Apple Dev registration)
