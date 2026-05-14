@@ -1657,3 +1657,6 @@ Heartbeat 2026-05-13 09:17 — idle, awaiting Paul (B3.0a manual RunPod smoke te
 Heartbeat 2026-05-13 15:23 — idle, awaiting Paul (3rd idle today; same gates: B3.0a Paul-runnable RunPod smoke test blocks B3.0c/B3.0d/D-VALIDATE-1; B2 parent awaits Godot dev-test eyeball PASS; B3.1 Apple Dev registration Paul-only)
 
 Heartbeat 2026-05-14 04:17 — B3.0e art inventory pass: art owed: 216, done: 0 (216 specs across iron_penitents/ash_mourners/coven/last_legion/skinward_pact/warlords/enemies; zero production renders yet — gated on B3.0a RunPod smoke test). See `art_iterations/_owed.md` + `art_iterations/_inventory.json`.
+
+
+_Claude-Code git heartbeat 2026-05-14 07:22 — pushed f9a3dcf "docs: heartbeat updates (2026-05-14)"_
