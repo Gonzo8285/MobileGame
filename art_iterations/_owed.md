@@ -1,6 +1,6 @@
 # Gallowfell art — owed inventory
 
-_Generated 2026-05-13 20:29 UTC by `scripts/art_inventory.py`. Do not edit by hand — re-run the script._
+_Generated 2026-05-14 04:17 UTC by `scripts/art_inventory.py`. Do not edit by hand — re-run the script._
 
 **Total specs:** 216  ·  **Generated:** 0  ·  **Owed:** 216
 
