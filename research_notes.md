@@ -1,5 +1,14 @@
 # Research notes — Gaming app
 
+## B3.0f (1/5) — Iron Penitents sigil prompt authored (heartbeat 2026-05-14 09:17 UTC)
+
+- New file: `art_specs/_sigils.md` — header + S1 fully authored + S2–S5 stubbed with seed + accent + prose-stub source line for next 4 heartbeats.
+- S1 spec includes: positive prompt (flat-vector/silhouette/heraldic emblem stack, no painterly tags, rust-red on tarnished brass), negative prompt (overrides §3.6 painterly defaults — explicitly negates `oil paint, brushwork, painterly, gradient, 3d render`), LoRA stack = none (prompt-only), seed = 200400 (sigil range 200400–200800, clear of all existing seed ranges), output path `art/sigils/iron_penitents_sigil.png` + iteration archive at `art_iterations/_sigils/`, 7-point validation checklist, deviation notes against `pipeline_spec.md` §3.1 + §3.4.
+- New composition tier introduced: `sigil_glyph` — bypasses §3.4 portrait/landscape entirely. Documented as sigils-file-only convention for now (Open Q 4 asks Paul whether to promote into §3.4).
+- Workflow file reuse: existing `pipeline_setup/workflow_gallowfell_card.json` runs unchanged BUT every LoraLoader weight zeroed per its `lora_weight_protocol` field. EmptyLatentImage swapped 832×1216 → 1024×1024.
+- 4 open Qs for Paul logged in the file (LoRA route vs hand-author fallback vs queue D-LORA-SIGIL; crop method LANCZOS vs centre-crop; composition tier promotion). None block S2–S5 next-heartbeat authoring.
+- B3.0f backlog item NOT ticked this run (4 of 5 still pending). Next heartbeat picks up S2 — Ash-Mourners.
+
 ## T4 — Collection screen UI mock landed (heartbeat 2026-05-13)
 
 - **Brief:** Phase 2.10 closing item. Placeholder wireframe for the per-card treatment chooser. Mirrors W4's `warlord_select_ui_v0.md` format so both UI specs feel like one app.
