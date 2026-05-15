@@ -1,5 +1,45 @@
 # Research notes — Gaming app
 
+## B3.0f (4/5) — The Last Legion sigil prompt authored (heartbeat 2026-05-15)
+
+- Appended **S4 — The Last Legion** section to `art_specs/_sigils.md` (replaced the pending stub).
+- Subject: two ironwood batons crossed in saltire over a half-moon brass officer's gorget, single foundry-rivet stamped at the gorget centre. Distinct silhouette read vs S1 (mask-profile) / S2 (quills-over-skull) / S3 (coin-in-wreath).
+- Resolved positive prompt: same flat-vector / silhouette-logo / heraldic-emblem stack as S1–S3 — smoke-blackened-brass-on-coal-grey accent locked, "thick clean silhouette readable at 96 pixels". Baton-tips upward-outward with brass ferrules, butt-ends downward-inward (heraldic standard, mirrors S2 quill-saltire orientation).
+- Resolved negative prompt: S1–S3 painterly/3d/photoreal/anime/cartoon/text/PEGI override stack PLUS **`modern military insignia, nazi iconography, real-world military rank symbols, swastika, iron cross, real-world flags, real-world unit patches`** — keeps the gorget grimdark-fantasy command-cadre, NOT 20th-century military. Legion lore is decayed-knight foundry-order, not historical-military — this guard keeps SDXL from drifting toward the wrong reference cluster (military-emblem-tagged training data) and keeps PEGI-12 clean of real-world-controversy flags. Same protective-negative pattern as S3 used against pentagram/satanic drift.
+- Single-rivet-at-gorget-centre design choice over multi-rivet row to keep silhouette legible at 96×96 — a rivet row would compete with the baton-crossing line-weight and muddy the thumbnail. Mirrors S2's "two folds, not many" and S3's "three thorn points, not many" minimal-detail discipline.
+- Decayed-knight motif intentionally restrained at sigil tier — soot-blackened cuirass / chain-bound hair / smoke-and-coal background that defines Legion card-hero art don't survive 96×96 downscale. Sigil is command/officer iconography, NOT battle-trauma vignette.
+- LoRA stack: none (prompt-only first pass; flat-icon LoRA route still flagged as Open Q1 from S1).
+- Seed: 200700 (clean from S1's 200400, S2's 200500, S3's 200600; sigil range 200400–200800; final slot S5 Skinward Pact = 200800).
+- Validation checklist: 9 items including baton-crossing-not-parallel, gorget-half-moon-not-breastplate, single-rivet-not-row, brass-not-gold-or-copper palette guard (echoes A-SPEC-4 Legion palette guard), decayed-knight restraint at sigil tier, real-world-military IP-clean guard, 96×96 thumbnail test.
+- Backlog item B3.0f stays UNCHECKED — S5 (Skinward Pact) still pending; next heartbeat closes the cycle. Progress field in backlog updated S1✅ S2✅ S3✅ S4✅.
+- Time spent: ≈1 read of `_sigils.md` + ≈1 read of `IMAGE-GEN-SHOTLIST.md` §F4 + ≈1 grep of research_notes + 2 edits. No GPU, no network. Heartbeat budget honoured.
+
+## B3.0f (3/5) — Coven of the Black Mire sigil prompt authored (heartbeat 2026-05-15)
+
+- Appended **S3 — Coven of the Black Mire** section to `art_specs/_sigils.md` (replaced the stub).
+- Subject: demon-coin disc with hex-sign stamp at centre, encircled by a closed briar wreath with three thorn points. Distinct silhouette read vs S1 (mask-profile) and S2 (skull-and-quills).
+- Resolved positive prompt: same flat-vector / silhouette-logo / heraldic-emblem stack as S1/S2 — bog-green-on-bone-white accent locked, "thick clean silhouette readable at 96 pixels".
+- Resolved negative prompt: S1/S2 painterly/3d/photoreal/anime/cartoon/text/PEGI override stack PLUS **`pentagram, satanic imagery, inverted cross, occult symbols of real-world religion`** — keeps the hex-sign folkloric-grotesque, NOT modern-occult. Coven lore is swamp-witch / pact-magic / three-shadows-cast, not satanic — this guard keeps SDXL from drifting toward the wrong cluster and keeps PEGI-12 clean of religious-controversy flags.
+- Threes motif: three thorn points spaced around the wreath perimeter ties to Coven's three-shadows-cast lore beat (per `pipeline_spec.md` §3.2).
+- LoRA stack: none (prompt-only first pass; flat-icon LoRA route still flagged as Open Q1 from S1).
+- Seed: 200600 (clean from S1's 200400 + S2's 200500; sigil range 200400–200800).
+- Validation checklist: 8 items including coin-vs-shield read, hex-sign-NOT-pentagram guard, three-thorn-point count, bog-green palette guard (echoes A-SPEC-3 Coven palette guard: "bog-green accent, not lime green or neon"), body-horror restraint (no fungal/eye/ichor — symbol, not illustration), 96×96 thumbnail test.
+- Backlog item B3.0f stays UNCHECKED — S4 (Last Legion) and S5 (Skinward Pact) still pending; next 2 heartbeats cycle them per the queued plan. Progress field in backlog updated S1✅ S2✅ S3✅.
+- Time spent: ≈1 read of `_sigils.md` + ≈1 read of `IMAGE-GEN-SHOTLIST.md` §F3 + 1 edit. No GPU, no network. Heartbeat budget honoured.
+
+## B3.0f (2/5) — Ash-Mourners sigil prompt authored (heartbeat 2026-05-14)
+
+- Appended **S2 — Ash-Mourners** section to `art_specs/_sigils.md` (replaced the stub).
+- Subject: two raven-quills crossed in saltire over a hooded shrouded skull; shroud-pleat in two clean folds beneath the chin. Distinct from S1 execution-mask (different silhouette read at 96×96).
+- Resolved positive prompt: flat-vector / silhouette-logo / heraldic-emblem stack (mirrors S1 conventions) — dusk-purple-on-parchment-cream accent locked, woodcut-clarity, "thick clean silhouette readable at 96 pixels".
+- Resolved negative prompt: S1's painterly/3d/photoreal/anime/cartoon/text/PEGI override stack PLUS `exposed brain, screaming skull, jaw agape` — keeps the skull motif iconographic, not horror-tier (PEGI-12 guard).
+- LoRA stack: none (prompt-only first pass, same convention as S1; LoRA route + flat-icon fallback still flagged as Open Q1+Q2 from S1).
+- Seed: 200500 (clean from S1's 200400; sigil range 200400–200800).
+- 8-point S2-specific validation checklist authored (saltire-cross orientation, feather-tip-up / nib-down heraldic standard, skull-not-helmet read, two-fold shroud, monochrome silhouette, dusk-purple accent guardrail, PEGI restraint, 96×96 thumbnail legibility).
+- Deviation notes: same `pipeline_spec.md` §3.1 / §3.4 divergence as S1; sigil-specific composition tier `sigil_glyph` applies; painterly card-hero motifs (censer-smoke, catacomb-vault, raven-drift) deliberately NOT used — they don't survive 96×96 downscale.
+- B3.0f backlog item still NOT ticked (3 of 5 still pending — S3 Coven / S4 Legion / S5 Pact). Inline progress note updated in backlog.md to reflect S2 done.
+- Next heartbeat: S3 Coven of the Black Mire (seed 200600, accent bog-green-on-bone-white, prose stub = "demon-coin disc inside a hex-sign briar wreath").
+
 ## B3.0f (1/5) — Iron Penitents sigil prompt authored (heartbeat 2026-05-14 09:17 UTC)
 
 - New file: `art_specs/_sigils.md` — header + S1 fully authored + S2–S5 stubbed with seed + accent + prose-stub source line for next 4 heartbeats.
@@ -1669,3 +1709,118 @@ Heartbeat 2026-05-14 04:17 — B3.0e art inventory pass: art owed: 216, done: 0 
 
 
 _Claude-Code git heartbeat 2026-05-14 07:22 — pushed f9a3dcf "docs: heartbeat updates (2026-05-14)"_
+
+
+---
+
+## B3.0g — Warlord LoRA pack audit (heartbeat 2026-05-15 — Controller)
+
+**Brief:** `IMAGE-GEN-SHOTLIST.md` §4 names per-Warlord LoRA packs (e.g. W1 uses `iron mask portrait @ 0.7` + `cathedral ruin @ 0.5`). These names were authored speculatively. Audit each one against `pipeline_setup/loras_resolved.md` — flag any that don't exist in the resolved manifest so the shotlist can be amended before generation runs.
+
+**Method:** lexical match of the 13 unique LoRA short-names referenced across W1–W11 against the §"Quick reference table" of `loras_resolved.md`. No fuzzy match — if the warlord-pack name doesn't appear verbatim or as a documented alias in the resolved manifest, it's flagged.
+
+### Findings — every Warlord-pack LoRA name is unresolved
+
+| Warlord-pack name (from shotlist §4) | Used by | In `loras_resolved.md`? | Closest resolved substitute |
+|---|---|---|---|
+| `iron mask portrait` | W1, W6, W9 | **NO** | RPGNightmareXL (cap 0.4 for PEGI-12) — used as Penitents body-horror slot, NOT a mask-portrait specialist |
+| `cathedral ruin` | W1 | **NO** | gothic cathedral interior (Mourners env slot, not Penitents) |
+| `gothic court robes` | W2, W6 | **NO** | no clean substitute — Mourners style relies on prompt-side `pipeline_spec.md` §3.2 vocabulary |
+| `catacomb interior` | W2 | **NO** | gothic cathedral interior is the nearest env, not catacomb-specific |
+| `swamp witch` | W3 | **NO** | Swamp people SDXL (people, not witch-specific) + optional Old Witch Style `ral-wtchz` (best fit, currently OPTIONAL slot) |
+| `bog mire interior` | W3 | **NO** | Mythical Forest Style SDXL (`ral-mytfrst`) — fungal-grove, not bog-mire |
+| `military commander portrait` | W4, W7 | **NO** | ArmorSentinel medieval armor style (armor, not portrait-composition) |
+| `industrial foundry` | W4, W7 | **NO** | no resolved env LoRA for foundry/industrial — prompt-side only |
+| `druidic shaman` | W5, W9 | **NO** | Mythical Forest Style SDXL + Mythical Creatures (creatures, not shaman-specific) |
+| `cinderwood forest` | W5 | **NO** | Mythical Forest Style SDXL (forest yes, cinder-burn no) |
+| `funeral smoke` | W8 | **NO** | no resolved smoke/atmospheric LoRA — prompt-side only |
+| `saint portrait halo` | W8 | **NO** | no resolved religious/halo LoRA — prompt-side only |
+| `religious icon portrait` | W11 | **NO** | no resolved religious/icon LoRA — prompt-side only |
+
+**Net:** 0 of 13 warlord-pack LoRA names are present in the resolved manifest. Every named pack is aspirational.
+
+### Implication for D-VALIDATE-1 Stage A (5 Warlord anchors)
+
+The 5 free Warlords (W1–W5) are the Stage-A validation anchors. With the audit above, the per-Warlord LoRA stacks fall into two paths:
+
+- **Path A (cheap, prompt-only):** drop the per-Warlord LoRA list entirely. Use only the resolved faction-style stack from `pipeline_spec.md` §2.2 mapped via primary-faction (W1→iron_penitents stack, W2→ash_mourners stack, etc., per A-SPEC-6 spec convention). Subject specificity rides on the §4 prose. **Lowest risk; matches what `art_specs/warlords/` already assumes; first-pass output already known to be strong from the 2026-05-10 cloud smoke test.**
+
+- **Path B (deferred, costly):** resolve each missing name to a real Civitai LoRA. ~13 lookups, ~30 min of search; some (`military commander portrait`, `funeral smoke`, `saint portrait halo`, `religious icon portrait`) have low odds of finding a clean match. Best case yields marginal quality uplift on Path-A baseline; worst case adds hours to validation and surfaces LoRA-load conflicts that the per-faction stack already balances.
+
+**Recommendation: Path A.** Run Stage A with the resolved faction-style stack only, prompt-side specificity for each Warlord. If Paul rejects any of the 5 anchors as "off-brand", THEN spend the search budget on the specific missing slot for that Warlord — never speculatively. Same logic as `loras_resolved.md` §"Substitution rationale" + B3.0b's `Don't pre-optimise` line.
+
+### Amendment proposed for IMAGE-GEN-SHOTLIST.md §4 (not yet applied)
+
+Add a one-line note at the top of §4: *"Warlord-pack LoRA names below are aspirational. Per B3.0g audit 2026-05-15, none are resolved; D-VALIDATE-1 runs Path A — primary-faction stack from `loras_resolved.md` only, prompt-side specificity. Pack names retained as design intent for future deep-LoRA pass."*
+
+Defer the actual amendment to next heartbeat — three of the §4 entries (W1, W2, W3) sit inside the Stage-A render queue, and rewriting the shotlist mid-validation risks confusing whoever orchestrates the pod run. Add the note in a separate edit pass once Stage A has produced its first anchors.
+
+### W11 special-case carry-forward
+
+W11's `religious icon portrait @ 0.6` notation is unresolved like the others, BUT the W11 art spec already flags `art_specs/warlords/w11_…` as the most PEGI-sensitive render in the whole project (rope-mark must read as iconography, not injury). The Path-A primary-faction-stack route maps W11 to Ash-Mourners (per A-SPEC-6 deviation note). That stack alone can drive the icon-portrait composition prompt-side. No new gating from this audit on W11 — its existing Paul-approval gate is unchanged.
+
+### Open questions
+
+1. **Path-A confirmation.** Paul to confirm Path A (resolved-stack-only) for Stage A is the right call before D-VALIDATE-1 fires. If yes, append the §4 amendment next heartbeat.
+2. **Optional Witch Style for W3.** Old Witch Style (Civitai 262925, trigger `ral-wtchz`) is the closest LoRA to `swamp witch` semantically and sits in `loras_resolved.md` as the Coven faction's optional slot. Promote it to W3's default stack at 0.4? Default = leave optional, prompt-side only.
+3. **Future `D-LORA-WARLORD` task.** Worth queueing a real-resolution pass for warlord-pack LoRAs after Stage A produces results, OR delete the §4 pack-name lines entirely once Path A is locked? Recommend: delete them — speculative names misled this audit, retention risks the same misread next time.
+
+
+---
+
+## B3.0f S5 + B3.0g + Persist-tag verification (heartbeat 2026-05-15 09:50 UK — Controller)
+
+**Three heartbeat-sized passes in one Controller run** while the user was AFK:
+
+### 1. B3.0f S5 — Skinward Pact sigil glyph authored
+
+Wrote the full S5 entry into `art_specs/_sigils.md` replacing the prose stub. Subject: five-point antler-crown over a horizontal cord binding wrapping a single upright sapling stem with two small flanking leaves. Seed 200800. Bark-brown accent on bone-white. Same flat-vector-silhouette protocol as S1–S4 (prompt-only, no LoRA stack, sigil-specific composition tier `sigil_glyph`). PEGI-12-safe; explicit negative-prompt guard against real-world hunting/taxidermy/deer-trophy reference clusters added because SDXL's antler-tagged training data over-indexes there. Phase 2.11 sigil sub-track now complete: S1✅ S2✅ S3✅ S4✅ S5✅.
+
+### 2. B3.0g — Warlord LoRA pack audit complete
+
+See the dedicated B3.0g section above for the full table. Headline: 0 of 13 warlord-pack LoRA short-names in `IMAGE-GEN-SHOTLIST.md` §4 resolve against `pipeline_setup/loras_resolved.md`. Every per-Warlord LoRA name was aspirational. **Recommended Path A** — drop the per-Warlord LoRA list entirely for D-VALIDATE-1 Stage A and run on the resolved per-faction style stacks only (matches what `art_specs/warlords/` A-SPEC-6 already assumes). Path B (resolve the 13 missing slots) is deferred and only spawns if a Stage A anchor reads off-brand. Shotlist §4 amendment proposed but not applied this run — defer to after Stage A anchors land to avoid mid-validation confusion.
+
+### 3. Persist tagging verification (5/5 candidates)
+
+The M1 design note ("tagging happens at M2") was earlier interpreted as pending. Re-audited this run — Persist (Keyword.PERSIST = 14) is already present on all 5 candidate Ash-Mourners cards. Decoded keyword arrays:
+
+- **M5 Last Censer-Bearer** (`game/data/cards/M5.tres` — TOP-LEVEL not subfolder; starter card, pre-Phase-2.6): `[DREAD, PERSIST]`
+- **M12 Necrologist of the Catacombs** (`game/data/cards/ash_mourners/M12.tres`): `[RESURRECT, SUMMON, PERSIST]`
+- **M20 Bone-Shroud Acolyte** (`game/data/cards/ash_mourners/M20.tres`): `[PERSIST]`
+- **M22 Hollow Mortician** (`game/data/cards/ash_mourners/M22.tres`): `[PERSIST]`
+- **M24 Choir of the Long Dead** (`game/data/cards/ash_mourners/M24.tres`): `[PERSIST]`
+
+**Layout note for future heartbeats:** the 30 starter cards (P1–P9, M1–M11, C1–C10) live at `game/data/cards/` top level, NOT under per-faction subdirs. Phase 2.6 expansion (M12–M40 etc.) lives under `game/data/cards/ash_mourners/`. Don't grep only the subfolder when chasing a starter card — that's how Controller first thought M5 was missing this run. The hybrid layout is intentional (preserves the v0 → v1 expansion history) and shouldn't be flattened without a deliberate engine-load refactor.
+
+### Implication for the M1 design contract
+
+M1 design contract = closed. No further .tres edits required on the Persist axis. The 3 open Qs flagged in `keywords/persist_v0.md` (ATK floor, enemy-side Persist, UI display) still defer to Paul + B3.2 art pass respectively; none of them gate B2 / B3 / IMV-1.
+
+
+---
+
+## Phase 2.12.M5 — TAUNT keyword design v0 (heartbeat 2026-05-15 09:55 UK — Controller)
+
+**Outputs (5 files touched):**
+- `keywords/taunt_v0.md` — full keyword spec (one-line text, mechanics-locked block, 6 interactions vs SHIELD/PIERCE/FEAR/SMOKE/PERSIST/ROOT/HangingHour/Cleave/spells, faction allocation Last Legion primary + Iron Penitents secondary, engine wiring sketch, anti-P2W invariant, 4 open Qs).
+- `game/src/data/enums.gd` — `GFEnums.Keyword.TAUNT` added (16th keyword; doc-comment points at spec).
+- `faction_bible.md` — Last Legion §4 mechanical-role line now names TAUNT alongside RALLY + ECHO.
+- `cards_last_legion_v1.md` — appended "TAUNT candidates" §: L7 / L11 / L18 / L33 (4 cards, 3R + 1U, 10% pool density).
+- `cards_iron_penitents_v1.md` — appended "TAUNT candidates" §: P3 / P34 (2 cards, 1C + 1U, 5% pool density).
+
+**Locked design:** in-lane targeting override, range-scoped (TAUNT body must be in range of the attacker, no free back-line shield), token-excluded (`is_token = true` cards cannot carry TAUNT), multiple-taunters defaults to lowest-tile (consistent with existing target rule), Cleave/AoE ignores TAUNT (collateral is the counter to formation), spell-targeting unaffected.
+
+**Faction allocation:** Last Legion primary (4 cards = 10% of pool, 3R+1U, no C-tier TAUNT to keep formation decks rewarding rare-pulls); Iron Penitents secondary (2 cards = 5% pool, 1C+1U, thematic accent on the "zealot throws himself on the spike" fantasy); other 3 factions: no TAUNT at v1 — Mourners' Smoke/Dread already covers lane-control, Coven swarms by overload not by shielding, Skinward Big-Monsters self-soak via raw HP.
+
+**.tres tagging deferred** to next engine-wiring heartbeat (Phase 2.12.E1 in the new backlog block). Same M1 → M2 pattern as PERSIST — keyword design isolates from engine work, .tres edits batch into a focused E1 run after Paul's keyword approval. 6 markdown-flagged candidate cards: L7 Sergeant-Smith Vikar, L11 Iron Watch Standard-Bearer, L18 Echo-Sergeant, L33 Banner-Captain of the Crowned Anvil, P3 Cathedral Brother, P34 Hammer-Curate.
+
+**Engine wiring sketch (for E1):** extend `TurnEngine.choose_enemy_target(enemy, lane)` — before falling through to the existing lowest-tile rule, filter `lane.friendlies` for units where `card.has_keyword(TAUNT) AND not card.is_token AND tile_distance(enemy, unit) <= enemy.card.attack_range_tiles`. Non-empty filtered set → target lowest-tile member. No `UnitInstance` state changes — TAUNT is a static keyword check, always-on, no per-combat lock. Test coverage: 3 new assertions in `turn_engine_test.gd` (MELEE-in-range-redirect / MELEE-out-of-range-falls-through / Cleave-hits-both).
+
+**Anti-P2W invariant:** TAUNT is gameplay-only, never cosmetic. Restated explicitly in spec §"Anti-P2W invariant" because TAUNT is high-impact and the IAP-temptation is real but would break PvP fairness if multiplayer is ever added.
+
+**Open Qs queued for Paul (none block E1):** TAUNT visual cue (halo/banner/border-glow defer to B3.2); player-initiated TAUNT activation (always-on vs cost-1-mana toggle, default = always-on); cross-lane TAUNT at LEGENDARY tier (defer to post-IMV-1 boss-counter pass); TAUNT-pull vs Penance-trigger priority (recommend: TAUNT-soak first, then Penance fires on TAUNT-body death — lock at E1).
+
+**Sandbox note:** GDScript syntax untestable in Cowork sandbox; enum addition is a single-token append after `PERSIST`, same risk profile as M1. Paul to confirm the project still parses in Godot. No engine-wide rename; existing keyword constants untouched.
+
+**Phase 2.12 forward queue:** E1 (engine wiring), M6 (cross-faction synergy refinement v0.2 — TAUNT shifts 3 counter relationships), M7 (faction-internal sub-archetype cohesion check), M8 (event-card content v0 — 10 prompts for the EVENT NodeKind added in B2.9), M9 (shrine + rest content v0), M10 (Hanging Hour Chapter 1 boss). All queued in backlog.md.
+

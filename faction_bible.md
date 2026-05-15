@@ -39,7 +39,7 @@ Each faction = **vibe** (one line) + **visual cue** (silhouette + colour + motif
 - **Vibe:** The dying empire's regiment, sent to "secure" Gallowfell. Industrial, soot-stained, stubborn. The forges they ran never went cold; the curse keeps them stoked. Discipline through routine, even after meaning has gone. Tempo through formation, not flash.
 - **Visual cue:** Blackened steel cuirasses with brass plate-rivets; soot-painted faces; factory aprons over uniform; standards in iron, not cloth; **Crowned Anvil sigil**. No officer above captain — every general is dead. Palette: soot-black, brass, ember-orange.
 - **Motif:** Anvil + bayonet. Forge-spark. Folded iron standard.
-- **Mechanical role:** **Tempo / formation.** Adjacency buffs, cheap card draw on kill, RALLY + ECHO keywords (units in a line gain +1 ATK; on-resolve replays).
+- **Mechanical role:** **Tempo / formation.** Adjacency buffs, cheap card draw on kill, RALLY + ECHO + TAUNT keywords (units in a line gain +1 ATK; on-resolve replays; designated front-line bodies force enemy targeting). _TAUNT added 2026-05-15 by Controller per `keywords/taunt_v0.md`._
 - **Flagship unit:** _Sergeant-Smith Vikar, the Iron Watch_ — 4-cost, all friendly Host units in the same lane row gain +1 ATK and SHIELD-1.
 - **Biome:** The Foundry. Black-coal forges still burn; iron rails crisscross the streets; the smoke is the same iron taste as Host blood now.
 - **Why they march on Gallowfell:** A regiment sent by the dying empire to "secure" the town. The curse is in their lungs now, and they can't leave.

@@ -211,3 +211,20 @@ Five splash hooks → meets C7's "≥2 splash hooks per faction" target.
 - **Same heartbeat:** `.tres` files for L1–L40 generated under `game/data/cards/last_legion/`.
 
 _Next backlog hop: C6 — Skinward Pact full pool (~40 cards). Net-new faction in the cards file. Identity/payoff cards from `archetypes_v0.md` (Bear-Skin Hierophant, Wyrd-Shifter, Pelt-Bound Shaman, Thrask the Bear-Who-Was-King, etc.) used as the spine._
+
+
+---
+
+## TAUNT candidates (design-flagged 2026-05-15 by Controller — Phase 2.12.M5)
+
+Per `keywords/taunt_v0.md`, 4 Last Legion cards are flagged for TAUNT tagging at the next engine-wiring heartbeat (Phase 2.12.E1). Markdown-level design flag only this run; `.tres` `keywords` array edits happen at E1 after Paul's keyword approval, same pattern as M1 → M2 for PERSIST.
+
+| Card | Rarity | Current keywords | TAUNT rationale | Risk note |
+|---|---|---|---|---|
+| **L7 Sergeant-Smith Vikar** | R | SHIELD-1 + RALLY | Flagship 4-cost; the "hold the line" leader. TAUNT confirms his role as the formation soak. | None — stat-line untouched. |
+| **L11 Iron Watch Standard-Bearer** | U | RALLY | Mid-curve front-line body. Currently flex; TAUNT gives him a clear soak role. | None. |
+| **L18 Echo-Sergeant** | R | ECHO | Echo+Taunt creates a "replays the soak" pattern that's flavour-perfect for the Tempo-Echo archetype. | Echo-proc-on-Taunt-absorption is a B3-polish detail (visual feedback only); does not change combat math. |
+| **L33 Banner-Captain of the Crowned Anvil** | R | SHIELD-1 + RALLY-2 | Banner-Captain payoff. Standing in front of the banner IS the fantasy. | None — stat-line untouched. |
+
+**Density:** 4 / 40 = 10% of pool. Spread across rarities (3R + 1U) — Common-tier TAUNT deliberately omitted to keep formation-style decks rewarding rare-pulls rather than handing it to the C-curve. Reconsider density at first balance review if Legion mirror-matches feel oppressive.
+

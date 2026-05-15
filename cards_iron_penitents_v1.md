@@ -195,3 +195,18 @@ Single new card, slotted as the cheapest sacrifice outlet in the pool.
 - P26 Long Confession (sac up to 3 → mana+draw) → Last Vows on the 4th if you have one. Triple-sac into draw + Bleed clear is a real Iron Penitent finisher pattern.
 
 **Anti-stack guard:** the up-to-2-enemies cap stops Last Vows from snowballing into a one-button board-wipe on a packed lane. Two stacks of Bleed on two targets = 4 DoT damage spread, comparable to a 2-mana spell, paid in flesh instead.
+
+
+---
+
+## TAUNT candidates (design-flagged 2026-05-15 by Controller — Phase 2.12.M5)
+
+Per `keywords/taunt_v0.md`, 2 Iron Penitents cards are flagged for TAUNT tagging at the next engine-wiring heartbeat (Phase 2.12.E1). Markdown-level design flag only this run; `.tres` `keywords` array edits happen at E1 after Paul's keyword approval, same pattern as M1 → M2 for PERSIST.
+
+| Card | Rarity | Current keywords | TAUNT rationale | Risk note |
+|---|---|---|---|---|
+| **P3 Cathedral Brother** | C | SACRIFICE-soft | Cheap 2-cost zealot body. Becomes the "early-game soak" play pattern that hands off into Bleed-Stack scaling. Brother is currently a flex flavour-card; TAUNT gives him a clear role. | C-tier TAUNT is the only one in the pool — deliberate flavour spice (zealots throw themselves on the spike), not a faction-defining mechanic. |
+| **P34 Hammer-Curate** | U | PENANCE | Aura captain who buffs Penance triggers. Taunt-soaking is consistent with curate-as-shepherd flavour. | None — stat-line untouched. |
+
+**Density:** 2 / 40 = 5% of pool. Penitents stays Bleed/Sacrifice/Cleave primary; TAUNT is thematic accent only. Open Q for Paul: should P3's TAUNT actually be a soft-soak ("becomes preferred target only when at full HP, drops off after first hit") to mechanically reward the zealot's first-strike fantasy rather than full-time soaking? Default = full TAUNT per the keyword spec; soft-soak is a v1.1 variant.
+

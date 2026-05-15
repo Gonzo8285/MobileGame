@@ -54,6 +54,7 @@ enum Keyword {
 	SMOKE,        ## Zone status — Fear-1 + ATK debuff while in zone
 	SLOW,         ## Movement -X, stacks up to Slow-3 (= rooted)
 	PERSIST,      ## On death: return to lane at end-of-turn at -1 ATK (floor 0), once per combat. See keywords/persist_v0.md.
+	TAUNT,        ## Enemies in lane must target this unit first (within range, non-token). See keywords/taunt_v0.md.
 }
 
 ## Cosmetic treatment tiers — the Marvel-Snap-style upgrade system.
