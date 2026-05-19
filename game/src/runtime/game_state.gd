@@ -47,12 +47,30 @@ var ash: int = 0          ## generic run currency (shop, reroll)
 var keys: int = 0         ## chest keys / event gates
 var modifiers: Array[StringName] = []  ## active curse/boon tags
 
+# IMV-1 gem economy (Paul, 2026-05-18). Gems are the retry currency: earned by
+# winning rounds, spent to restart a failed combat. Within IMV-1 they live on
+# GameState (run-scoped). Persistence across runs is IMV-2 (requires save).
+# Daily-login + IAP top-up are IMV-2 — for now starter_gems seeds each run.
+const STARTER_GEMS: int = 3                ## seeded into each new run
+const RETRY_COST_BY_ROUND: Array[int] = [
+	1, 1, 2, 2, 3, 3, 4, 5  ## rounds 1-8; rises gently so late retries hurt
+]
+const GEM_REWARD_NORMAL: int = 2
+const GEM_REWARD_ELITE: int = 3
+const GEM_REWARD_HORDE: int = 5
+const GEM_REWARD_BOSS: int = 10
+var gems: int = 0
+var retries_taken: int = 0
+
+
 # ---------- Combat-level state ---------------------------------------------
 
 var turn: int = 0
 var mana: int = 0
-var max_mana: int = 3     ## per-turn refill ceiling. Grows with chapter (TBD per balance).
+var max_mana: int = 3     ## per-turn refill ceiling. Ramps +1/turn during a combat (see next_turn).
 const MANA_OVERFLOW_CAP: int = 5  ## allow temp overflow above max_mana up to this much
+const MANA_FLOOR: int = 3         ## start-of-combat mana ceiling (resets here each fight)
+const MANA_CAP: int = 8           ## ramp cap — Paul, 2026-05-18 design call
 
 # ---------- Player vitals --------------------------------------------------
 
@@ -69,6 +87,8 @@ signal turn_ended(turn_num: int)
 signal mana_changed(new_mana: int, ceiling: int)
 signal hp_changed(new_hp: int, max_hp: int)
 signal node_advanced(new_node: int, chapter_num: int)
+signal gems_changed(new_amount: int)
+signal retry_consumed(round_num: int, cost: int)
 
 # Map graph signals (B2.9). `chapter_started` fires once when the player enters
 # a chapter (graph is built; UI listens to render the map). `map_node_entered`
@@ -139,6 +159,9 @@ func start_run(starter_pool: Array[Card], warlord_id: StringName, seed_value: in
 	ash = 0
 	keys = 0
 	modifiers.clear()
+	gems = STARTER_GEMS
+	retries_taken = 0
+	gems_changed.emit(gems)
 
 	deck = Deck.new(starter_pool, run_seed)
 	hand = Hand.new()
@@ -185,6 +208,7 @@ func start_combat(opening_hand_size: int = 0) -> void:
 	set_phase(GFEnums.RunPhase.COMBAT)
 	turn = 0
 	mana = 0
+	max_mana = MANA_FLOOR   # per-combat reset; mana ramp restarts each fight
 
 	if hand != null and deck != null:
 		for c in hand.clear():
@@ -218,6 +242,12 @@ func next_turn() -> void:
 	if turn > 0:
 		turn_ended.emit(turn)
 	turn += 1
+	# Mana ramp (Paul, 2026-05-18 design call): max_mana grows +1 each turn
+	# from its starting value (3), capping at MANA_CAP. Classic Hearthstone /
+	# Slay-the-Spire ramp curve. Per-combat reset happens in start_combat()
+	# which resets max_mana back to 3, so each fight starts at the ramp floor.
+	if max_mana < MANA_CAP:
+		max_mana += 1
 	mana = max_mana
 	mana_changed.emit(mana, max_mana)
 	turn_started.emit(turn)
@@ -530,3 +560,44 @@ func _drain_pending_consumes() -> void:
 			xp_multiplier_sources.erase(sid)
 			xp_multiplier_consumed.emit(sid)
 			xp_multiplier_changed.emit(sid, 0.0)
+
+
+
+# ============================================================================
+# Gem economy (IMV-1 — Paul, 2026-05-18)
+# ============================================================================
+
+## Award gems. Routed from combat-win handlers.
+func gain_gems(amount: int) -> void:
+	if amount <= 0:
+		return
+	gems += amount
+	gems_changed.emit(gems)
+
+
+## Spend gems for a retry. Returns true on success; false if insufficient.
+## Caller (game_over flow) handles the retry-state setup; this only debits.
+func spend_gems_for_retry(round_num: int) -> bool:
+	var cost: int = retry_cost_for_round(round_num)
+	if gems < cost:
+		return false
+	gems -= cost
+	retries_taken += 1
+	gems_changed.emit(gems)
+	retry_consumed.emit(round_num, cost)
+	return true
+
+
+## Cost in gems to retry the given round (1-indexed). Bounded by array length.
+func retry_cost_for_round(round_num: int) -> int:
+	var idx: int = clampi(round_num - 1, 0, RETRY_COST_BY_ROUND.size() - 1)
+	return RETRY_COST_BY_ROUND[idx]
+
+
+## Gem reward for winning a round of the given kind.
+func gem_reward_for_kind(kind: int) -> int:
+	match kind:
+		GFEnums.NodeKind.HORDE: return GEM_REWARD_HORDE
+		GFEnums.NodeKind.BOSS:  return GEM_REWARD_BOSS
+		GFEnums.NodeKind.ELITE: return GEM_REWARD_ELITE
+		_:                      return GEM_REWARD_NORMAL

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="Warlord" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/warlord.gd" id="1_warlord"]
+
+[resource]
+script = ExtResource("1_warlord")
+id = &"vyrrun"
+display_name = "Penance-Captain Vyrrun"
+faction = 0
+base_passive_id = &"mortify"
+signature_unit = null
+signature_spell = null
+tier_unlocks = Array[Resource]([])
+is_free = true
+marrow_shard_cost = 0
+gem_cost = 0
+unlock_tag = &""

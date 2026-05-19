@@ -1,33 +1,33 @@
 extends RefCounted
 class_name MapGenerator
 
-## MapGenerator (B2.9) — builds a chapter MapGraph from (chapter, seed).
+## MapGenerator (IMV-1 redesign 2026-05-18) — builds a linear 8-round gauntlet.
 ##
-## Pure static. Deterministic: same (chapter, seed) → byte-identical graph
-## (kinds, children edges, seed_offsets). Backbone of run save/load — a save
-## file only needs to store the run-seed + chapter + current_node_id; the
-## graph is rebuilt on demand.
+## Per Paul's design call: the run is 8 sequential combats. Win all 8 = run
+## victory. Lose any = defeat (or spend a retry gem). No branching at IMV-1;
+## the engine still supports MapGraph branching for future iterations.
 ##
-## Chapter 1 is the prototype map per backlog B2.9: a 5-node test chapter
-## that exercises the branching + merge mechanic without needing 16 nodes
-## of layout work. Subsequent chapters (B2.9 follow-on / B8 tuning) extend
-## this generator with full STS-style 4×4 + boss layouts.
+## Round layout (locked for IMV-1):
 ##
-## Anti-P2W invariant: the generator reads no monetisation state. Run-seed
-## comes from the player's `start_run` call; no IAP path can bias the kind
-## distribution.
+##   Round 1   COMBAT       (easy intro — baseline scaling)
+##   Round 2   COMBAT
+##   Round 3   COMBAT
+##   Round 4   ELITE        (first power gate; +30% stats vs round 1)
+##   Round 5   HORDE        (many weak enemies; +5 bonus gem payout on win)
+##   Round 6   COMBAT       (mid-curve)
+##   Round 7   HORDE        (second swarm; same bonus)
+##   Round 8   BOSS         (single tough enemy; +10 gem payout)
+##
+## Deterministic per (run_seed): same seed → same per-node seed_offsets so the
+## wave/event rolls inside each round replay identically.
 
-const _MULT_KNUTH: int = 2654435761  # Knuth multiplicative hash constant
+const _MULT_KNUTH: int = 2654435761
 
 
 # ============================================================================
 # Public entry
 # ============================================================================
 
-## Build a chapter MapGraph. `chapter` is 1-indexed (matches GameState.chapter).
-## `seed_value` should be the run-seed so all chapters in a run share a
-## deterministic pedigree — we mix in `chapter` internally so chapter 1 and
-## chapter 2 never collide on identical seeds.
 static func generate(chapter: int, seed_value: int) -> MapGraph:
 	var graph := MapGraph.new()
 	graph.chapter = chapter
@@ -36,57 +36,64 @@ static func generate(chapter: int, seed_value: int) -> MapGraph:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value ^ (chapter * _MULT_KNUTH)
 
-	if chapter == 1:
-		_generate_chapter_1(graph, rng)
-	else:
-		# Placeholder for chapters 2+. For now they clone the chapter-1 shape
-		# so end-to-end smoke flow has something to chew on. Real per-chapter
-		# generators land alongside their content (B2.9 follow-on).
-		_generate_chapter_1(graph, rng)
+	# IMV-1: one chapter, linear 8 rounds, no branching. Future chapters can
+	# reuse this scaffold or branch off `_generate_branching` (legacy, kept
+	# below for engine-test back-compat).
+	_generate_linear_8_round(graph, rng)
 
 	return graph
 
 
 # ============================================================================
-# Chapter 1 — 5-node prototype (start → branch → merge → boss)
+# Linear 8-round gauntlet (IMV-1)
 # ============================================================================
-#
-#   depth 0       depth 1       depth 2       depth 3
-#   c1_start  →   c1_left   →   c1_mid    →   c1_boss
-#             →   c1_right  ↗
-#
-# 5 nodes, one branch point (depth-1), one merge point (depth-2).
-# - c1_start is always COMBAT (every chapter must open on a fight)
-# - c1_left + c1_right are an EVENT + COMBAT pair, order coin-flipped per seed
-# - c1_mid is ELITE or SHOP (50/50)
-# - c1_boss is BOSS
 
-static func _generate_chapter_1(graph: MapGraph, rng: RandomNumberGenerator) -> void:
-	# Branch node kinds: one COMBAT, one EVENT — order rolls so reruns vary.
-	var branch_swap: bool = (rng.randi() % 2) == 0
-	var left_kind: int = GFEnums.NodeKind.EVENT if branch_swap else GFEnums.NodeKind.COMBAT
-	var right_kind: int = GFEnums.NodeKind.COMBAT if branch_swap else GFEnums.NodeKind.EVENT
+const ROUND_KINDS: Array[int] = [
+	GFEnums.NodeKind.COMBAT,   # round 1
+	GFEnums.NodeKind.COMBAT,   # round 2
+	GFEnums.NodeKind.COMBAT,   # round 3
+	GFEnums.NodeKind.ELITE,    # round 4 — power gate
+	GFEnums.NodeKind.HORDE,    # round 5 — swarm + bonus gems
+	GFEnums.NodeKind.COMBAT,   # round 6
+	GFEnums.NodeKind.HORDE,    # round 7 — swarm + bonus gems
+	GFEnums.NodeKind.BOSS,     # round 8 — boss
+]
 
-	# Merge node: ELITE or SHOP (the "tougher fight vs. spend-Ash" call).
-	var mid_kind: int = GFEnums.NodeKind.ELITE if (rng.randi() % 2) == 0 else GFEnums.NodeKind.SHOP
+static func _generate_linear_8_round(graph: MapGraph, _rng: RandomNumberGenerator) -> void:
+	var ids: Array[StringName] = []
+	for i in range(ROUND_KINDS.size()):
+		var nid: StringName = StringName("r%d" % (i + 1))
+		ids.append(nid)
+		var node := MapNode.new(nid, ROUND_KINDS[i], i, (i + 1) * 11)
+		graph.add_node(node)
 
-	var n_start := MapNode.new(&"c1_start", GFEnums.NodeKind.COMBAT, 0, 1)
-	var n_left  := MapNode.new(&"c1_left",  left_kind,                  1, 2)
-	var n_right := MapNode.new(&"c1_right", right_kind,                 1, 3)
-	var n_mid   := MapNode.new(&"c1_mid",   mid_kind,                   2, 4)
-	var n_boss  := MapNode.new(&"c1_boss",  GFEnums.NodeKind.BOSS,      3, 5)
+	# Linear wiring: each round points to the next; round 8 (boss) is terminal.
+	for i in range(ids.size() - 1):
+		var node: MapNode = graph.nodes[ids[i]]
+		node.children = [ids[i + 1]]
 
-	# Wire children. Boss is terminal (no children).
-	n_start.children = [&"c1_left", &"c1_right"]
-	n_left.children  = [&"c1_mid"]
-	n_right.children = [&"c1_mid"]
-	n_mid.children   = [&"c1_boss"]
+	graph.start_id = ids[0]
+	graph.boss_id = ids[ids.size() - 1]
 
-	graph.add_node(n_start)
-	graph.add_node(n_left)
-	graph.add_node(n_right)
-	graph.add_node(n_mid)
-	graph.add_node(n_boss)
 
-	graph.start_id = n_start.id
-	graph.boss_id = n_boss.id
+# ============================================================================
+# Helpers
+# ============================================================================
+
+## Returns the round number (1-8) for a given node id in the linear gauntlet.
+## Returns -1 if the id doesn't match the rN pattern.
+static func round_for_node(node_id: StringName) -> int:
+	var s: String = String(node_id)
+	if not s.begins_with("r"):
+		return -1
+	return int(s.substr(1)) if s.substr(1).is_valid_int() else -1
+
+
+## True if the round is a horde wave (more enemies, bonus gem payout).
+static func is_horde_round(round_num: int) -> bool:
+	return round_num == 5 or round_num == 7
+
+
+## True if the round is a boss wave (single tough enemy, max gem payout).
+static func is_boss_round(round_num: int) -> bool:
+	return round_num == 8

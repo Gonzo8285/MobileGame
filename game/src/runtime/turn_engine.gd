@@ -235,7 +235,7 @@ static func _resolve_friendly_attacks_in_lane(lane: Lane) -> int:
 		if target == null:
 			continue
 		var dmg: int = u.current_attack()
-		target.take_damage(dmg)
+		lane.apply_damage_to_enemy(target, dmg)
 		# On-hit keyword application — only BLEED/POISON for B2.7. Other
 		# on-hit keywords (CLEAVE, PIERCE) are deferred to a balance pass.
 		if u.card_data != null:
@@ -303,7 +303,7 @@ static func _resolve_enemy_attacks_in_lane(lane: Lane) -> int:
 		var victim: UnitInstance = _friendly_on_tile(lane, e.tile)
 		if victim == null:
 			continue
-		victim.take_damage(atk)
+		lane.apply_damage_to_unit(victim, atk)
 		attacks += 1
 	return attacks
 

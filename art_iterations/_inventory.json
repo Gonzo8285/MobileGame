@@ -1,15 +1,10 @@
 {
-  "total": 216,
-  "done": 0,
-  "owed": 216,
+  "total": 219,
+  "done": 216,
+  "owed": 3,
   "owed_by_faction": {
-    "ash_mourners": 40,
-    "coven": 40,
-    "enemies": 5,
-    "iron_penitents": 40,
-    "last_legion": 40,
-    "skinward_pact": 40,
-    "warlords": 11
+    "coven": 2,
+    "iron_penitents": 1
   },
-  "generated_at": "2026-05-14 04:17 UTC"
+  "generated_at": "2026-05-19 19:52 UTC"
 }

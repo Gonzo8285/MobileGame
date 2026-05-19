@@ -22,6 +22,9 @@ signal enemy_reached_base(enemy: EnemyInstance, damage: int)
 signal enemy_killed(enemy: EnemyInstance)
 signal unit_placed(unit: UnitInstance)
 signal unit_killed(unit: UnitInstance)
+signal enemy_hit(enemy: EnemyInstance, damage: int)  ## flash hook (IMV-1)
+signal unit_hit(unit: UnitInstance, damage: int)      ## flash hook (IMV-1)
+signal enemy_blocked(enemy: EnemyInstance, blocker: UnitInstance)  ## advance-blocked
 
 var lane_index: int = 0
 var tile_count: int = 6                   ## number of playable tiles 1..tile_count-1, plus tile 0 = base
@@ -51,22 +54,38 @@ func spawn_enemy(data: Enemy) -> EnemyInstance:
 # Per-turn advance
 # ============================================================================
 
-## Advance every living enemy by its `move_speed`. Any enemy that crosses tile
-## 0 emits `enemy_reached_base` with the damage it deals; Combat listens and
-## forwards the hit to GameState.take_damage.
+## Advance every living enemy by its `move_speed`, but BLOCK at any friendly
+## tile in the enemy's path. Enemies do NOT pass through friendlies — they
+## stop at the friendly's tile and stand-attack on the next phase (handled
+## by TurnEngine.process_turn_end_post_advance).
 ##
-## Returns the total base damage dealt this tick (for tests / damage-roll-up
-## display).
+## Any enemy that reaches tile 0 (no friendly blocking) emits
+## `enemy_reached_base` and despawns.
+##
+## Returns the total base damage dealt this tick.
 func advance_all() -> int:
 	var total_damage: int = 0
-	# Iterate a copy so we can splice the list mid-loop if an enemy despawns.
 	var to_despawn: Array[EnemyInstance] = []
 	for e in enemies:
 		if not e.is_alive():
 			to_despawn.append(e)
 			continue
 		var speed: int = e.enemy_data.move_speed if e.enemy_data != null else 1
-		e.advance(speed)
+		var target_tile: int = maxi(e.tile - speed, 0)
+		# Walk the path tile-by-tile, looking for a friendly to block on.
+		# Block at the FIRST friendly encountered (highest tile in the path).
+		var blocker: UnitInstance = null
+		var new_tile: int = target_tile
+		for t in range(e.tile - 1, target_tile - 1, -1):
+			var occupant: UnitInstance = _friendly_at_tile(t)
+			if occupant != null and occupant.is_alive():
+				blocker = occupant
+				new_tile = t  # stop on the friendly's tile
+				break
+		e.tile = new_tile
+		if blocker != null:
+			enemy_blocked.emit(e, blocker)
+			continue  # don't check base — we're not there
 		if e.is_at_base():
 			var dmg: int = e.enemy_data.base_strike_damage()
 			total_damage += dmg
@@ -75,6 +94,14 @@ func advance_all() -> int:
 	for d in to_despawn:
 		enemies.erase(d)
 	return total_damage
+
+
+## Helper — first alive friendly on the given tile (or null).
+func _friendly_at_tile(tile_idx: int) -> UnitInstance:
+	for u in friendly_units:
+		if u != null and u.is_alive() and u.tile == tile_idx:
+			return u
+	return null
 
 
 # ============================================================================
@@ -168,3 +195,30 @@ func _to_string() -> String:
 	return "Lane(idx=%d tiles=%d enemies=%d units=%d)" % [
 		lane_index, tile_count, enemies.size(), friendly_units.size()
 	]
+
+
+
+# ============================================================================
+# Damage wrappers (IMV-1 — fires hit signals for flash)
+# ============================================================================
+
+## Apply damage to an enemy and fire `enemy_hit` for view feedback.
+## Returns actual damage taken.
+func apply_damage_to_enemy(enemy: EnemyInstance, damage: int) -> int:
+	if enemy == null or damage <= 0:
+		return 0
+	var actual: int = enemy.take_damage(damage)
+	if actual > 0:
+		enemy_hit.emit(enemy, actual)
+	return actual
+
+
+## Apply damage to a friendly unit and fire `unit_hit` for view feedback.
+## Returns actual damage taken.
+func apply_damage_to_unit(unit: UnitInstance, damage: int) -> int:
+	if unit == null or damage <= 0:
+		return 0
+	var actual: int = unit.take_damage(damage)
+	if actual > 0:
+		unit_hit.emit(unit, actual)
+	return actual

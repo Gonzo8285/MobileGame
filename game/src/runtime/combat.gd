@@ -71,6 +71,9 @@ func _init_lanes(tiles_per_lane: int) -> void:
 		lane.enemy_reached_base.connect(_on_enemy_reached_base)
 		lane.unit_placed.connect(_on_unit_placed)
 		lane.unit_killed.connect(_on_unit_killed)
+		# IMV-1 visuals: visualize enemies on lane (HP bars, advance feedback).
+		lane.enemy_spawned.connect(_on_enemy_spawned)
+		lane.enemy_killed.connect(_on_enemy_killed)
 		lanes.append(lane)
 
 
@@ -177,6 +180,12 @@ func _on_turn_ended(turn_num: int) -> void:
 
 func _on_enemy_reached_base(enemy: EnemyInstance, damage: int) -> void:
 	GameState.take_damage(damage)
+	# Despawn the visual — enemy_killed isn't fired for base-reach despawns.
+	if _enemy_views.has(enemy):
+		var ev: EnemyView = _enemy_views[enemy]
+		_enemy_views.erase(enemy)
+		if is_instance_valid(ev):
+			ev.queue_free()
 
 
 # ============================================================================
@@ -187,6 +196,7 @@ func _on_enemy_reached_base(enemy: EnemyInstance, damage: int) -> void:
 ## clean them up when the unit dies. Held weakly by reference; UnitView
 ## queue_frees itself on _on_unit_killed.
 var _unit_views: Dictionary = {}  ## { UnitInstance -> UnitView }
+var _enemy_views: Dictionary = {}  ## { EnemyInstance -> EnemyView }
 
 func _on_unit_placed(unit: UnitInstance) -> void:
 	if unit == null:
@@ -217,6 +227,28 @@ func _on_unit_killed(unit: UnitInstance) -> void:
 	_unit_views.erase(unit)
 	if is_instance_valid(uv):
 		uv.queue_free()
+
+
+# ============================================================================
+# Enemy visuals (IMV-1)
+# ============================================================================
+
+func _on_enemy_spawned(enemy: EnemyInstance) -> void:
+	if enemy == null:
+		return
+	var ev: EnemyView = EnemyView.new()
+	ev.bind(enemy)
+	add_child(ev)
+	_enemy_views[enemy] = ev
+
+
+func _on_enemy_killed(enemy: EnemyInstance) -> void:
+	if enemy == null or not _enemy_views.has(enemy):
+		return
+	var ev: EnemyView = _enemy_views[enemy]
+	_enemy_views.erase(enemy)
+	if is_instance_valid(ev):
+		ev.queue_free()
 
 
 # ============================================================================

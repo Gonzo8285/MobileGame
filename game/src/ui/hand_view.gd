@@ -13,7 +13,7 @@ class_name HandView
 
 const CARD_VIEW_SCENE: PackedScene = preload("res://scenes/card_view.tscn")
 
-@onready var hbox: HBoxContainer = $HBox
+@onready var hbox: Container = $HBox
 
 var _hand: Hand = null
 var _added_cb: Callable
