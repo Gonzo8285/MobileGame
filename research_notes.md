@@ -1824,3 +1824,5 @@ M1 design contract = closed. No further .tres edits required on the Persist axis
 
 **Phase 2.12 forward queue:** E1 (engine wiring), M6 (cross-faction synergy refinement v0.2 — TAUNT shifts 3 counter relationships), M7 (faction-internal sub-archetype cohesion check), M8 (event-card content v0 — 10 prompts for the EVENT NodeKind added in B2.9), M9 (shrine + rest content v0), M10 (Hanging Hour Chapter 1 boss). All queued in backlog.md.
 
+
+_Claude-Code git heartbeat 2026-05-20 08:06 — pushed c88d1f4 "feat: showcase art for coven and iron_penitents …and more"_
