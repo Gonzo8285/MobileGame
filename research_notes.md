@@ -1826,3 +1826,4 @@ M1 design contract = closed. No further .tres edits required on the Persist axis
 
 
 _Claude-Code git heartbeat 2026-05-20 08:06 — pushed c88d1f4 "feat: showcase art for coven and iron_penitents …and more"_
+_Claude-Code git heartbeat 2026-05-22 04:07 — pushed b7464c3 "feat: upgrade_trees_v0.md and more"_
