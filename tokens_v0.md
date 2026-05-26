@@ -102,6 +102,28 @@ func resolve_attack_with_dread_check(attacker: UnitInstance):
     # normal check ...
 ```
 
+### 3.7 Per-combat token cap (added 2026-05-22, CANON_PATCHES_APPLIED — round-3 wobble fix)
+
+**Rule:** each token type has a hard cap of **5 active instances per side per combat**, beyond which further summons fizzle (no error, no refund — silent skip). Cap is per-token-type, per-player. Tokens that die do NOT free a slot (the cap is on cumulative summons, not concurrent ones), except where a card explicitly says otherwise (e.g. C40 Quag-Mire Pact "Cap 3 per combat" — that overrides this global rule).
+
+Reasoning: prevents pathological unbounded-summon loops via Echo + Recall + Persist + Bog-Spawn-spam. 5 is high enough that the design fantasy still resolves (Brood-Mother's 3-summon + Brood-Mother's 3-summon via Echo would still play fully); low enough that the engine never has to render 30+ tokens on one lane (mobile UI ceiling).
+
+**Per-token caps (cumulative summons per combat, per side):**
+
+| Token | Cap | Source-cards affected |
+|---|---|---|
+| TKN-1 Bog-Spawn | 5 (player-side); 5 (enemy-side) | C1, C2, C4, C8, C12, C20, C22, C24, C33, C38, C40 (already capped at 3), C42 (already capped at 3 charges) |
+| TKN-5 Wolf-Token | 5 per side | W29 Whelp-Caller, W38 Whelping Burrow, etc. |
+| TKN-7 Brass Hound | 5 per side | W9 sig spell Wail |
+| Drowned-Choir Wraith (unnamed token from C35) | 5 per side | C35 Drown-Choir (cap noted in card line) |
+| Drowned-King (from C28) | unbounded — single fixed spawn-on-sacrifice, no recursion path | n/a |
+| TKN-3 Withered Servant | 5 per side | M5 Lord-Justiciar Vey, Sieren passive |
+| TKN-6 Banner-Token | 1 (existing per-spec) | L34 |
+
+**Engine field on `Card`:** `@export var token_spawn_cap_per_combat: int = 5` (default 5; overrideable per spawning card if a lower local cap is intended, e.g. C40 sets this to 3).
+
+**Audit-comment to engine team:** when implementing `spawn_token()` in `Combat.gd` (per §6.2), check `combat.token_spawn_count[token_id][side]` < `cap` before placing; if at cap, no-op + emit `signal token_spawn_fizzled(token_id, side)` for telemetry but no UI feedback (silent design intent).
+
 ### 3.6 Tokens cannot be targeted by certain effects
 
 Some cards/relics only target "drafted units" — i.e. non-tokens. Per-effect basis:

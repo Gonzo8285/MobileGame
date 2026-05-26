@@ -29,6 +29,15 @@ extends Node
 ##     • C3: persisted unit on origin tile
 ##     • C4: second-death drain returns 0 (lock holds)
 ##
+##   SCENE D — TAUNT enemy-targeting redirect (keywords/taunt_v0.md)
+##     • D1: enemy stand-attack on tile-N hits the TAUNT body, not the cheaper
+##           non-taunt body sharing the same tile (TAUNT overrides cost rule).
+##     • D2: TAUNT body on a different tile from the enemy does NOT redirect;
+##           normal cheapest-on-tile rule still picks the non-taunt body.
+##     • D3: TAUNT presence does not affect friendly→enemy attack resolution
+##           (TAUNT only redirects enemy→friendly; documents the Cleave / AoE
+##           "ignores TAUNT" clause from the spec).
+##
 ## PASS = 0 errors. Wired into main.gd alongside the other dev tests.
 
 
@@ -45,6 +54,7 @@ func _run() -> int:
 	errors += _scene_a_friendly_attack()
 	errors += _scene_b_bleed_dot()
 	errors += _scene_c_persist_roundtrip()
+	errors += _scene_d_taunt_targeting()
 	return errors
 
 
@@ -220,6 +230,135 @@ func _scene_c_persist_roundtrip() -> int:
 	if lane.friendly_units.size() != 0:
 		printerr("C4b: lane should be empty after second death + locked persist, got %d" %
 				lane.friendly_units.size())
+		errors += 1
+
+	return errors
+
+
+# ============================================================================
+# SCENE D — TAUNT enemy-targeting redirect (keywords/taunt_v0.md)
+# ============================================================================
+
+func _scene_d_taunt_targeting() -> int:
+	var errors: int = 0
+
+	# Shared helper inline: build a UNIT card with optional TAUNT.
+	var mk_card := func(cid: StringName, cost: int, hp: int, atk: int,
+			has_taunt: bool) -> Card:
+		var c := Card.new()
+		c.id = cid
+		c.display_name = "TestCard_%s" % cid
+		c.card_type = GFEnums.CardType.UNIT
+		c.cost = cost
+		c.hp = hp
+		c.attack = atk
+		c.attack_range = GFEnums.AttackRange.MELEE
+		c.cooldown = 1
+		c.is_draftable = true
+		if has_taunt:
+			c.keywords = [GFEnums.Keyword.TAUNT]
+		return c
+
+	# ----- D1: TAUNT body absorbs the stand-attack over a cheaper non-taunt -
+	# Enemy on tile 1 collides with TWO friendlies sharing tile 1:
+	#   - cheap_filler  cost=1  HP=10  (would normally be picked — cheapest)
+	#   - taunt_anchor  cost=4  HP=10  TAUNT keyword
+	# Expected: enemy hits taunt_anchor (loses 2 HP), filler untouched.
+	var lane_d1 := Lane.new(0, 6)
+	var enemy_d1 := Enemy.new()
+	enemy_d1.id = &"E_test_d1"
+	enemy_d1.display_name = "Test Enemy D1"
+	enemy_d1.max_hp = 5
+	enemy_d1.attack = 2
+	enemy_d1.move_speed = 0  # stationary; collision is already set up
+	var ei_d1 := EnemyInstance.new(enemy_d1, 1, 0)
+	lane_d1.enemies.append(ei_d1)
+
+	var filler := UnitInstance.new(
+		mk_card.call(&"D1_filler", 1, 10, 1, false), 1, 0)
+	filler.cooldown_counter = 99  # never attacks back; isolate enemy-attack path
+	var taunter := UnitInstance.new(
+		mk_card.call(&"D1_taunt", 4, 10, 1, true), 1, 1)
+	taunter.cooldown_counter = 99
+	lane_d1.friendly_units.append(filler)
+	lane_d1.friendly_units.append(taunter)
+
+	var lanes_d1: Array[Lane] = [lane_d1]
+	TurnEngine.process_turn_end_pre_advance(lanes_d1)
+
+	if taunter.current_hp != 10 - 2:
+		printerr("D1: TAUNT body should have taken the 2 dmg, got HP=%d (expected %d)" %
+				[taunter.current_hp, 10 - 2])
+		errors += 1
+	if filler.current_hp != 10:
+		printerr("D1: non-taunt filler should be untouched, got HP=%d" %
+				filler.current_hp)
+		errors += 1
+
+	# ----- D2: TAUNT on a DIFFERENT tile does not redirect ------------------
+	# Enemy stand-attacks tile 2. A TAUNT body sits on tile 4 (out of the
+	# enemy's collision tile). Filler on tile 2 should take the hit.
+	var lane_d2 := Lane.new(0, 6)
+	var enemy_d2 := Enemy.new()
+	enemy_d2.id = &"E_test_d2"
+	enemy_d2.display_name = "Test Enemy D2"
+	enemy_d2.max_hp = 5
+	enemy_d2.attack = 3
+	enemy_d2.move_speed = 0
+	var ei_d2 := EnemyInstance.new(enemy_d2, 2, 0)
+	lane_d2.enemies.append(ei_d2)
+
+	var filler2 := UnitInstance.new(
+		mk_card.call(&"D2_filler", 1, 10, 1, false), 2, 0)
+	filler2.cooldown_counter = 99
+	var faraway_taunt := UnitInstance.new(
+		mk_card.call(&"D2_taunt", 4, 10, 1, true), 4, 1)
+	faraway_taunt.cooldown_counter = 99
+	lane_d2.friendly_units.append(filler2)
+	lane_d2.friendly_units.append(faraway_taunt)
+
+	TurnEngine.process_turn_end_pre_advance([lane_d2])
+
+	if filler2.current_hp != 10 - 3:
+		printerr("D2: out-of-tile TAUNT should NOT pull aggro — expected filler2 HP=%d, got %d" %
+				[10 - 3, filler2.current_hp])
+		errors += 1
+	if faraway_taunt.current_hp != 10:
+		printerr("D2: faraway TAUNT body should be untouched, got HP=%d" %
+				faraway_taunt.current_hp)
+		errors += 1
+
+	# ----- D3: TAUNT does not interfere with friendly→enemy attacks ---------
+	# A friendly with MELEE range attacks an in-range enemy. A separate TAUNT
+	# body sits beside it. Per spec, TAUNT only redirects enemy→friendly; it
+	# must NOT modify friendly attack selection or counts.
+	var lane_d3 := Lane.new(0, 6)
+	var enemy_d3 := Enemy.new()
+	enemy_d3.id = &"E_test_d3"
+	enemy_d3.display_name = "Test Enemy D3"
+	enemy_d3.max_hp = 10
+	enemy_d3.attack = 0
+	enemy_d3.move_speed = 0
+	var ei_d3 := EnemyInstance.new(enemy_d3, 2, 0)
+	lane_d3.enemies.append(ei_d3)
+
+	var attacker := UnitInstance.new(
+		mk_card.call(&"D3_atk", 2, 5, 3, false), 1, 0)
+	attacker.cooldown_counter = 0  # ready to swing
+	var bystander_taunt := UnitInstance.new(
+		mk_card.call(&"D3_taunt", 4, 5, 1, true), 1, 1)
+	bystander_taunt.cooldown_counter = 99
+	lane_d3.friendly_units.append(attacker)
+	lane_d3.friendly_units.append(bystander_taunt)
+
+	var res_d3 := TurnEngine.process_turn_end_pre_advance([lane_d3])
+	if res_d3["friendly_atk"] != 1:
+		printerr("D3: expected 1 friendly attack regardless of TAUNT bystander, got %d" %
+				res_d3["friendly_atk"])
+		errors += 1
+	if ei_d3.current_hp != 10 - 3:
+		printerr("D3: enemy should have taken attacker's 3 dmg, got HP=%d" %
+				ei_d3.current_hp)
 		errors += 1
 
 	return errors

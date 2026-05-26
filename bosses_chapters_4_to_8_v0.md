@@ -526,7 +526,7 @@ Per `internal_mvp_scope.md` precedent + `2026-05-18_gallowfell_balance.md` retry
 4. **Chapter 7 lane corruption.** Cycling-corruption is a new lane state. Engine work needed: `lane.corruption: enum {NONE, P_DEBUFF, E_BUFF, BOTH}` + duration counter. Confirm worth implementing or simplify to single-lane locked corruption.
 5. **Chapter 8 phase cascade.** 3 phases on a single boss is novel for the engine. Confirm the design is worth the engine cost OR simplify to single-phase with 320 HP.
 6. **Chapter 8 retry policy.** Recommend NO retries on final boss (forces respect for the moment). Alternative: 1 retry at 100 gems. Confirm.
-7. **W11 unlock trigger.** Resolve conflict between `bosses_chapters_2_3_v0.md` §3.7 ("triggers at Ch3 boss") and §6.8 ("triggers at Ch8 boss"). Recommend: **trigger at Ch8 boss** (proper campaign clear), with a "10 of 10 progress" achievement visible all the way through. Confirm.
+7. **W11 unlock trigger.** _RESOLVED 2026-05-22 (CANON_PATCHES_APPLIED): Ch8 boss clear is canonical_, with a "10 of 10 Warlord campaign clears" achievement visible all the way through. Ch3 reference in `bosses_chapters_2_3_v0.md` §3.7 patched to "progress milestone only".
 8. **Curse-tick start turn.** Per `gameplay_keywords_resolution_v0.md` §10, default = turn 12. Ch6 Vilrek pulls it to turn 8 for spec reasons. Confirm OK or move back to 12.
 
 ---

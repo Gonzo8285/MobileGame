@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="ThemePack" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/data/theme_pack.gd" id="1_theme"]
+[ext_resource type="Script" path="res://src/data/card_theme_treatment.gd" id="2_ctt"]
+
+[sub_resource type="Resource" id="ctt_0"]
+script = ExtResource("2_ctt")
+card_id = &"M3"
+theme_pack_id = &"grimm_reaping"
+art_path = ""
+display_name = "The Pyre-Piper"
+flavour_text = "Tall thin piper in patchwork red-and-black, soot-charred pipe trailing smoke-children."
+frame_variant = &"grimm_bramble"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_1"]
+script = ExtResource("2_ctt")
+card_id = &"P6"
+theme_pack_id = &"grimm_reaping"
+art_path = ""
+display_name = "The Bramble Princess"
+flavour_text = "Woman bound by living thorns; crown of brambles drawing blood from forehead."
+frame_variant = &"grimm_bramble"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_2"]
+script = ExtResource("2_ctt")
+card_id = &"C7"
+theme_pack_id = &"grimm_reaping"
+art_path = ""
+display_name = "Big Wolf's Granny"
+flavour_text = "Hag in nightcap with wolf-fangs visible under bonnet; cottage door splintered behind."
+frame_variant = &"grimm_bramble"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_3"]
+script = ExtResource("2_ctt")
+card_id = &"L3"
+theme_pack_id = &"grimm_reaping"
+art_path = ""
+display_name = "Bremen Drummer"
+flavour_text = "Donkey-headed jester drumming on iron pot; dog/cat/rooster shadows behind."
+frame_variant = &"grimm_bramble"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_4"]
+script = ExtResource("2_ctt")
+card_id = &"W4"
+theme_pack_id = &"grimm_reaping"
+art_path = ""
+display_name = "Gretel of the Crumb-Path"
+flavour_text = "Child in patched dress trailing breadcrumbs into dark forest; gingerbread silhouette."
+frame_variant = &"grimm_bramble"
+sfx_variant = &""
+icon_path = ""
+
+[resource]
+script = ExtResource("1_theme")
+id = &"grimm_reaping"
+display_name = "The Grimm Reaping"
+category = 0
+era = "fairytale_folk_horror"
+status = 1
+palette = Array[Color]([Color("#7A1A1A"), Color("#1A1A1A"), Color("#E8DEB6"), Color("#3A4A2A"), Color("#5C2A2A")])
+fonts = {}
+frame_default_variant = &"grimm_bramble"
+preview_art_path = ""
+price_tier_gbp = 5.99
+bundle_includes_board = true
+bundle_includes_back = true
+bundle_includes_avatar_frame = true
+pass_plus_free_in_season = &"season_1"
+subscription_quarterly_free = false
+always_owned = false
+owned_at_account_create = false
+card_theme_treatments = Array[ExtResource("2_ctt")]([SubResource("ctt_0"), SubResource("ctt_1"), SubResource("ctt_2"), SubResource("ctt_3"), SubResource("ctt_4")])
+pitch = "Brothers Grimm fairy tales reframed as folk horror — the version your grandmother told you to scare you into not wandering off the path. Red Riding Hood as Coven, Pied Piper as Ash Mourner, Bremen Musicians as Last Legion warband, Rapunzel's tower as Iron Penitents, Hansel-and-Gretel as Skinward Pact lost-children. Palette: blood-on-snow red, charcoal black, parchment cream, dried-flower green. Frame: bramble-and-thorn vines, hand-illuminated capital letters."
+ip_notes = "Brothers Grimm fairy tales — first published 1812-1857; in the public domain in all major jurisdictions. PD audit cleared 2026-05-25."

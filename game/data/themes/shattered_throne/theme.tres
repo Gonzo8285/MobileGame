@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="ThemePack" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/data/theme_pack.gd" id="1_theme"]
+[ext_resource type="Script" path="res://src/data/card_theme_treatment.gd" id="2_ctt"]
+
+[sub_resource type="Resource" id="ctt_0"]
+script = ExtResource("2_ctt")
+card_id = &"M3"
+theme_pack_id = &"shattered_throne"
+art_path = ""
+display_name = "The Master of Whispers"
+flavour_text = "Hooded figure in council chamber; ravens at shoulder; one finger to lips."
+frame_variant = &"dynasty_sigil"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_1"]
+script = ExtResource("2_ctt")
+card_id = &"P2"
+theme_pack_id = &"shattered_throne"
+art_path = ""
+display_name = "The Sworn-Sword's Discipline"
+flavour_text = "Armoured knight with cat-of-nine; oath-scroll burned at his feet."
+frame_variant = &"dynasty_sigil"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_2"]
+script = ExtResource("2_ctt")
+card_id = &"C4"
+theme_pack_id = &"shattered_throne"
+art_path = ""
+display_name = "The Three Pretender Witches"
+flavour_text = "Three women at council-table; one crown floating between them."
+frame_variant = &"dynasty_sigil"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_3"]
+script = ExtResource("2_ctt")
+card_id = &"L5"
+theme_pack_id = &"shattered_throne"
+art_path = ""
+display_name = "The Rebel King's Standard"
+flavour_text = "Grey wolf on white field, snow-crusted; northern-army silhouette behind."
+frame_variant = &"dynasty_sigil"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_4"]
+script = ExtResource("2_ctt")
+card_id = &"W7"
+theme_pack_id = &"shattered_throne"
+art_path = ""
+display_name = "The Antler-Crown Claimant"
+flavour_text = "Bearded king with antler-and-bone crown, sworn before clan-circle."
+frame_variant = &"dynasty_sigil"
+sfx_variant = &""
+icon_path = ""
+
+[resource]
+script = ExtResource("1_theme")
+id = &"shattered_throne"
+display_name = "The Shattered Throne"
+category = 1
+era = "political_fantasy"
+status = 1
+palette = Array[Color]([Color("#1A2A4A"), Color("#7A1A2A"), Color("#C9A35A"), Color("#E8DEB6"), Color("#0A0A0A")])
+fonts = {}
+frame_default_variant = &"dynasty_sigil"
+preview_art_path = ""
+price_tier_gbp = 5.99
+bundle_includes_board = true
+bundle_includes_back = true
+bundle_includes_avatar_frame = true
+pass_plus_free_in_season = &""
+subscription_quarterly_free = false
+always_owned = false
+owned_at_account_create = false
+card_theme_treatments = Array[ExtResource("2_ctt")]([SubResource("ctt_0"), SubResource("ctt_1"), SubResource("ctt_2"), SubResource("ctt_3"), SubResource("ctt_4")])
+pitch = "Political-fantasy intrigue. Less monster, more conspiracy. The curse of Gallowfell reinterpreted as a kingdom's slow disintegration through betrayal, sworn-sword loyalty, broken oaths. Iron Penitents = king's-guard sworn-swords; Ash Mourners = court-spy network; Coven = bastard-claimant's witch-council; Last Legion = rebel army-of-the-North; Skinward Pact = wild-clan kingsmoot. Every card is a betrayal foretold."
+ip_notes = "Internal inspiration only: Game-of-Thrones-adjacent grimdark Paul wants. ASOIAF / Game of Thrones is HBO+Martin — NEVER named in customer copy. All names here are Gallowfell-original. Audit 2026-05-25."

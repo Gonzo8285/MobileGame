@@ -98,7 +98,7 @@ Identity is **C12 Brood-Mother of the Mire (4c R)** — on play, summon 3 Bog-Sp
 |---|---|---|---|---|
 | C8 | Antler Crown | 2 | C | Sacrifice a friendly unit. Summon a Bog-Spawn with that unit's ATK. _(v0 — unchanged. Bridges A2 + A3.)_ |
 | C33 | Bog-Sigil | 2 | C | Summon a Bog-Spawn AND apply Poison-1 to enemies in adjacent tiles. |
-| C35 | Drown-Choir | 3 | C | Summon a 2/2 Drowned-Choir Wraith with Poison-1 on death. |
+| C35 | Drown-Choir | 3 | C | Summon a 2/2 Drowned-Choir Wraith with Poison-1 on death. _Cap: max 5 Drowned-Choir Wraiths in play per combat (per CANON_PATCHES_APPLIED_2026-05-22 token-cap audit — prevents unbounded swarm via Echo + recast loops)._ |
 
 ### Trap (1)
 

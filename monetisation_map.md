@@ -10,7 +10,7 @@ flowchart TD
     B -->|"$ STORE: gem packs, starter bundle, BP"| B
     B -->|"$ WARLORD UNLOCK: gems or meta-currency"| C[Pick Warlord & Faction]
     C --> D[Draft Starting Deck<br/>12 cards]
-    D --> E[Run Map<br/>16 nodes / 4 acts]
+    D --> E[Run Map<br/>8 sequential combats]
 
     E --> F[Battle Node<br/>8-12 waves TD]
     E --> G[Elite / Boss]
@@ -195,19 +195,46 @@ Master registry of every surface that grants a Warlord-XP multiplier. Source of 
 
 ## What's in MVP vs later
 
-| Surface | MVP (first internal build) | Post-soft-launch |
-|---|---|---|
-| Run-shop (gold sink) | ✅ | — |
-| Daily chest (1× rewarded ad) | ✅ | — |
-| Gold IAP (single SKU) | ✅ | full ladder |
-| Warlord unlocks (paid) | — | ✅ |
-| Cosmetic skins | — | ✅ |
-| Battle Pass | — | ✅ |
-| Gacha | — | ✅ |
-| Energy | — | A/B test only |
-| Live-ops bundles | — | ✅ |
-| Starter bundle | — | ✅ (Day 2 trigger) |
-| Warlord XP boosters (BP / quest / event / skin) | — | ✅ (alongside BP+quests) |
+> **Naming lock (patched 2026-05-22, CANON_PATCHES_APPLIED):** the column previously labelled "MVP (first internal build)" is the **First Commercial Pass (FCP)** slice — post-IMV-1, pre-soft-launch. IMV-1 itself ships only stubbed IAP buttons per `internal_mvp_scope.md`. Soft launch = FCP + battle pass + gacha + starter + cosmetics.
+
+| Surface | First Commercial Pass (FCP) | Soft launch | Post-soft-launch |
+|---|---|---|---|
+| Run-shop (gold sink) | ✅ | ✅ | — |
+| Daily chest (1× rewarded ad) | ✅ | ✅ | — |
+| Gold IAP (single SKU) | ✅ | full ladder | — |
+| Warlord unlocks (paid) | — | ✅ | — |
+| Cosmetic skins | — | ✅ | — |
+| Battle Pass | — | ✅ | — |
+| Gacha | — | ✅ | — |
+| Energy | — | — | A/B test only |
+| Live-ops bundles | — | — | ✅ |
+| Starter bundle | — | ✅ (Day 2 trigger) | — |
+| Warlord XP boosters (BP / quest / event / skin) | — | ✅ (alongside BP+quests) | — |
+| **Ascendant Pact subscription** | — | — | ✅ (patch 1.2, post-D14 milestone — see §15) |
+
+## 15. Subscription — The Ascendant Pact (added 2026-05-22, CANON_PATCHES_APPLIED)
+
+Per `HANDOVER.md` §5 and `shop_economy_v0.md` §4.6. The Ascendant Pact is the project's recurring-subscription surface. Locked here as a first-class monetisation surface in the player journey.
+
+| Field | Value |
+|---|---|
+| Name | The Ascendant Pact |
+| Price | £4.99/mo (auto-renew per platform conventions) |
+| Daily login bonus | +50 gems/day |
+| Daily run-XP multiplier | ×1.25 on first run completed each day |
+| BP-tier advancement | +5 free tiers per month |
+| Exclusive cosmetic | 1 rotating "Ascendant-only" treatment per month (per faction rotation) |
+| Cancellation | per-platform; access continues to end of billing period |
+| Pay-to-win check | All multipliers feed into the ×3.0 cap registry per §13. No power-creep — cosmetic-and-velocity only. |
+| FOMO check | Cosmetic-only rewards. No card-power or Warlord locked behind it. |
+| MVP coverage | **Not in IMV-1. Not in FCP. Not in soft launch.** Ships at patch 1.2 (post-D14 success milestone). Cross-ref `shop_economy_v0.md` §4.6 catalogue spec. |
+
+**Player-journey arrow (Mermaid update — apply when next editing the diagram block):**
+```
+B -->|"$ ASCENDANT PACT subscription (patch 1.2)"| B
+```
+
+**Why subscription is post-soft-launch:** wallet-state plumbing for recurring entitlements (auto-renew, mid-cycle cancellation, grace-period handling) is heavyweight platform work. Wedging it into soft launch risks the launch slot. Better to ship cleaner without it, then add at patch 1.2 once the D14 retention signal confirms a player base worth subscribing.
 
 ## Open questions for Paul
 
@@ -215,3 +242,4 @@ Master registry of every surface that grants a Warlord-XP multiplier. Source of 
 2. **Battle Pass price tier** — happy with $4.99 standard / $9.99 Pass+? (Industry-standard, but worth your call.)
 3. **Cosmetic-only paid Warlord variants** — would you ever sell a "skinned" Warlord ($14.99) on top of unlocking the base Warlord, or one-and-done?
 4. **Geo-priced ladders** — auto-localise via store, or hand-tune top 5 markets? (Auto is fine for soft-launch.)
+5. **Ascendant Pact patch-1.2 slot** — confirm post-D14 trigger condition. Alternative: ship Pact with patch 1.1 if D7 conversion exceeds 6% (proves wallet-state plumbing is justified).

@@ -1,5 +1,7 @@
 # Game Design Document v0 — The Curse of Gallowfell
 
+> **SUPERSEDED 2026-05-22 by `GDD_v1.md`.** Kept for diff history only. v0 contains pre-Gallowfell run structure (16-node / 4-act) + 10-Warlord count + 30-card starter pool — all of which are no longer canonical. Read `GDD_v1.md` for the live design. Patched by CANON_PATCHES_APPLIED_2026-05-22.
+
 _Drafted 2026-04-29 by heartbeat. Approved by Paul 2026-04-30. Title locked: The Curse of Gallowfell._
 
 ## Pitch

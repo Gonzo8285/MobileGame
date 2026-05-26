@@ -20,7 +20,7 @@ Per W1 Open Q4, the wildcard/lore-locked Warlords (W10, W11) get **campaign-tier
 - **Default — _Mortify_:** Lose 2 HP at start of wave; your units gain +1 ATK that wave.
   - **T2 Variant A — _Flagellant Rite_:** Lose 4 HP at start of wave; your units gain +2 ATK AND Bleed-1 that wave. (Higher self-damage, faster wave clear, painful at Hanging Hour.)
   - **T2 Variant B — _Ash-Vow_:** Don't lose HP at start of wave; your units gain +1 armor that wave (no ATK buff). (Pure defensive flip — slower clears, longer runs.)
-- **Default sig spell — _Self-Scourge_** (3 mana): Deal 3 dmg to your strongest unit. All your units gain +2 ATK this wave.
+- **Default sig spell — _Self-Scourge_** (3 mana): Deal 3 dmg to your strongest unit. All your units gain +2 ATK this wave. _Per-combat cap: +6 ATK total from Self-Scourge stacking (CANON_PATCHES_APPLIED_2026-05-22 — Hanging Hour doubled-buff interaction wobble fix; subsequent casts still self-damage but the ATK component fizzles)._
   - **T3 Alt-fire — _Bone-Pageant_** (3 mana): Deal 3 dmg to your WEAKEST unit. If it dies, it Persists at the Hanging Hour with +2 ATK regardless of its base Persist eligibility. (Immediate buff → delayed sacrifice payoff. Same cost. M1/M4 hooks live.)
 - **T4 Mastery:**
   - _Skin:_ "The Flayed Sermon" — armor stripped, brass mask cracked vertically, ribs visible like tabbed prayer-pages; hammer trails a thin rope of his own blood.

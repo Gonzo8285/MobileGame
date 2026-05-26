@@ -1,5 +1,7 @@
 # G9 — Warlord roster v0 (10 characters)
 
+> **SUPERSEDED by `warlords_v1.md`.** Canonical roster is 11 Warlords (10 playable + W11 The Saint That Should Not Hang, lore-locked). Kept for diff history only. Patched by CANON_PATCHES_APPLIED_2026-05-22.
+
 _Drafted 2026-04-30 by heartbeat. 5 free at launch span all five playstyles so any new player finds their fit. 5 paid Warlords are flashier/synergistic but never strictly stronger — every paid Warlord is also reachable via grind (Marrow Shards). Anti-pay-to-win bound by G8._
 
 ## Free roster (5 — one per playstyle, one per faction)

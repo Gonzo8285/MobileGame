@@ -2,23 +2,23 @@
 
 _Drafted 2026-05-01 in heartbeat. Net-new faction in the cards file (no v0 cards — `cards_v0.md` v1.0 covered Penitents/Mourners/Coven only). All 40 cards authored fresh as IDs L1–L40. Designed against `archetypes_v0.md` v0.1 (D1/D2/D3) and the v0.1 anti-synergy grid. Faction = canonical Track A — **The Last Legion** (`GFEnums.Faction.FERRUM_HOST` in code; engine constant left unchanged this pass per L2 cleanup queue). Pool tuned to the same 60–25–10–5 distribution and 24/12/4 rarity skew as the prior three faction pools._
 
-## Distribution (target: 40 cards / 60–25–10–5)
+## Distribution (target: 40 cards / 60–25–10–5; current 41 after Phase 2.13 N2)
 
 | Slot | Target | Authored | Per archetype split |
 |---|---|---|---|
-| Units | 24 (60%) | 24 | 8 Rally-Formation / 8 Tempo-Echo / 8 Banner-Buff |
+| Units | 24 (60%) | 25 | 8 Rally-Formation / 8 Tempo-Echo / 9 Banner-Buff |
 | Spells | 10 (25%) | 10 | 4 Rally / 4 Echo / 2 Banner |
 | Traps | 4 (10%) | 4 | 1 Rally / 1 Echo / 2 Banner |
 | Specials (relics) | 2 (5%) | 2 | 1 Echo-flavoured / 1 Banner-flavoured |
-| **Total** | **40** | **40** | |
+| **Total** | **40** | **41** | _+1 (L41 Banner-Bearer of the Crowned Anvil, 3c U, Phase 2.13 N2)_ |
 
 ## Rarity skew
 
 | Rarity | Count | % | Notes |
 |---|---|---|---|
-| Common (C) | 24 | 60% | Cheap fuel, 2-cost spine, draftable mass |
-| Uncommon (U) | 12 | 30% | Archetype workhorses + both archetype payoff spells (Iron Standard Unfurled, Hammer-Stroke Doctrine) + 1 relic |
-| Rare (R) | 4 | 10% | 3 archetype identities (Vikar / Echo-Sergeant / Banner-Captain) + 1 payoff (Crowned Anvil Standard, 5c R artifact-unit) |
+| Common (C) | 24 | 58.5% | Cheap fuel, 2-cost spine, draftable mass |
+| Uncommon (U) | 13 | 31.7% | Archetype workhorses + both archetype payoff spells (Iron Standard Unfurled, Hammer-Stroke Doctrine) + L41 Banner-Bearer spine (Phase 2.13 N2) + 1 relic |
+| Rare (R) | 4 | 9.8% | 3 archetype identities (Vikar / Echo-Sergeant / Banner-Captain) + 1 payoff (Crowned Anvil Standard, 5c R artifact-unit) |
 
 ## Format reminder
 
@@ -115,6 +115,7 @@ Identity is **L33 Banner-Captain of the Crowned Anvil (4c R)** — on play, plac
 | L32 | Banner-Sergeant of Vanrik | 4 | 4 | 2 | S | 1 | U | On play: place a Banner-Token (3 turns) in this lane: row gains Shield-1 while it stands. |
 | L33 | **Banner-Captain of the Crowned Anvil** | 4 | 4 | 3 | S | 1 | **R** | **Identity.** On play: Banner-Token (3 turns); while it stands, all Legion in row gain +1 ATK and Shield-1. |
 | L34 | **Crowned Anvil Standard** | 5 | 8 | 0 | — | 0 | **R** | **Payoff (artifact-unit).** Cannot attack. Aura: persistent +1 ATK to friendly Legion in lane until destroyed. |
+| L41 | Banner-Bearer of the Crowned Anvil | 3 | 3 | 2 | S | 1 | U | While a friendly banner stands in this row, gains +1 ATK and Pierce. _(Phase 2.13 N2 spine, 2026-05-26 — anchors the 1c→3c→4c R→5c R Banner rarity ramp.)_ |
 
 ### Spells (2)
 
@@ -143,11 +144,11 @@ Identity is **L33 Banner-Captain of the Crowned Anvil (4c R)** — on play, plac
 
 | Slice | Target | Actual |
 |---|---|---|
-| Total cards | ~40 | **40** ✓ |
+| Total cards | ~40 | **41** _(+1 from Phase 2.13 N2)_ |
 | Common (C) | ~24 | **24** (L1, L2, L3, L5, L10, L11, L12, L13, L14, L15, L17, L21, L22, L23, L26, L27, L28, L29, L30, L31, L35, L36, L37, L40) ✓ |
-| Uncommon (U) | ~12 | **12** (L4, L6, L8, L9, L16, L19, L20, L24, L25, L32, L38, L39) ✓ |
+| Uncommon (U) | ~12 | **13** (L4, L6, L8, L9, L16, L19, L20, L24, L25, L32, L38, L39, **L41**) _(+1 N2)_ |
 | Rare (R) | ~4 | **4** (L7, L18, L33, L34) ✓ |
-| Units | ~24 (60%) | **24** (L1–L8, L14–L21, L27–L34) ✓ |
+| Units | ~24 (60%) | **25** (L1–L8, L14–L21, L27–L34, **L41**) _(+1 N2)_ |
 | Spells | ~10 (25%) | **10** (L9, L10, L11, L12, L22, L23, L24, L25, L35, L36) ✓ |
 | Traps | ~4 (10%) | **4** (L13, L26, L37, L38) ✓ |
 | Specials | ~2 (5%) | **2** (L39, L40) ✓ |
@@ -156,7 +157,7 @@ Identity is **L33 Banner-Captain of the Crowned Anvil (4c R)** — on play, plac
 
 - **D1 Rally-Formation:** L1, L2, L3, L4, L5, L6, L7, L8, L9, L10, L11, L12, L13 = **13 primary**.
 - **D2 Tempo-Echo:** L14, L15, L16, L17, L18, L19, L20, L21, L22, L23, L24, L25, L26, L39 (relic) = **14 primary**.
-- **D3 Banner-Buff:** L27, L28, L29, L30, L31, L32, L33, L34, L35, L36, L37, L38, L40 (relic) = **13 primary**.
+- **D3 Banner-Buff:** L27, L28, L29, L30, L31, L32, L33, L34, L35, L36, L37, L38, L40 (relic), **L41 (Phase 2.13 N2 spine)** = **14 primary**.
 
 Cross-archetype splash (every Legion Pierce / Shield card splashes into the other two Legion archetypes natively — formation pieces feed Echo replays and Banner auras alike).
 
@@ -167,7 +168,7 @@ Cross-archetype splash (every Legion Pierce / Shield card splashes into the othe
 | 0 | 0 | — |
 | 1 | 7 | L1, L10, L14, L22, L27, L35, L37 |
 | 2 | 10 | L2, L3, L11, L13, L15, L16, L23, L26, L28, L29 |
-| 3 | 10 | L4, L5, L12, L17, L21, L24, L30, L31, L36, L38 |
+| 3 | 11 | L4, L5, L12, L17, L21, L24, L30, L31, L36, L38, **L41** _(+1 N2)_ |
 | 4 | 6 | L6, L7, L18, L19, L32, L33 |
 | 5 | 5 | L8, L9, L20, L25, L34 |
 | relic | 2 | L39, L40 (cost 0, off-deck) |
@@ -196,6 +197,16 @@ Five splash hooks → meets C7's "≥2 splash hooks per faction" target.
 - "Foundry-Sworn", "Forge-Spark", "Anvil-Drilled", "Crown-Anvil" — the naming cluster builds the locale (the Foundry biome) into the card-text, same trick the Coven uses with the bog-coin cluster.
 - Flagship characters: Sergeant-Smith Vikar (the line officer), Banner-Captain of the Crowned Anvil (the standard-bearer), Echo-Sergeant (the drill-master). Lord-Marshal placeholder _not_ used this pass — reserved for a future Warlord-tier signature card.
 - Echo as soft keyword: card text spells out "Echo (replay)" so players parse the rule without enum support. Engine `.tres` keywords array is empty for Echo-only cards.
+
+## v1.1 change log
+
+**2026-05-26 — Phase 2.13 N2 (Controller).** Added **L41 Banner-Bearer of the Crowned Anvil** (3c U Banner-Buff spine). Hardens D3 (flagged LOOSE in M7 audit) by giving the 1c→3c→4c R→5c R Banner rarity ramp its 3c U keystone. Pool 40 → 41; Units 24 → 25; Uncommons 12 → 13; D3 Banner-Buff archetype density 13 → 14. Distribution + Rarity-skew + Pool-totals + Per-archetype-density + Cost-curve tables updated. PIERCE is conditional (only while banner stands in row) so `.tres` `keywords` array is empty — Pierce is granted via effect text, mirroring the M41 / Wraith-Caller convention for cost-triggered conditional effects. `attack_range = 2` (SHORT) for consistency with the 3c Banner-Buff slot (L30, L31) and the polearm-bearer chassis.
+
+Open questions for Paul (none block N3 / N4):
+
+1. **What counts as a "friendly banner"?** Banner-Tokens placed by L13 / L32 / L33 / L36 / L37 / L40 are the obvious answer. Does **L34 Crowned Anvil Standard** (the 5c R artifact-unit) ALSO count as a banner for L41's trigger? Lean YES (it's a banner in flavour and the persistent +1 ATK aura makes it the late-game lane anchor L41 should pair with), but worth confirming so the engine reads either `LaneEffect.kind == BANNER_TOKEN` OR `card.id == &"L34"`, not just the former.
+2. **Pierce scope.** "gains +1 ATK and Pierce" reads as: while banner stands → ATK = 3 with PIERCE applied to all attacks (not just the bonus). Confirm — alternative reading would be "+1 ATK that bypasses Shield" which is a niche corner case.
+3. **Multi-banner stacking.** If L32 (Banner-Sergeant) + L33 (Banner-Captain) both place tokens in the same row, does L41 stack the +1 ATK / Pierce buff (becomes +2 ATK + 2× Pierce-redundant) or cap at ≥1 banner = single buff? Lean SINGLE (binary trigger), matches the "1c→3c→4c→5c ramp" framing.
 
 ## Open questions / flags for Paul
 
@@ -228,3 +239,15 @@ Per `keywords/taunt_v0.md`, 4 Last Legion cards are flagged for TAUNT tagging at
 
 **Density:** 4 / 40 = 10% of pool. Spread across rarities (3R + 1U) — Common-tier TAUNT deliberately omitted to keep formation-style decks rewarding rare-pulls rather than handing it to the C-curve. Reconsider density at first balance review if Legion mirror-matches feel oppressive.
 
+
+---
+
+## M7 cohesion-audit addition (2026-05-26 by Controller)
+
+Per `archetypes_v0.md` §"Sub-archetype cohesion audit" — D3 Banner-Buff was rated LOOSE because the spine borrowed from D1 (Pikeman) and D2 (Echo-Sergeant), leaving D3 with no unique 3-cost anchor. One new uncommon added:
+
+| Card | Rarity | Cost | Stats | Role |
+|---|---|---|---|---|
+| **L41 Banner-Bearer of the Crowned Anvil** | U | 3 | 3 HP / 2 ATK / Range-M / CD-1 | Front-line spine for Banner-Buff. While a friendly banner stands in this row, gains +1 ATK and Pierce. Banner-as-object becomes the spine's primary value lever; rarity ramp now reads Standard-Bearer's Cry (1c spell) → L41 Banner-Bearer (3c U) → L33 Banner-Captain (4c R identity) → Crowned Anvil Standard (5c R payoff). |
+
+`.tres` authored at `game/data/cards/last_legion/L41.tres`. Faction-id 3 / card-type UNIT / rarity UNCOMMON / `keywords=[1]` (PIERCE — engine applies Pierce only when banner present per the effect_text condition; tag declares the kit). Net new card; brings pool from 40 → 41.

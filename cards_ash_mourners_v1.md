@@ -2,22 +2,22 @@
 
 _Drafted 2026-05-01 in-session. Full 40-card Ash-Mourners pool across the 3 archetypes (Smoke-Fear / Resurrect-Spam / Trap-Control). Designed against `archetypes_v0.md` v0.1 (B1/B2/B3) and the v0.1 anti-synergy grid. Existing 11 cards from `cards_v0.md` v1.0 (M1–M11) absorbed; M5 Last Censer-Bearer gets the S2 statline reshape (3c U → 4c R, 4/4/S/CD-2 + Dread aura). Net new: 29 cards (M12–M40). Faction = canonical Track A — **Ash-Mourners** (`GFEnums.Faction.WITHERED_COURT` in code; the file naming and player-facing text use Ash-Mourners per L1 lock 2026-04-30; the enum constant is left unchanged this pass to avoid an engine-wide rename — flagged for L2 cleanup heartbeat)._
 
-## Distribution (target: 40 cards / 60–25–10–5)
+## Distribution (target: 40 cards / 60–25–10–5; actual: 41 post-Phase-2.13 N1)
 
 | Slot | Target | Authored | Per archetype split |
 |---|---|---|---|
-| Units | 24 (60%) | 24 | 9 Smoke / 9 Resurrect / 8 Trap-Control + 4 cross-archetype splash |
+| Units | 24 (60%) | 25 | 9 Smoke / **10** Resurrect / 8 Trap-Control + 4 cross-archetype splash _(post-N1: +M41 Wraith-Caller of the Dirge)_ |
 | Spells | 10 (25%) | 10 | 4 Smoke / 3 Resurrect / 3 Trap-Control |
 | Traps | 4 (10%) | 4 | 0 Smoke / 0 Resurrect / 4 Trap-Control |
 | Specials (relics) | 2 (5%) | 2 | 1 Smoke / 1 Resurrect (both faction-locked) |
-| **Total** | **40** | **40** | |
+| **Total** | **40** | **41** | _(+1 net from Phase 2.13 N1; accept deviation per audit, re-balance at C7-v0.2)_ |
 
 ## Rarity skew
 
 | Rarity | Count | % | Notes |
 |---|---|---|---|
-| Common (C) | 24 | 60% | Cheap fodder, smoke-spreaders, wraith-bait |
-| Uncommon (U) | 12 | 30% | Archetype workhorses incl. both new identities (Necrologist, Funeral Bellringer) |
+| Common (C) | 24 | 59% | Cheap fodder, smoke-spreaders, wraith-bait |
+| Uncommon (U) | 13 | 32% | Archetype workhorses incl. both new identities (Necrologist, Funeral Bellringer) + M41 Wraith-Caller of the Dirge (Phase 2.13 N1) |
 | Rare (R) | 4 | 10% | M5 Last Censer-Bearer (Smoke-Fear identity, post-S2 promotion), M6 The Pyre-Priest (Resurrect-Spam payoff), M8 Cinder Tide (Smoke-Fear payoff), M11 Funeral Bell (Trap-Control payoff). New identity cards held at U so the rarity budget stays clean — 4 R per faction. |
 
 ## Format reminder
@@ -86,6 +86,7 @@ Identity is **M12 Necrologist of the Catacombs (4c U)** — when a friendly Mour
 | M22 | Hollow Mortician | 3 | 3 | 2 | M | 1 | C | When any friendly Mourner dies in lane, this unit gains +1 ATK this turn. |
 | M23 | Cradle of the Dead | 4 | 5 | 1 | M | 1 | U | On death: summon a 2/2 Ash Wraith with Fear. |
 | M24 | Choir of the Long Dead | 5 | 4 | 2 | S | 1 | U | Aura: friendly Ash Wraiths gain +1 HP. On play: existing Ash Wraiths get +1 HP immediately. |
+| M41 | **Wraith-Caller of the Dirge** | 3 | 3 | 2 | M | 1 | **U** | When a friendly Mourner dies, the next Mourner you play this turn costs 1 less. Cap once per turn. _(Phase 2.13 N1, added 2026-05-26. B2 Resurrect-Spam spine fix per M7 audit. Naming-distinct from M21 "Wraith-Caller" via the "of the Dirge" suffix — M21 is on-play SUMMON, M41 is on-friendly-death cost-reduction. Trigger surface broader than M20 Bone-Shroud Acolyte (M20 = own death only; M41 = any friendly Mourner death) justifying the 3c vs 2c cost gap. Engine reads effect text and dispatches via the existing `friendly_unit_died` signal path used by M22 Hollow Mortician — no new keyword required.)_ |
 
 ### Spells (3)
 
@@ -140,11 +141,11 @@ Identity is **M13 Funeral Bellringer (4c U)** — when a trap triggers in your l
 
 | Slice | Target | Actual |
 |---|---|---|
-| Total cards | ~40 | **40** ✓ |
+| Total cards | ~40 | **41** _(+1 from Phase 2.13 N1)_ |
 | Common (C) | ~24 | **24** (M1, M2, M3, M7, M9, M14, M15, M16, M17, M18, M19, M20, M22, M25, M26, M29, M30, M31, M32, M34, M35, M37, M38, M40) ✓ |
-| Uncommon (U) | ~12 | **12** (M4, M10, M12, M13, M21, M23, M24, M27, M28, M33, M36, M39) ✓ |
+| Uncommon (U) | ~12 | **13** (M4, M10, M12, M13, M21, M23, M24, M27, M28, M33, M36, M39, **M41**) _(+1 from Phase 2.13 N1)_ |
 | Rare (R) | ~4 | **4** (M5 post-promotion, M6, M8, M11) ✓ |
-| Units | ~24 (60%) | **24** (M1–M6 + M12–M29 — 6 v0 + 18 new) ✓ |
+| Units | ~24 (60%) | **25** (M1–M6 + M12–M29 + M41 — 6 v0 + 19 new) _(+1 from Phase 2.13 N1)_ |
 | Spells | ~10 (25%) | **10** (M7, M8, M30–M37 — 2 v0 + 8 new) ✓ |
 | Traps | ~4 (10%) | **4** (M9, M10, M11 + M38 — 3 v0 + 1 new) ✓ |
 | Specials | ~2 (5%) | **2** (M39, M40 — both new) ✓ |
@@ -152,7 +153,7 @@ Identity is **M13 Funeral Bellringer (4c U)** — when a trap triggers in your l
 ## Per-archetype card density (target ~10–12 each)
 
 - **B1 Smoke-Fear:** M1, M2, M3, M5, M7, M8, M14, M15, M16, M17, M18, M30, M31, M32, M36, M39 = **16 primary** (heavy because Smoke-Fear has the most v0 cards). Still healthy — wide card variety reads as the "control" faction's identity.
-- **B2 Resurrect-Spam:** M4, M6, M12, M19, M20, M21, M22, M23, M24, M33, M34, M35, M40 = **13 primary**.
+- **B2 Resurrect-Spam:** M4, M6, M12, M19, M20, M21, M22, M23, M24, M33, M34, M35, M40, **M41** = **14 primary** _(post-Phase-2.13 N1: M41 Wraith-Caller of the Dirge added as B2 spine fix per M7 audit)_.
 - **B3 Trap-Control:** M9, M10, M11, M13, M25, M26, M27, M28, M29, M37, M38 = **11 primary**.
 
 (Splash cards count toward both archetypes; total unique cards still 40.)
@@ -164,7 +165,7 @@ Identity is **M13 Funeral Bellringer (4c U)** — when a trap triggers in your l
 | 0 | 0 | — |
 | 1 | 7 | M1, M7, M9, M14, M19, M30, M37 |
 | 2 | 9 | M2, M3, M10, M15, M20, M25, M31, M32, M38 |
-| 3 | 8 | M16, M17, M21, M22, M26, M27, M33, M34 |
+| 3 | 9 | M16, M17, M21, M22, M26, M27, M33, M34, **M41** _(+1 from Phase 2.13 N1)_ |
 | 4 | 8 | M5, M8, M12, M13, M18, M23, M28, M29, M35 _(9 — slight overweight, accept)_ |
 | 5 | 3 | M6, M24, M36 |
 | relic | 2 | M39, M40 (cost 0, off-deck) |
@@ -213,8 +214,14 @@ Five splash hooks → meets C7's "≥2 splash hooks per faction" target.
 
 - **v1.0 (2026-05-01)** — initial 40-card pool authored from C1 archetype briefs + `cards_v0.md` v1.0 (M1–M11). M5 statline reshape S2 lock applied (3c U → 4c R, 4/2/S/CD-2). 29 net-new cards (M12–M40). 60/25/10/5 distribution hit exactly. 4 Rares (3 v0 retained + M5 promoted). 2 specials introduced (relics flagged for system-wide call).
 - **Same heartbeat:** `.tres` files for M12–M40 generated under `game/data/cards/ash_mourners/`. M5.tres updated in place with promoted statline + R rarity.
+- **v1.1 (2026-05-26)** — Phase 2.13 N1 add: M41 Wraith-Caller of the Dirge (3c U Resurrect-Spam spine) per M7 cohesion audit. Net +1 card (pool now 41). Distribution, Rarity, Pool-totals, Per-archetype-density, and Cost-curve tables updated in place. No existing card altered. `M41.tres` authored under `game/data/cards/ash_mourners/`. **3 open Qs for Paul** (none block N2):
+    1. **Cap-per-turn vs cap-per-combat?** Spec uses once-per-turn (mirrors M12). Once-per-combat would make N1's "spine accelerator" job thinner — recommend keep once-per-turn.
+    2. **Stack with M20 Bone-Shroud Acolyte?** If M20 dies on a turn N41 has already fired, do both discounts apply to the same next Mourner (cost -2)? Spec leans yes — they're different trigger sources, both with their own caps. Watch for free-Mourner cascades in playtest.
+    3. **"Next Mourner you play this turn" — hand-only or any source?** If a friendly Mourner death spawns a summoned Ash Wraith (e.g. via M12 Necrologist), does that summon count as "the next Mourner played" and consume N41's discount? Spec leans no — summons are not "played." Aligns with M20's "next Mourner you summon this combat" which explicitly says "summon," distinguishing it.
 
 _Next backlog hop: C4 — Coven of the Black Mire full pool (~40 cards). C6 Mother Quag stays as a single dual-archetype card per Paul's 2026-05-01 lock; new cards Witch of the Bound Coin, Brood-Mother of the Mire, Ferryman of the Drowned Coin, Drowning of the Demon-Coin authored fresh._
+
+- **v1.1a (2026-05-26 evening)** — Cleanup: removed M42 "Wraith-Caller of the Dirge" duplicate. A prior Controller pass had authored M42.tres + a spec block (formerly at the "M7 cohesion-audit additions" section below) before the N1 / M41 backlog assignment was visible to that seat. Same card name, same role, slightly different stats (M42 was 3 HP / 1 ATK / Range-S / CD-2; M41 — canonical — is 3 HP / 2 ATK / MELEE / CD-1). M41 is the authoritative N1 deliverable. M42.tres deleted from `game/data/cards/ash_mourners/`; M42 spec block replaced with a supersession note pointing at M41. Pool composition unaffected (M41 was the only Phase-2.13 add for this faction). Caught by the "verify backlog ticks against actual files" rule — phantom-tick / phantom-untick check on 2026-05-26 evening hand-back.
 
 ---
 
@@ -252,3 +259,9 @@ Five M1-flagged cards have been keyword-tagged with PERSIST in their `.tres` fil
 - All five + Coven C42 Black Mire Pact → each Persist death pops a 0/1 Bog-Spawn (3 charges). Mourner + Coven combo deck becomes a real shape.
 
 **Open Q for Paul (not blocking M3):** M22 Hollow Mortician's "+1 ATK this turn" on-death trigger interacts oddly with Persist — when the Mortician itself dies and Persists back, does its own death trigger fire and pre-buff its returning body? Engine answer is "no" (the buff is on the Mortician's instance, which is gone; the new instance is fresh). Design answer is unclear. Recommend keeping engine answer; revisit only if Mortician underperforms.
+
+---
+
+## M7 cohesion-audit additions — superseded by Phase 2.13 N1 (M41)
+
+**SUPERSEDED 2026-05-26 evening (Controller).** This section originally added an M42 "Wraith-Caller of the Dirge" as the B2 Resurrect-Spam spine fix. That add was authored in a prior Controller pass that didn't yet see N1 (M41, same name, same role, different stats) had been queued in `backlog.md` Phase 2.13. M41 is the canonical N1 card per the backlog tick; M42 was a duplicate. `M42.tres` and this section's table have been removed to keep the spec doc and disk state in sync. **No card is lost** — the B2 spine fix is M41 (see the M41 row at line 89 of this doc and the v1.1 change-log entry above for the canonical record). M41 stats: 3c U / 3 HP / 2 ATK / MELEE / CD-1. Reconciliation recorded in `backlog.md` Phase 2.13 closing note.

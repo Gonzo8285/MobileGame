@@ -11,7 +11,7 @@ _Respun 2026-04-30 against `lore_gallowfell.md`. v0 used the pre-Gallowfell fact
 - **Backstory:** Led the flagellant column from the Cathedral Ruins into Gallowfell. Believes if he bleeds enough, the gallows-tree will weep him an answer.
 - **Passive — _Mortify_:** Start of each wave, lose 2 HP; your units gain +1 ATK that wave.
 - **Signature unit — _Cathedral Brother_:** 1-cost, fast, low HP, **Cleave**.
-- **Signature spell — _Self-Scourge_:** Deal 3 damage to your strongest unit. All your units gain +2 ATK this wave.
+- **Signature spell — _Self-Scourge_:** Deal 3 damage to your strongest unit. All your units gain +2 ATK this wave. **Per-combat cap: +6 ATK total from Self-Scourge stacking** (added 2026-05-22, CANON_PATCHES_APPLIED — round-3 wobble fix: caps Hanging Hour doubled-buff interaction at 3 meaningful casts per combat. Subsequent casts still resolve the self-damage but no further ATK buff applies. Card balance audit §19 surfaced this risk.)
 - **Visual cue:** Monarchy-era execution-mask in tarnished brass, hooded, flayed back, hammer-and-rope motif on the chest plate.
 - **Hanging Hour synergy:** at midnight his self-damage is doubled — and so is the buff. Risk goes vertical.
 

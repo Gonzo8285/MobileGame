@@ -309,17 +309,33 @@ static func _resolve_enemy_attacks_in_lane(lane: Lane) -> int:
 
 
 static func _friendly_on_tile(lane: Lane, tile_idx: int) -> UnitInstance:
+	# TAUNT override (keywords/taunt_v0.md): if any non-token TAUNT-tagged
+	# friendly is on this tile, the enemy MUST target it before any non-taunt
+	# body — even if the non-taunt is cheaper. Tie-break among taunters uses
+	# the same cheapest-cost rule. (Range-scoping in the spec is moot under
+	# the current "stand-attack on tile-collision" enemy model — when ranged
+	# enemy attacks land, replace this helper with a range-aware variant.)
 	var best: UnitInstance = null
+	var best_taunt: UnitInstance = null
 	for u in lane.friendly_units:
 		if u == null or not u.is_alive():
 			continue
 		if u.tile != tile_idx:
 			continue
-		# Tie-break: cheapest card cost first (least valuable defender). Stable
-		# enough for tests; revisit if it ever feels arbitrary in playtest.
-		if best == null or (u.card_data != null and best.card_data != null and u.card_data.cost < best.card_data.cost):
+		var is_taunt: bool = (u.card_data != null
+			and u.card_data.has_keyword(GFEnums.Keyword.TAUNT)
+			and u.card_data.is_draftable)
+		if is_taunt:
+			# Cheapest-cost tie-break among taunters.
+			if best_taunt == null or (u.card_data.cost < best_taunt.card_data.cost):
+				best_taunt = u
+		# Tie-break for non-taunt fallback: cheapest card cost first (least
+		# valuable defender). Stable enough for tests; revisit if it ever
+		# feels arbitrary in playtest.
+		if best == null or (u.card_data != null and best.card_data != null
+				and u.card_data.cost < best.card_data.cost):
 			best = u
-	return best
+	return best_taunt if best_taunt != null else best
 
 
 # ----- Status duration decay ------------------------------------------------

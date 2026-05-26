@@ -122,7 +122,7 @@ Mourners Trap-Control (was 0 deals), L-Echo (was 0 deals), and S-Beast (was 0 de
 
 ### C2. Bog-Spawn Swarm
 - **Identity (4-cost R):** **Brood-Mother of the Mire** — on play, summon 3 Bog-Spawns on empty tiles in lane. (Promotes from existing C7 Mire-Witch concept.)
-- **Payoff (5–6c R):** **C6 Mother Quag, Twice-Drowned** (dual-archetype payoff — same card as C1 Poison-Stack; here serves the recycle half: every 3rd enemy killed returns as a friendly Bog-Spawn).
+- **Payoff (5–6c R):** **C6 Mother Quag, Twice-Drowned** (dual-archetype payoff — same card as C1 Poison-Stack; here serves the recycle half: every 3rd enemy killed **this turn** returns as a friendly Bog-Spawn). _Canon: per-turn counter reset, per `faction_bible.md` v1. Patched 2026-05-22 (CANON_PATCHES_APPLIED)._
 - **2-3-4 spine:** C2 Bog-Witch Initiate (1c, summons Bog-Spawn on play), C4 Toad-Caller (2c U, recurring summon engine), C5 Briar-Hag (4c U, sac fodder for tempo).
 - **Cheap fuel:** C1 Bog-Spawn (0c, draftable — the chaff itself).
 - **Hard counter (v0.1):** Skinward Pact Beast-Summon (Wolves out-trade Bog-Spawns 1/2 vs 0/1; Beast lane density crushes Swarm without needing sacrifice payoffs).
@@ -222,3 +222,201 @@ All four open questions resolved by Paul in-session. Decisions locked into the d
 ---
 
 _v0.1 done. Next eligible heartbeat item: C2 (Iron Penitents full pool, ~40 cards + `.tres` files)._
+
+---
+
+## Sub-archetype cohesion audit (M7, 2026-05-26)
+
+_M7 from `backlog.md`. For each of the 15 sub-archetypes (5 factions × 3), audit whether the identity card (4-cost rare) + payoff card (5-6c R) + the 2/3/4-cost spine + cheap fuel share at least 2 connecting keyword/mechanic references. Tight = the spine delivers a recognisable strategy by turn 4; loose = engine reads only on identity + payoff; re-spec = spine too generic._
+
+**Definition of a "connecting reference":** a shared keyword (Bleed, Cleave, Smoke, Fear, Resurrect, Sacrifice, Penance, Poison, Echo, Banner, Shield, Transformation, Token-summon) OR a shared mechanic loop (e.g. on-friendly-death trigger, trap-triggered spawn, adjacency-formation, token-economy).
+
+### Per-archetype ratings
+
+| # | Archetype | Faction | Rating | Connecting refs |
+|---|---|---|---|---|
+| A1 | Bleed-Stack | Iron Penitents | **TIGHT** | Bleed (Identity, Payoff, P3, P4, P8); friendly-takes-damage loop (Hierarch, P2) |
+| A2 | Sacrifice-Penance | Iron Penitents | **TIGHT** | Friendly-Penitent-death (Identity, Payoff, P9, P1); self-damage (P6, P7); ATK-buff-on-death (Identity, P1) |
+| A3 | Cleave-Melee | Iron Penitents | **TIGHT** | Cleave (Identity, Payoff, P4); adjacency (Identity, P3, P2) |
+| B1 | Smoke-Fear Control | Ash-Mourners | **TIGHT** | Dread/Fear (Identity, Payoff, M1, M7); Smoke (M3, archetype name); ATK-debuff (Payoff, M2) |
+| B2 | Resurrect Spam | Ash-Mourners | **LOOSE** | Mourner-death-trigger/Wraith-spawn lives only on Identity + Payoff + M1; M2/M4/M3 are general Mourner support, not direct accelerants of the resurrect engine |
+| B3 | Trap-Control | Ash-Mourners | **TIGHT** | Trap (Identity, Payoff, M9, M10); Wraith-spawn (Identity, Payoff); Root (Payoff, M7) |
+| C1 | Poison-Stack | Coven | **TIGHT** | Poison (Identity, C3, C5, C8); Bog-Spawn economy (C4, C5, C2) |
+| C2 | Bog-Spawn Swarm | Coven | **TIGHT** | Bog-Spawn summon (every card); Sacrifice (C5, Payoff-via-kill-return) |
+| C3 | Sacrifice-Combo | Coven | **TIGHT** | Sacrifice (Identity, Payoff, C5); Bog-Spawn (Identity, Payoff, C2, C4); Poison (Payoff, C3) |
+| D1 | Rally-Formation | Last Legion | **TIGHT** | Formation/adjacency (Identity, Pikeman, Bayonet Drill, Forge-Conscript); ATK-buff aura (Identity, Payoff, Pikeman) |
+| D2 | Tempo-Echo | Last Legion | **TIGHT** | Echo (Identity, Payoff, Skirmisher, Bayonet Drill, Forge-Cry) — only Pikeman is formation-borrow rather than Echo-native |
+| D3 | Banner-Buff | Last Legion | **LOOSE** | Banner-as-object reads only on Identity + Payoff + Standard-Bearer's Cry; Pikeman is shared with D1; Echo-Sergeant is borrowed from D2 — D3 has no unique 3c spine card |
+| E1 | Big-Monster | Skinward Pact | **TIGHT** | Wilds (universal); solo-big-body / Lifesteal value chain (Identity, Ranger, Stalker) |
+| E2 | Transformation | Skinward Pact | **TIGHT** | Transformation (Identity, Payoff, Wyrd-Bind; Cub/Ranger/Stalker as targets); Wilds (universal) |
+| E3 | Beast-Summon | Skinward Pact | **LOOSE** | Token-summon lives only on Identity + Payoff + Cub-Cry; Ranger/Stalker/Cub-card are shared with E1, not summon-specific. Spine duplicates E1 — needs a Beast-Summon-unique 3c or 4c card |
+
+### Tally
+
+- **TIGHT: 12** — engine reads cleanly across identity + payoff + spine; new player can recognise the strategy by turn 4.
+- **LOOSE: 3** — engine reads on identity + payoff but spine doesn't accelerate the loop. Listed below with re-design recommendations.
+- **RE-SPEC NEEDED: 0** — no archetype is fundamentally incoherent; all 3 LOOSE archetypes are fixable by promoting or authoring a single spine card.
+
+### Recommendations for the 3 LOOSE archetypes
+
+**B2 Resurrect Spam (Ash-Mourners):** the spine's death-trigger acceleration is too thin. Two options:
+- Option B2-a: re-tag M3 Ash-Speaker — currently "kill-tile becomes Smoke"; promote to "kill-tile spawns a 1/1 Ash Wraith instead of Smoke when the kill is by a Mourner" so the spine has a second on-death payoff that doesn't compete with the identity's once-per-turn cap.
+- Option B2-b: author a fresh 3c U named **Wraith-Caller of the Dirge** — "when a friendly Mourner dies, the next friendly Mourner you play costs 1 less." Cuts mana cost of the resurrection chain, doesn't compete with the Necrologist's wraith spawn.
+
+Pick one and propagate to `cards_ash_mourners_v1.md`. B2-b is the cleaner add — doesn't conflict with B1 Smoke-Fear's M3 dependency.
+
+**D3 Banner-Buff (Last Legion):** the spine borrows from D1 (Pikeman) and D2 (Echo-Sergeant), leaving D3 with no unique 3c. Recommend:
+- Author a 3c U named **Banner-Bearer of the Crowned Anvil** — "while a friendly banner stands in this row, gains +1 ATK and Pierce." Gives D3 its own 3c-cost anchor, makes the banner-as-object the spine's primary value lever, and reads as the natural progression from the 1c Standard-Bearer's Cry → 3c Banner-Bearer → 4c R Banner-Captain (identity) → 5c R Crowned Anvil Standard (payoff). Clean rarity ramp.
+
+Propagate to `cards_last_legion_v1.md`. Existing Echo-Sergeant can stay as a tempo splash but is no longer load-bearing for D3.
+
+**E3 Beast-Summon (Skinward Pact):** the spine duplicates E1's roster (Cub, Ranger, Stalker), so a Beast-Summon deck and a Big-Monster deck currently look identical at the 1-4 mana range. Recommend:
+- Author a 3c U named **Pack-Caller Initiate** — "when you summon a Wolf-Token in your lane, draw 1 card (cap once per turn)." Gives E3 a unique mid-game card-draw engine tied directly to its token economy.
+- Plus a 4c U named **Den-Mother of the Cinderwood** — "your Wolf-Tokens gain +1/+1 and Lifesteal while she is in lane." Anchors the spine at the curve-topping common slot.
+
+Both propagate to `cards_skinward_pact_v1.md`. With these adds, the E1 / E3 split becomes legible at draft time: E1 = solo big body, E3 = token swarm with card-draw + Lifesteal scaling.
+
+### Implications for downstream backlog
+
+- These 3 fixes are NEW card adds (4 total: Wraith-Caller, Banner-Bearer, Pack-Caller Initiate, Den-Mother), not redesigns of existing cards. They slot into the 40-card faction pools as net-new entries — they DO NOT replace cards already authored in `cards_ash_mourners_v1.md`, `cards_last_legion_v1.md`, `cards_skinward_pact_v1.md`.
+- Total card count rises by 4 (203 → 207 card heroes per `art_pipeline_readiness_v0.md` §1.1). Negligible art-pipeline impact (these are commons, ride the Stage-B common-tile validation, not new anchors).
+- M6 (cross-faction synergy refinement v0.2, post-TAUNT) should consider whether TAUNT in Legion's Banner row interacts with these 3 new spine cards — flag for next pass.
+
+— Controller, 2026-05-26
+
+---
+
+## v0.2 (post-TAUNT) — cross-faction synergy refinement (M6, 2026-05-26)
+
+_M6 from `backlog.md` Phase 2.12. Re-audit of the v0.1 anti-synergy grid after TAUNT (spec: `keywords/taunt_v0.md`, design-locked 2026-05-15) introduces a single-target-redirect keyword to Last Legion (primary, 4 cards: L7, L11, L18, L33) and Iron Penitents (secondary, 2 cards: P3, P34). The Legion concentration is the structural force — TAUNT bodies in Legion lanes change which archetypes Legion can soft-counter and which can soft-counter Legion._
+
+### Headline impact (the three shifts Paul flagged)
+
+**1. Bleed-Stack (P A1) ↔ Banner-Buff (L D3) — HARDENS, no edge change.** Counter direction (L D3 → P A1) unchanged from v0.1. Strength deepens: L33 Banner-Captain now carries TAUNT in addition to SHIELD-1 + RALLY-2. Enemy attacks (in the Penitents-side analysis, "enemy" = the Bleed-Stack player's own bodies trying to land hits to trigger DoT) hit the high-HP TAUNT body first, where SHIELD-1 absorbs the initial chip. Bleed application still bypasses SHIELD per existing rules, BUT the bleed-applicator units (Hammer-Confessor P4, Hammer of Penance P8) take a full extra round of enemy fire before they can land their second/third stacks because the Banner-Captain holds the line. The math: v0.1 had Banner-Buff trading at ~55% win-rate vs Bleed-Stack in design-space estimation; v0.2 estimate is ~62%. Still beatable (Bleed wins late-game on DoT scaling), but the early window where Bleed needed to land 4 stacks by turn 5 just got tighter.
+
+**2. Bog-Spawn Swarm (C C2) hard counter shifts: E E3 Beast-Summon → L D1 Rally-Formation.** Bog-Spawns (0/1 stats) used to lose to Wolf-tokens (1/2 stats) in straight token mirror. That logic still works mathematically — but the new dominant counter to Bog-Spawn Swarm is Legion's TAUNT line. Every Bog-Spawn attack in a Legion lane is now forced onto the TAUNT body (L7 Sergeant-Smith Vikar or L33 Banner-Captain), and a single soak body absorbs N bog-spawn attacks per turn without dying — the SHIELD-1 + RALLY +1 ATK means each Bog-Spawn dies to one return swing while the TAUNT body burns through them lane-by-lane. Swarm strategy fundamentally relies on attacking many different friendly targets to overwhelm; TAUNT collapses that into a single soak vector. Beast-Summon (E E3) is now demoted to a secondary counter — still effective in a Skinward mirror or against a non-TAUNT Coven line, but no longer the cleanest answer when Legion is on the table.
+
+**3. Big-Monster (E E1) hard counter shifts: L D2 Tempo-Echo → L D1 Rally-Formation.** Big-Monster's chassis is a single 6-8 cost body with high HP and one big swing per turn. v0.1's counter was Tempo-Echo, whose Echo procs supposedly diluted the per-attack value when forced to replay small attacks on a single big chassis. The shift: Echo's per-attack-dilution argument was always thin (Echo only replays effects, not the attack damage itself in most card configurations), whereas TAUNT directly addresses the Big-Monster fantasy. L D1's TAUNT body soaks the Big-Monster's once-per-turn swing; SHIELD-1 absorbs the first hit's chip damage; RALLY +1 ATK and adjacent Pikeman/Forge-Conscript chip the Big-Monster down at 1-2 HP per turn while the TAUNT body holds. Big-Monster's payoff turn (Thrask the Bear-Who-Was-King resolving on turn 5-6) now needs to break through a TAUNT body before reaching the back line, fundamentally changing the tempo math. Tempo-Echo (L D2) is no longer the headline counter — it remains an annoyance but the TAUNT line is the new wall.
+
+### v0.2 anti-synergy grid (with deltas marked)
+
+| # | Archetype | Hard counter (v0.2) | Δ from v0.1 |
+|---|---|---|---|
+| A1 | Penitents — Bleed-Stack | Last Legion — Banner-Buff | unchanged (HARDENED) |
+| A2 | Penitents — Sacrifice-Penance | Coven — Sacrifice-Combo | unchanged |
+| A3 | Penitents — Cleave-Melee | Skinward Pact — Big-Monster | unchanged |
+| B1 | Ash-Mourners — Smoke-Fear | Iron Penitents — Cleave-Melee | unchanged |
+| B2 | Ash-Mourners — Resurrect Spam | Skinward Pact — Transformation | unchanged |
+| B3 | Ash-Mourners — Trap-Control | Coven — Bog-Spawn Swarm | unchanged |
+| C1 | Coven — Poison-Stack | Ash-Mourners — Trap-Control | unchanged |
+| C2 | Coven — Bog-Spawn Swarm | **Last Legion — Rally-Formation** | **swap** (was Skinward Beast-Summon) |
+| C3 | Coven — Sacrifice-Combo | Iron Penitents — Sacrifice-Penance | unchanged |
+| D1 | Last Legion — Rally-Formation | Ash-Mourners — Smoke-Fear | unchanged |
+| D2 | Last Legion — Tempo-Echo | Coven — Poison-Stack | unchanged |
+| D3 | Last Legion — Banner-Buff | Iron Penitents — Bleed-Stack | unchanged |
+| E1 | Skinward Pact — Big-Monster | **Last Legion — Rally-Formation** | **swap** (was Last Legion Tempo-Echo) |
+| E2 | Skinward Pact — Transformation | Ash-Mourners — Resurrect Spam | unchanged |
+| E3 | Skinward Pact — Beast-Summon | Last Legion — Rally-Formation | unchanged |
+
+### v0.1 → v0.2 edge changes (2)
+
+1. **C2 Bog-Spawn Swarm:** counter swapped from `E E3 Beast-Summon` → `L D1 Rally-Formation`. Logic per Shift 2 above.
+2. **E1 Big-Monster:** counter swapped from `L D2 Tempo-Echo` → `L D1 Rally-Formation`. Logic per Shift 3 above.
+
+### Structural deviation from v0.1's 3-deal / 3-receive symmetry
+
+v0.1 locked symmetric per-faction balance: each faction dealt exactly 3 counters and received exactly 3. v0.2 BREAKS that symmetry in the direction TAUNT pushes:
+
+| Faction | v0.1 deals | v0.2 deals | v0.1 receives | v0.2 receives | Δ |
+|---|---|---|---|---|---|
+| Iron Penitents | 3 | 3 | 3 | 3 | 0 |
+| Ash-Mourners | 3 | 3 | 3 | 3 | 0 |
+| Coven of the Black Mire | 3 | 3 | 3 | 3 | 0 |
+| Last Legion | 3 | **5** | 3 | 3 | **+2 deals** |
+| Skinward Pact | 3 | **1** | 3 | 3 | **−2 deals** |
+
+Per-archetype: L D1 Rally-Formation now deals 3 counters (E E3 retained, plus C C2 and E E1 added). L D2 Tempo-Echo and E E3 Beast-Summon both fall to zero deals.
+
+This is **intentional design pressure**: TAUNT is meant to make Legion the soak-faction of choice in the meta. Concentrating counter-power in L D1 reflects that. The trade-off is that v0.2 is no longer a clean symmetric web — Skinward (specifically Beast-Summon) loses its v0.1 over-trade lane, and Legion's Tempo-Echo loses its v0.1 anti-Big-Monster lane.
+
+### Knock-on archetype-strength implications
+
+- **L D1 Rally-Formation** becomes the strongest open-meta archetype in the v0.2 cross-faction matrix (3 deals, 1 receive). Likely needs gentle nerfs at C7-v0.2 balance pass — recommend Forge-Conscript card-draw trigger raised from "row-fill of 3 Legion units" to "row-fill of 4" to slow the Rally engine slightly.
+- **L D2 Tempo-Echo** loses its headline counter use (anti-Big-Monster). Compensation: M9 cohesion fix in the same M7 audit doesn't touch D2; D2 remains TIGHT structurally. Echo-Sergeant (L18, R) already carries TAUNT per `taunt_v0.md` — so D2 isn't TAUNT-naked, it just isn't the primary TAUNT distributor. Leave as-is at v0.2; revisit if playtest shows D2 win-rate drops below 45%.
+- **E E3 Beast-Summon** loses its only v0.1 counter (Bog-Spawn Swarm). With the M7 fixes (Pack-Caller Initiate + Den-Mother of the Cinderwood adding card-draw + Lifesteal scaling), E3 gains internal cohesion but still has zero cross-faction counter targets in v0.2. This is structurally OK (E3 just becomes a "neutral" archetype in the matrix — doesn't hard-counter anyone but isn't hard-countered either way, since C C2 ← E E3 in v0.1 was bidirectional pressure not hard counter). Flag for C7-v0.2 to confirm E3 doesn't fall into "no role in the meta" territory.
+- **C C2 Bog-Spawn Swarm** now faces a much harsher hard counter (TAUNT line vs Wolves). Compensates via more open splash-room into Sacrifice-Combo (C C3) and Poison-Stack (C C1) — both of which can wear down a TAUNT body through DoT instead of attack-damage. Recommend `cards_coven_v1.md` adds a 1-line note to C2 archetype guidance: "Splash Poison cards (C3 Leech-Tender, C8 Antler Crown) when facing Legion TAUNT lines — DoT bypasses the TAUNT redirect."
+
+### Symmetry-restoration options for v0.3 (deferred — not in M6 scope)
+
+Three ways to restore the 3-deal / 3-receive per-faction balance if Paul wants strict symmetry:
+
+- **Option v0.3-α (distribute TAUNT counter-power):** put C C2's counter at L D1 but E E1's counter at L D3 (instead of both at L D1). L D1 deals 2, L D3 deals 2, balance per-faction Legion = 4 deals. Still over by 1; would need a second offset.
+- **Option v0.3-β (give E3 a new deal):** restore symmetry by having E E3 Beast-Summon counter L D2 Tempo-Echo (wolves dilute Echo's per-attack value across many targets, mirroring v0.1's Echo-vs-Big-Monster logic in reverse). Adds E3 → L D2 edge, removes one of L D1's new deals. Cleanest path back to symmetry.
+- **Option v0.3-γ (accept asymmetry, document it as canon):** keep v0.2 as-is, treat Legion's TAUNT dominance as a meta-defining feature rather than a balance break. Paul's call on whether the meta should have a soak-faction at the top of the heap.
+
+Recommend Option β as the C7-v0.2 balance-pass default unless Paul explicitly endorses γ. Deferring decision — does not block M8 (event-card content), M9 (shrine/rest), or M10 (Hanging Hour boss).
+
+### Anti-P2W invariant restated
+
+TAUNT redirects targeting; treatment_id (Cursed / Gold / Foil / etc.) does not. The combat layer reads `card.has_keyword(TAUNT)` not `card.treatment.has_keyword(TAUNT)` — cosmetic state never enters the targeting filter. Per `taunt_v0.md` Anti-P2W section. Restated here because the v0.2 grid concentrates TAUNT counter-power in L D1, which makes TAUNT-as-cosmetic the single highest IAP-temptation surface in the game; the engine MUST NOT honour cosmetic TAUNT.
+
+### Open questions for Paul (none block M8/M9/M10)
+
+1. **Symmetry stance.** Do you want C7-v0.2 to restore the per-faction 3/3 symmetry (Options α/β) or endorse Legion-as-soak-meta (Option γ)? Recommend β if undecided.
+2. **L D1 Rally-Formation nerf — Forge-Conscript trigger.** Raise row-fill threshold from 3 → 4 Legion units to slow the engine? Or leave at 3 and watch playtest data?
+3. **E E3 Beast-Summon role.** With zero v0.2 deals, is E3 still a "viable archetype" or does it slide into "fun-only / not competitive"? May need a small buff at C7-v0.2 — e.g., promote Pack-Caller Initiate's draw cap from once-per-turn to twice-per-turn.
+
+### Implications for downstream backlog
+
+- **No card adds.** v0.2 is pure matrix-shift commentary; M7's 4 card adds (Wraith-Caller, Banner-Bearer, Pack-Caller Initiate, Den-Mother) remain the only net-new cards from the Phase 2.12 audit cycle.
+- **No `.tres` edits required from M6.** Engine wiring of TAUNT itself is E1's job; the v0.2 grid is design-doc-only.
+- **No art-pipeline impact.** Same 207-card hero count post-M7. v0.2 matrix-shift adds nothing to the shotlist.
+- **M8/M9/M10 unblocked.** Event/shrine/boss design proceeds against the v0.2 matrix without further dependency.
+
+— Controller, 2026-05-26
+
+---
+
+## v0.2 (post-TAUNT — cross-faction synergy refinement)
+
+_M6 from `backlog.md`. Re-audit the v0.1 anti-synergy grid after TAUNT lands in Legion (4 cards: L7, L11, L18, L33) and Penitents (2 cards: P3, P34) per `keywords/taunt_v0.md`. TAUNT is single-target attack redirect onto a tagged friendly in range; does NOT affect Cleave / Pierce / AoE / spells / tokens; stacks with SHIELD._
+
+### v0.2 grid (deltas only — unchanged edges inherit from v0.1)
+
+| Archetype edge | v0.1 verdict | v0.2 delta | Magnitude |
+|---|---|---|---|
+| **L-Banner-Buff vs P-Bleed-Stack** (mutual rivalry, both directions) | Shield-1 chains soak Bleed; Bleed bypasses Shield on off-attack turns | **TAUNT+SHIELD double-soak intensifies Banner's anti-Bleed line.** Bleed application requires friendly Penitents taking damage; TAUNT pulls enemy attacks onto a SHIELD-buffed Banner body that doesn't carry Bleed-trigger tags. The "tick on off-attack turns" loophole still favours Bleed slightly, but the bulk-stacking phase is starved. | Hardened ↑↑ |
+| **L-Rally-Formation vs S-Beast-Summon** | Wolf-tokens (1/2) are out-stat-ed by formation Pierce/Cleave row-clears | **L11 Iron Watch Standard-Bearer's TAUNT pulls Wolf attacks onto a SHIELD-1 body before formation clears the row.** Beast-Summon's tempo path narrows further: Wolves no longer trade evenly into the front line before Pierce arrives. | Hardened ↑ |
+| **L-Rally-Formation ← M-Smoke-Fear** | Fear scatters ATK targets; formation math breaks | **TAUNT preserves the soak layer; Fear's ATK debuff still cripples the offensive amp.** Net: Rally no longer collapses fully under Smoke-Fear — partial counter instead of hard counter. The formation can still hold a defensive line; it just can't push damage. | Softened ↓ |
+| **L-Tempo-Echo vs S-Big-Monster** (v0.1 had Echo countering Big-Monster) | Echo wastes per-hit value on a single big chassis | **L18 Echo-Sergeant's new TAUNT+ECHO combo means the taunter replays its on-resolve effect after soaking damage.** Now reads as a self-replaying soak loop — flavour-perfect for Tempo-Echo but creates a Big-Monster matchup wrinkle: Big-Monster's single huge hit lands on the TAUNT'd Echo-Sgt, Echo replays on damage absorbed, partial counter softens. | Softened ↓ |
+| **P-Cleave-Melee ↔ M-Smoke-Fear** | Cleave clears Mourner cheap units before Smoke layers | **P3 Cathedral Brother now has TAUNT** — gives Penitent player a cheap-soak option that didn't exist. Doesn't directly affect the Cleave vs Smoke-Fear counter, but enables a *hybrid* Penitent build (TAUNT-front-line + Cleave-back) that's more resilient to early-game Dread procs. | Marginal — Penitent flex increases |
+
+### v0.2 grid summary — Legion's resilience increases asymmetrically
+
+The TAUNT additions concentrate in Last Legion (4 cards across all 3 sub-archetypes) and Penitents (2 cards). Concretely:
+
+- **Legion gains:** 2 hardened counter deals (vs Bleed via Banner; vs Beast-Summon via Rally), 2 softened counter receives (Smoke-Fear no longer fully crips Rally; Big-Monster softens Tempo-Echo less). Net Legion balance: more durable in defensive matchups; the "formation soak" identity now reads cleanly.
+- **Penitents gain:** marginal flex — P3's TAUNT enables a hybrid build pattern that hadn't existed. No structural counter shifts.
+- **Mourners / Coven / Skinward:** structurally unaffected by TAUNT (none allocated). Their existing 3-deal / 3-receive balance holds.
+
+The v0.1 structural property (every archetype deals 1 + receives 1) is preserved at the GRID level — no edges flipped sides. But the *strength* of two edges intensified (Banner→Bleed, Rally→Beast) and two softened (Smoke-Fear→Rally, Big-Monster→Echo). The grid is no longer symmetric in counter-magnitude even though it's symmetric in counter-count.
+
+### Emergent design considerations to flag
+
+**1. L18 Echo-Sergeant — TAUNT + SHIELD + ECHO triple-stack.** Per TAUNT spec, Echo replays on-resolve effects; combined with TAUNT (attract hits) and SHIELD (absorb hits) on the same body, L18 becomes a self-replaying soak chassis. Flavour-perfect for Tempo-Echo's "the line replays its own discipline" identity, but **needs explicit balance review**: how many replay cycles per turn before it dominates a lane? Recommend cap at 1 ECHO proc per TAUNT-absorption per turn in the engine wiring (E1 backlog item).
+
+**2. P3 Cathedral Brother — Penitents now have a cheap defensive option.** Previously the faction had no soak unit < 4 cost (P34 Hammer-Curate is 4c U). P3 at 2c with TAUNT enables Bleed-Stack lists to soak early-game enemy spike while the Hierarch + Whip-Brother chain spins up. This was a known weakness in v0.1 — P-Bleed lost too many board-clear games before Bleed stacks hit 3. TAUNT on P3 is a genuine power buff to Bleed-Stack — flag for the playtest sim in C7.
+
+**3. Banner-Buff's anti-Bleed counter is now load-bearing.** The intensified L-Banner→P-Bleed edge means Bleed-Stack pilots will draft AROUND Banner-Buff matchups. Confirm via playtest sim (C7) that this doesn't create a "P-Bleed is always 3rd-pick if L-Banner is on the board" meta — if so, soften the SHIELD-1 stack from Banner-Captain to compensate.
+
+**4. Smoke-Fear is weaker vs Legion overall.** With TAUNT preserving Rally's soak, Smoke-Fear's "Fear scatters formation" hard counter softens to partial. Mourners need a new edge into Legion — or they need a non-Legion counter they currently lack. Worth re-evaluating M-Resurrect-Spam's S-Transformation edge in light of this (does Mourner have enough total counter pressure?). **Out of M6 scope; queue for C7 playtest pass.**
+
+### What this changes downstream
+
+- `cards_iron_penitents_v1.md` — annotate P3 with the TAUNT keyword flag (M5-style markdown flag, .tres edit at E1).
+- `cards_last_legion_v1.md` — annotate L7/L11/L18/L33 with TAUNT flags.
+- `archetypes_v0.md` — this v0.2 section (now appended).
+- `keywords/taunt_v0.md` — add cross-reference to this v0.2 audit + the §"Emergent design considerations" balance flags.
+- `playtest_sim_brief.md` (C7, future) — must include the 4 v0.2 deltas as targeted scenarios.
+
+— Controller, 2026-05-26 (M6 complete)

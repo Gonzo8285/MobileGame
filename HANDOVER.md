@@ -6,7 +6,7 @@ Single-source handover for any Claude project (or human) picking this up cold. G
 
 ## 1. What this build is
 
-**The Curse of Gallowfell** — a grimdark roguelite tower-defence deckbuilder for mobile (iOS + Android). Player picks one of 10 Warlords, builds a 12-card deck of units/spells/traps, pushes through a 10-minute branching dungeon of TD-lane fights inside Gallowfell, the Monarchy's cursed gallows-town. PvE only, PEGI 12, free-to-play with microtransactions + battle pass.
+**The Curse of Gallowfell** — a grimdark roguelite tower-defence deckbuilder for mobile (iOS + Android). Player picks one of 11 Warlords (10 playable + 1 lore-locked W11 The Saint That Should Not Hang), builds a 12-card deck of units/spells/traps, pushes through an 8-round linear gauntlet of TD-lane fights inside Gallowfell, the Monarchy's cursed gallows-town. PvE only, PEGI 12, free-to-play with microtransactions + battle pass. _(Patched 2026-05-22 per CANON_PATCHES_APPLIED — Warlord count 10→11, run structure 16-node→8-round linear.)_
 
 **Owner:** Paul McCann (`Paul.mccann@rtkeedwellgroup.co.uk`, GitHub: `Gonzo8285`).
 **Engine:** Godot 4.x (decided 2026-04-29).
@@ -123,7 +123,7 @@ Three storage locations end up with the same content (OneDrive workspace, GitHub
   4. **The Last Legion** — tempo/formation — Forgotten Parade
   5. **Skinward Pact** — summoner/monstrous — Cinderwood
   (Boss biome: Gallows Hill.) Any leftover Track-B names — Withered Court / Hollow Pact / Ferrum Host / Sable Wilds — are obsolete placeholders being globally renamed by heartbeat.
-- **10 Warlords:** 5 free at unlock (one per faction, spans all 5 playstyles) + 5 paid (grind-or-skip via Marrow Shards or Souls/gems). Never strictly stronger — sideways power only.
+- **11 Warlords (10 playable + 1 lore-locked W11):** 5 free at unlock (one per faction, spans all 5 playstyles) + 5 paid (grind-or-skip via Marrow Shards or Souls/gems) + W11 The Saint That Should Not Hang (lore-locked secret, unlocks at Ch8 boss clear per `bosses_chapters_4_to_8_v0.md` §6). Never strictly stronger — sideways power only.
 - **Card pool target:** ~35-40 cards per faction × 5 = 175-200 launch cards. 3 sub-archetypes per faction (~10-12 cards each), synergy anchored on 2-3-4-cost spine.
 - **Warlord tiers:** Tier 1 base → Tier 2 variant passive (~10-15 wins) → Tier 3 signature alt-fire (~30 wins) → Tier 4 mastery (~60-80 wins). Sideways power only.
 - **Monetisation pillars:** microtxn, bundles, time locks, resource locks, short bursts. Battle pass £4.99/season. Subscription "Ascendant Pact" £4.99/mo. Three currencies: Gold (in-run only), Bones (persistent soft), Souls (premium).
@@ -174,7 +174,7 @@ Live findings log: `C:\Users\Paul McCann\OneDrive - R.T. Keedwell Group\Document
 3. `lore_gallowfell.md` — setting, premise, biome map, faction motivations
 4. `gdd_v0.md` — 1-page Game Design Doc (signed off)
 5. `faction_bible.md` — the 5 factions with vibe/visual/motif/mechanics/flagship
-6. `warlords_v0.md` — 10 Warlord roster (5 free + 5 paid)
+6. `warlords_v1.md` — 11 Warlord roster (10 playable + 1 lore-locked W11). _Note: `warlords_v0.md` superseded — kept for diff history._
 7. `cards_v0.md` — 30-card starter pool with full stats
 8. `monetisation_map.md` — every spend surface, mapped to mechanic + currency
 9. `backlog.md` — what's done, what's next, all phases

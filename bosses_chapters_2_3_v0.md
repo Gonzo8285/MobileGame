@@ -171,7 +171,7 @@ The combat lasts a minimum of 10 turns. Schedule:
 - Reward screen: pick 1 of 3 cards from a **legendary pool** (Epic + Legendary weighted heavily; first time in game where Legendary drops are possible)
 - **+25 gems** (vs Ch2's +15)
 - **+3 Souls** if at Ascension ≥ 5
-- **W11 unlock trigger:** if this is the player's 10th unique-Warlord run-victory, the W11 "Saint That Should Not Hang" unlock fires here (per `warlords_v1.md` §11)
+- **W11 unlock trigger:** _MOVED to Ch8 boss clear_ — per CANON_PATCHES_APPLIED_2026-05-22 conflict resolution. W11 The Saint That Should Not Hang now unlocks only on Chapter 8 boss clear (full campaign completion across all 10 Warlords). See `bosses_chapters_4_to_8_v0.md` §6.8. Ch3 Saint That Hangs clear is now a **progress milestone only** (counts toward "10 of 10 Warlords clear" tracker).
 - **Run completion** — the campaign is "won". Map transitions to a victory screen (per inventory GP-6).
 
 ### 3.8 Defeat penalty
@@ -341,7 +341,7 @@ Per `upgrade_trees_v0.md` §6.3 relic catalogue:
 1. **R-CH2-5 Wax-Sealed Sigil** breaks the anti-P2W invariant by tying gameplay to cosmetic state. Redesign options: (a) drop the relic entirely; (b) re-flavour as Cursed-CARD-type (not Cursed-treatment) — the player must own the *card* with the relic; (c) remove the cosmetic linkage and make it a generic "+1 stat for cards with Persist". Recommend option (c). Confirm.
 2. **Chapter 3 boss difficulty.** The Drop at turn 9 is very punishing. Alternative: turn 10. Confirm 9 vs 10.
 3. **Saint That Hangs as multi-lane boss (3 HP bars)** vs single-HP-bar. Multi-lane reads "the curse fills the field"; single-HP is more concrete but less narrative. Recommend multi-lane. Confirm.
-4. **W11 unlock condition.** Per `warlords_v1.md` open Q2, current rule = "beat campaign with all 10 others". Add: triggered specifically at Ch3 boss victory. Confirm.
+4. **W11 unlock condition.** _RESOLVED 2026-05-22 (CANON_PATCHES_APPLIED):_ W11 unlock trigger moved from Ch3 boss clear → Ch8 boss clear (per Controller recommendation in `bosses_chapters_4_to_8_v0.md` §6.8 / Q7). Per-Warlord progress accumulator counts each chapter clear toward "10 of 10 Warlords campaign-complete" achievement; final unlock fires at Ch8 boss clear once that achievement is satisfied.
 5. **Ch2 Iron Communion faction.** Last Legion fits The Foundry biome best. Alternative: Iron Penitents (cathedral-anvil overlap). Recommend Last Legion. Confirm.
 
 ---
