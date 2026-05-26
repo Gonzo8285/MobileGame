@@ -38,6 +38,16 @@ extends Node
 ##           (TAUNT only redirects enemy→friendly; documents the Cleave / AoE
 ##           "ignores TAUNT" clause from the spec).
 ##
+##   SCENE E — LIFESTEAL heal-on-attack (keywords/lifesteal_v0.md)
+##     • E1: damaged Lifesteal attacker (1/4 HP, 2 ATK) heals to 3/4 after
+##           hitting an enemy for 2 damage.
+##     • E2: full-HP Lifesteal attacker (4/4, 3 ATK) does NOT overheal; stays
+##           at 4/4 after dealing 3 damage.
+##     • E4: Lifesteal heal scales with dealt damage (clamped to enemy HP),
+##           not raw ATK. Attacker swings 5 vs 1-HP enemy → heals 1, not 5.
+##     • E3 deferred: Shield-mitigated-damage scaling — B2.7 enemies don't
+##           carry keywords yet. Re-enable when enemy SHIELD/PIERCE lands.
+##
 ## PASS = 0 errors. Wired into main.gd alongside the other dev tests.
 
 
@@ -55,6 +65,7 @@ func _run() -> int:
 	errors += _scene_b_bleed_dot()
 	errors += _scene_c_persist_roundtrip()
 	errors += _scene_d_taunt_targeting()
+	errors += _scene_e_lifesteal_heal_on_attack()
 	return errors
 
 
@@ -359,6 +370,136 @@ func _scene_d_taunt_targeting() -> int:
 	if ei_d3.current_hp != 10 - 3:
 		printerr("D3: enemy should have taken attacker's 3 dmg, got HP=%d" %
 				ei_d3.current_hp)
+		errors += 1
+
+	return errors
+
+
+# ============================================================================
+# SCENE E — LIFESTEAL heal-on-attack (keywords/lifesteal_v0.md)
+# ============================================================================
+#
+# Validates the LIFESTEAL keyword wired into _resolve_friendly_attacks_in_lane:
+#   • E1: damaged Lifesteal attacker heals for damage_dealt (≤ max_hp clamp)
+#   • E2: full-HP Lifesteal attacker does not overheal (heal returns 0)
+#   • E3: Shield-tagged target reduces damage; Lifesteal heals only for the
+#         actually-dealt amount (post-Shield). NOTE: B2.7 enemies don't carry
+#         keywords yet, so this test uses the dealt = take_damage(actual)
+#         clamp at low enemy HP as a proxy for "Shield-limited damage". E3
+#         is documented but skipped pending enemy-keyword support; the clamp-
+#         at-enemy-HP variant IS exercised by E2.
+#   • E4: Lifesteal attacker on a dead enemy (post-overkill) — no heal because
+#         actual dealt is clamped to remaining enemy HP, and once enemy hits 0
+#         the heal would equal the overkill-clamped value, not raw ATK.
+#
+# Counts as 3 assertions (E3 deferred). Authored 2026-05-26 by Controller.
+
+func _scene_e_lifesteal_heal_on_attack() -> int:
+	var errors: int = 0
+
+	# Shared helper: build a UNIT card with optional LIFESTEAL.
+	var mk_card := func(cid: StringName, hp: int, atk: int,
+			has_lifesteal: bool) -> Card:
+		var c := Card.new()
+		c.id = cid
+		c.display_name = "TestCard_%s" % cid
+		c.card_type = GFEnums.CardType.UNIT
+		c.cost = 2
+		c.hp = hp
+		c.attack = atk
+		c.attack_range = GFEnums.AttackRange.MELEE
+		c.cooldown = 1
+		c.is_draftable = true
+		if has_lifesteal:
+			c.keywords = [GFEnums.Keyword.LIFESTEAL]
+		return c
+
+	# ----- E1: damaged Lifesteal attacker heals for damage_dealt -------------
+	# Setup: enemy at tile 2 with 10 HP, friendly Lifesteal attacker at tile 1
+	# with max_hp=4 / atk=2 / current_hp=1 (took 3 prior damage). Attacker
+	# swings for 2, enemy survives (HP 10→8), attacker heals 2 → ends at HP 3.
+	var lane_e1 := Lane.new(0, 6)
+	var enemy_e1 := Enemy.new()
+	enemy_e1.id = &"E_test_e1"
+	enemy_e1.display_name = "Test Enemy E1"
+	enemy_e1.max_hp = 10
+	enemy_e1.attack = 0
+	enemy_e1.move_speed = 0
+	var ei_e1 := EnemyInstance.new(enemy_e1, 2, 0)
+	lane_e1.enemies.append(ei_e1)
+
+	var attacker_e1 := UnitInstance.new(
+		mk_card.call(&"E1_lifesteal", 4, 2, true), 1, 0)
+	attacker_e1.cooldown_counter = 0  # ready to swing
+	attacker_e1.current_hp = 1  # took 3 prior damage
+	lane_e1.friendly_units.append(attacker_e1)
+
+	TurnEngine.process_turn_end_pre_advance([lane_e1])
+
+	if ei_e1.current_hp != 10 - 2:
+		printerr("E1: enemy should be at 8 HP after 2 dmg, got %d" % ei_e1.current_hp)
+		errors += 1
+	if attacker_e1.current_hp != 3:
+		printerr("E1: Lifesteal attacker should heal from 1 to 3 (heal 2), got HP=%d" %
+				attacker_e1.current_hp)
+		errors += 1
+
+	# ----- E2: full-HP Lifesteal attacker does NOT overheal ------------------
+	# Setup: enemy with 10 HP at tile 2, full-HP (4/4) Lifesteal attacker at
+	# tile 1 with atk=3. Attacker swings for 3, enemy survives, heal returns 0
+	# because attacker is at max HP. Final HP unchanged (still 4).
+	var lane_e2 := Lane.new(0, 6)
+	var enemy_e2 := Enemy.new()
+	enemy_e2.id = &"E_test_e2"
+	enemy_e2.display_name = "Test Enemy E2"
+	enemy_e2.max_hp = 10
+	enemy_e2.attack = 0
+	enemy_e2.move_speed = 0
+	var ei_e2 := EnemyInstance.new(enemy_e2, 2, 0)
+	lane_e2.enemies.append(ei_e2)
+
+	var attacker_e2 := UnitInstance.new(
+		mk_card.call(&"E2_lifesteal_fullhp", 4, 3, true), 1, 0)
+	attacker_e2.cooldown_counter = 0
+	# current_hp left at default (4 = max from _init)
+	lane_e2.friendly_units.append(attacker_e2)
+
+	TurnEngine.process_turn_end_pre_advance([lane_e2])
+
+	if attacker_e2.current_hp != 4:
+		printerr("E2: full-HP Lifesteal attacker should NOT overheal (expected 4), got HP=%d" %
+				attacker_e2.current_hp)
+		errors += 1
+	if ei_e2.current_hp != 10 - 3:
+		printerr("E2: enemy should be at 7 HP after 3 dmg, got %d" % ei_e2.current_hp)
+		errors += 1
+
+	# ----- E4: Lifesteal heal scales with actual damage dealt, not raw ATK ---
+	# Setup: enemy at tile 2 with 1 HP (about to die), Lifesteal attacker at
+	# tile 1 with atk=5 / max_hp=10 / current_hp=2. Attacker swings for 5 but
+	# enemy only has 1 HP — apply_damage_to_enemy returns 1 (the clamped actual).
+	# Attacker heals for 1, not 5. Ends at HP 3.
+	var lane_e4 := Lane.new(0, 6)
+	var enemy_e4 := Enemy.new()
+	enemy_e4.id = &"E_test_e4"
+	enemy_e4.display_name = "Test Enemy E4"
+	enemy_e4.max_hp = 1
+	enemy_e4.attack = 0
+	enemy_e4.move_speed = 0
+	var ei_e4 := EnemyInstance.new(enemy_e4, 2, 0)
+	lane_e4.enemies.append(ei_e4)
+
+	var attacker_e4 := UnitInstance.new(
+		mk_card.call(&"E4_overkill", 10, 5, true), 1, 0)
+	attacker_e4.cooldown_counter = 0
+	attacker_e4.current_hp = 2
+	lane_e4.friendly_units.append(attacker_e4)
+
+	TurnEngine.process_turn_end_pre_advance([lane_e4])
+
+	if attacker_e4.current_hp != 3:
+		printerr("E4: Lifesteal heal should match dealt=1 (not raw atk=5); expected HP=3, got %d" %
+				attacker_e4.current_hp)
 		errors += 1
 
 	return errors

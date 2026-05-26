@@ -42,7 +42,7 @@ Identity is **W4 Bear-Skin Hierophant (4c R)** — your highest-cost friendly Wi
 |---|---|---|---|---|---|---|---|---|
 | W1 | Pelt-Gathered Hunter | 2 | 2 | 2 | M | 1 | C | +1 ATK while a friendly Wilds is at full HP. |
 | W2 | Antler-Grown Ranger | 3 | 3 | 3 | S | 1 | C | +1 ATK while no other friendly Wilds is in lane. |
-| W3 | Cinderwood Stalker | 4 | 3 | 3 | M | 1 | U | When this attacks, heal it 1. (Lifesteal-by-text — no Lifesteal keyword.) |
+| W3 | Cinderwood Stalker | 4 | 3 | 3 | M | 1 | U | When this attacks, heal it 1. (Soft-Lifesteal — text-only intentionally. The real `LIFESTEAL = 16` keyword now exists per `keywords/lifesteal_v0.md` 2026-05-26 but heals for damage-dealt, not fixed 1. W3 stays soft pending balance review — flag for Paul.) |
 | W4 | **Bear-Skin Hierophant** | 4 | 4 | 3 | S | 1 | **R** | **Identity.** Your highest-cost friendly Wilds unit gains +2 HP and Cleave. |
 | W5 | Old-Wyrm Whelp | 2 | 3 | 1 | M | 1 | C | When a friendly Wilds in lane reaches 5+ HP, this gains +1 ATK (cap +2). |
 | W6 | Boneward Behemoth | 5 | 6 | 4 | M | 2 | U | Shield-2. |
@@ -185,7 +185,7 @@ Five splashes — meets brief.
 3. **Token cards as draftable C vs token-only.** W27 Cub-Token and W28 Wolf-Token are authored as draftable 0c cards (mirroring C1 Bog-Spawn). Alternative: leave them token-only (`is_draftable=false`) and remove from the deckbuilder pool — then the 24 C count drops to 22, need to re-promote 2 Us → Cs to balance. Paul's call.
 4. **Thrask exile-a-Wilds-from-hand mechanic.** W8 Thrask exiles a Wilds card from hand on summon to gain its keywords. Engine needs an Exile zone + a "card-as-keyword-source" lookup. Could be simplified to "Cleave + Pierce + Shield" baked-in keywords on Thrask (lose flavour, gain implementation simplicity). Paul's call.
 5. **Relic-system unification (Q4 from C5).** W39 Antler-Crown Sigil and W40 Wolf-Pelt Sigil match the C5/C4/C3/C2 relic pattern (`card_type=SPELL`, `is_draftable=false`, `unlock_tag=&"relic_<faction>"`). Still pending unified relic-slot system per Paul's open question. Carried.
-6. **Lifesteal soft-keyword on W3 Cinderwood Stalker.** Heals 1 on attack — expressed as text only this pass. Tiny scope, single card. Could fold into a future `LIFESTEAL = 16` enum addition or stay text-only. Low priority.
+6. **Lifesteal soft-keyword on W3 Cinderwood Stalker.** ~~Heals 1 on attack — expressed as text only this pass. Tiny scope, single card. Could fold into a future `LIFESTEAL = 16` enum addition or stay text-only. Low priority.~~ **RESOLVED 2026-05-26 by Controller.** `LIFESTEAL = 16` keyword promoted to enum in `keywords/lifesteal_v0.md` + `enums.gd`. Promotion driven by Phase 2.13 N4 (W42 Den-Mother's aura grant of Lifesteal to Wolf-Tokens needs a real keyword to grant). W3 NOT retagged — keyword heals for `damage_dealt`, W3's text was fixed-1 heal; retagging would silently buff W3 from heal-1 to heal-up-to-3-per-hit. W3 stays soft-Lifesteal pending Paul balance call. Open flag: agree W3 stays soft OR explicitly approve the heal-1-to-keyword buff at next balance pass.
 
 ---
 

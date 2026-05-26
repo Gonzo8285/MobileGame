@@ -1,19 +1,23 @@
 # Gallowfell art — owed inventory
 
-_Generated 2026-05-19 19:52 UTC by `scripts/art_inventory.py`. Do not edit by hand — re-run the script._
+_Generated 2026-05-26 18:38 UTC by `scripts/art_inventory.py`. Do not edit by hand — re-run the script._
 
-**Total specs:** 219  ·  **Generated:** 216  ·  **Owed:** 3
+**Total specs:** 223  ·  **Generated:** 219  ·  **Owed:** 4
 
 ## Owed by faction
 
-### coven (2)
+### ash_mourners (1)
 
-- `C41` — bog bargain recall — `art_specs/coven/c41_bog_bargain_recall.md`
-- `C42` — black mire pact — `art_specs/coven/c42_black_mire_pact.md`
+- `M41` — wraith caller of the dirge — `art_specs/ash_mourners/m41_wraith_caller_of_the_dirge.md`
 
-### iron_penitents (1)
+### last_legion (1)
 
-- `P41` — last vows — `art_specs/iron_penitents/p41_last_vows.md`
+- `L41` — banner bearer of the crowned anvil — `art_specs/last_legion/l41_banner_bearer_of_the_crowned_anvil.md`
+
+### skinward_pact (2)
+
+- `W41` — pack caller initiate — `art_specs/skinward_pact/w41_pack_caller_initiate.md`
+- `W42` — den mother of the cinderwood — `art_specs/skinward_pact/w42_den_mother_of_the_cinderwood.md`
 
 ## Generated (last seen)
 
@@ -54,6 +58,8 @@ _Generated 2026-05-19 19:52 UTC by `scripts/art_inventory.py`. Do not edit by ha
 - `C39` — the drowned coin — `art_iterations/_showcase/full/coven/c39_the_drowned_coin.png`
 - `C4` — toad caller — `art_iterations/_showcase/full/coven/c4_toad_caller.png`
 - `C40` — quag mire pact — `art_iterations/_showcase/full/coven/c40_quag_mire_pact.png`
+- `C41` — bog bargain recall — `art_iterations/_showcase/full/coven/c41_bog_bargain_recall.png`
+- `C42` — black mire pact — `art_iterations/_showcase/full/coven/c42_black_mire_pact.png`
 - `C5` — briar hag — `art_iterations/_showcase/full/coven/c5_briar_hag.png`
 - `C6` — mother quag twice drowned — `art_iterations/_showcase/full/coven/c6_mother_quag_twice_drowned.png`
 - `C7` — bog bubble — `art_iterations/_showcase/full/coven/c7_bog_bubble.png`
@@ -179,6 +185,7 @@ _Generated 2026-05-19 19:52 UTC by `scripts/art_inventory.py`. Do not edit by ha
 - `P39` — reliquary of wounds — `art_iterations/_showcase/full/iron_penitents/p39_reliquary_of_wounds.png`
 - `P4` — hammer confessor — `art_iterations/_showcase/full/iron_penitents/p4_hammer_confessor.png`
 - `P40` — crown of the hanged confessor — `art_iterations/_showcase/full/iron_penitents/p40_crown_of_the_hanged_confessor.png`
+- `P41` — last vows — `art_iterations/_showcase/full/iron_penitents/p41_last_vows.png`
 - `P5` — iron choir master — `art_iterations/_showcase/full/iron_penitents/p5_iron_choir_master.png`
 - `P6` — the crucified saint — `art_iterations/_showcase/full/iron_penitents/p6_the_crucified_saint.png`
 - `P7` — self mortification — `art_iterations/_showcase/full/iron_penitents/p7_self_mortification.png`

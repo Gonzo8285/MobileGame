@@ -235,7 +235,7 @@ static func _resolve_friendly_attacks_in_lane(lane: Lane) -> int:
 		if target == null:
 			continue
 		var dmg: int = u.current_attack()
-		lane.apply_damage_to_enemy(target, dmg)
+		var dealt: int = lane.apply_damage_to_enemy(target, dmg)
 		# On-hit keyword application — only BLEED/POISON for B2.7. Other
 		# on-hit keywords (CLEAVE, PIERCE) are deferred to a balance pass.
 		if u.card_data != null:
@@ -243,9 +243,56 @@ static func _resolve_friendly_attacks_in_lane(lane: Lane) -> int:
 				target.add_status(GFEnums.Keyword.BLEED, 1)
 			if u.card_data.has_keyword(GFEnums.Keyword.POISON):
 				target.add_status(GFEnums.Keyword.POISON, 1)
+			# LIFESTEAL (keywords/lifesteal_v0.md) — heal attacker for
+			# damage_dealt, capped at max HP via UnitInstance.heal(). Only
+			# triggers on positive damage (Shield/Pierce already resolved
+			# inside apply_damage_to_enemy / take_damage). No friendly-fire
+			# or self-target case — friendly attacks always target enemies.
+			if u.card_data.has_keyword(GFEnums.Keyword.LIFESTEAL) and dealt > 0:
+				u.heal(dealt)
 		u.reset_cooldown()
 		attacks += 1
 	return attacks
+
+
+# ----- Phase 2.13 bespoke trigger handlers — TODO follow-on heartbeat -------
+# M41 Wraith-Caller of the Dirge — "When a friendly Mourner dies, the next
+#   Mourner you play this turn costs 1 less (cap once/turn)." Needs:
+#     (a) per-turn flag on game_state (mourner_discount_armed: bool),
+#         reset on turn_started
+#     (b) Combat-level subscriber on lane.unit_killed that checks
+#         victim.card_data.faction == ASH_MOURNERS AND a friendly M41 is in
+#         lane AND flag not yet armed this turn, then sets flag = true
+#     (c) CardPlay.compute_play_cost() reads flag and applies -1 to the
+#         next Ash-Mourner card resolved, then clears the flag
+#   Defer to E-series heartbeat M41.E1.
+#
+# W41 Pack-Caller Initiate — "When you summon a Wolf-Token in your lane,
+#   draw 1 card (cap once/turn)." Needs:
+#     (a) per-turn flag (wolf_summon_draw_armed: bool), reset on turn_started
+#     (b) hook on whatever spawns Wolf-Tokens (Pelt-Bound Shaman, Pack-Call,
+#         Den-Mother end-of-turn, Whelping Burrow, etc) to check for a
+#         friendly W41 in the same lane and trigger the draw
+#     (c) call deck.draw(1) gated by the flag
+#   Defer to E-series heartbeat W41.E1.
+#
+# W42 Den-Mother of the Cinderwood — "Friendly Wolf-Tokens in lane gain +1/+1
+#   and Lifesteal while she is in lane." Needs (largest lift):
+#     (a) `runtime_keywords: Array[int]` field on UnitInstance, queried by
+#         has_keyword() AND-OR with card_data.has_keyword()
+#     (b) `aura_buffs: Dictionary { source_unit -> { atk: int, hp: int,
+#         keywords: Array[int] } }` on UnitInstance for stat aura
+#     (c) aura-on-lane-enter / aura-on-lane-leave hooks fired from
+#         lane.place_unit() and lane._cull_dead() — when W42 enters/leaves,
+#         walk all friendly Wolf-Tokens in lane and apply/remove the grant;
+#         when a NEW Wolf-Token enters with W42 already in lane, apply on
+#         arrival.
+#   This is the closest thing to a generic aura system in the engine and
+#   should be designed as its own keyword/concept (keywords/aura_v0.md) so
+#   future cards (Banner buff, Penance triggers, Bear-Skin Hierophant +2HP
+#   grant) can ride the same plumbing. Defer to keyword-spec heartbeat then
+#   W42.E1 implementation.
+# ----------------------------------------------------------------------------
 
 
 ## Pick the closest-to-base (lowest-tile) enemy that the friendly can reach.

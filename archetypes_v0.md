@@ -247,7 +247,7 @@ _M7 from `backlog.md`. For each of the 15 sub-archetypes (5 factions × 3), audi
 | D1 | Rally-Formation | Last Legion | **TIGHT** | Formation/adjacency (Identity, Pikeman, Bayonet Drill, Forge-Conscript); ATK-buff aura (Identity, Payoff, Pikeman) |
 | D2 | Tempo-Echo | Last Legion | **TIGHT** | Echo (Identity, Payoff, Skirmisher, Bayonet Drill, Forge-Cry) — only Pikeman is formation-borrow rather than Echo-native |
 | D3 | Banner-Buff | Last Legion | **LOOSE** | Banner-as-object reads only on Identity + Payoff + Standard-Bearer's Cry; Pikeman is shared with D1; Echo-Sergeant is borrowed from D2 — D3 has no unique 3c spine card |
-| E1 | Big-Monster | Skinward Pact | **TIGHT** | Wilds (universal); solo-big-body / Lifesteal value chain (Identity, Ranger, Stalker) |
+| E1 | Big-Monster | Skinward Pact | **TIGHT** | Wilds (universal); solo-big-body / Lifesteal value chain (Identity, Ranger, Stalker). _LIFESTEAL promoted to real enum keyword 2026-05-26 (`keywords/lifesteal_v0.md`); W3 stays text-only "heal 1" pending balance review, W42 grants the real keyword via aura — see lifesteal spec for retag plan._ |
 | E2 | Transformation | Skinward Pact | **TIGHT** | Transformation (Identity, Payoff, Wyrd-Bind; Cub/Ranger/Stalker as targets); Wilds (universal) |
 | E3 | Beast-Summon | Skinward Pact | **LOOSE** | Token-summon lives only on Identity + Payoff + Cub-Cry; Ranger/Stalker/Cub-card are shared with E1, not summon-specific. Spine duplicates E1 — needs a Beast-Summon-unique 3c or 4c card |
 
