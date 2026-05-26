@@ -264,4 +264,4 @@ Five M1-flagged cards have been keyword-tagged with PERSIST in their `.tres` fil
 
 ## M7 cohesion-audit additions — superseded by Phase 2.13 N1 (M41)
 
-**SUPERSEDED 2026-05-26 evening (Controller).** This section originally added an M42 "Wraith-Caller of the Dirge" as the B2 Resurrect-Spam spine fix. That add was authored in a prior Controller pass that didn't yet see N1 (M41, same name, same role, different stats) had been queued in `backlog.md` Phase 2.13. M41 is the canonical N1 card per the backlog tick; M42 was a duplicate. `M42.tres` and this section's table have been removed to keep the spec doc and disk state in sync. **No card is lost** — the B2 spine fix is M41 (see the M41 row at line 89 of this doc and the v1.1 change-log entry above for the canonical record). M41 stats: 3c U / 3 HP / 2 ATK / MELEE / CD-1. Reconciliation recorded in `backlog.md` Phase 2.13 closing note.
+**SUPERSEDED 2026-05-26 evening (Controller).** This section originally added an M42 "Wraith-Caller of the Dirge" as the B2 Resurrect-Spam spine fix. That add wa
