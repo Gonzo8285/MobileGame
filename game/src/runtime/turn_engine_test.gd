@@ -75,6 +75,22 @@ extends Node
 ##           +1 ATK + PIERCE (verified via current_attack() + has_keyword).
 ##     • G3: L34 dies and is culled → re-evaluate revokes → L41 reverts to
 ##           base ATK without PIERCE.
+##
+##   SCENE H — W4 Bear-Skin Hierophant DYNAMIC OUTBOUND aura (W4.E1)
+##     First dynamic-target aura — the holder of the +2 HP + CLEAVE grant
+##     shifts as lane composition changes. Predicate: unique max-cost
+##     Skinward Pact unit in lane, excluding W4 itself; tie-break = lowest
+##     tile (closest to base).
+##     • H1: W4 alone in lane → no eligible target → no grant projected.
+##     • H2: A 3-cost Wilds enters the lane → it becomes the holder,
+##           gaining +2 HP + CLEAVE.
+##     • H3: A 5-cost Wilds enters later → grant SHIFTS to the 5c, the
+##           3c reverts to base.
+##     • H4: Two 5-cost Wilds at different tiles. Lower-tile wins the
+##           grant by the determinism tie-break.
+##     • H5: The current holder dies → grant moves to the next-highest
+##           Wilds in lane via re_evaluate_dynamic_outbound_auras.
+##
 ## PASS = 0 errors. Wired into main.gd alongside the other dev tests.
 
 
@@ -95,6 +111,7 @@ func _run() -> int:
 	errors += _scene_e_lifesteal_heal_on_attack()
 	errors += _scene_f_aura_dispatch()
 	errors += _scene_g_l41_self_aura()
+	errors += _scene_h_w4_dynamic_outbound()
 	return errors
 
 
@@ -788,7 +805,121 @@ func _scene_g_l41_self_aura() -> int:
 		printerr("G3: L41 should NOT have PIERCE after banner culled")
 		errors += 1
 	if l41.aura_stats.has(l41):
-		printerr("G3: L41 self-aura should be revoked after banner culled")
+		printerr("G3: L41 self-aura should be revoked after bann
+
+
+# ============================================================================
+# SCENE H — W4 Bear-Skin Hierophant dynamic outbound aura (W4.E1)
+# ============================================================================
+
+func _scene_h_w4_dynamic_outbound() -> int:
+	var errors: int = 0
+
+	# Helper: build a Skinward Pact Wilds card at a given cost.
+	var mk_wilds := func(cid: StringName, cost: int) -> Card:
+		var c := Card.new()
+		c.id = cid
+		c.display_name = "TestWilds_%s" % cid
+		c.card_type = GFEnums.CardType.UNIT
+		c.faction = GFEnums.Faction.SKINWARD_PACT
+		c.cost = cost
+		c.hp = 3
+		c.attack = 2
+		c.attack_range = GFEnums.AttackRange.MELEE
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# Helper: build the W4 Bear-Skin Hierophant card.
+	var mk_w4 := func() -> Card:
+		var c := Card.new()
+		c.id = &"W4"
+		c.display_name = "Bear-Skin Hierophant"
+		c.card_type = GFEnums.CardType.UNIT
+		c.faction = GFEnums.Faction.SKINWARD_PACT
+		c.cost = 4
+		c.hp = 4
+		c.attack = 3
+		c.attack_range = GFEnums.AttackRange.SHORT
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# ----- H1: W4 alone — no eligible target — no grant -------------------
+	var lane := Lane.new(0, 6)
+	var w4 := lane.place_unit(mk_w4.call(), 1)
+	if w4 == null:
+		printerr("H1: W4 place_unit returned null")
+		return errors + 1
+	# W4 must not have granted to itself (aura_v0.md open-Q1 default).
+	if not w4.aura_stats.is_empty():
+		printerr("H1: W4 should not self-buff; aura_stats=%s" % str(w4.aura_stats))
+		errors += 1
+
+	# ----- H2: a 3-cost Wilds enters — becomes holder ---------------------
+	var w_3c := lane.place_unit(mk_wilds.call(&"W_3c", 3), 2)
+	if w_3c == null:
+		printerr("H2: 3-cost Wilds place_unit returned null")
+		return errors + 1
+	if w_3c.max_hp() != 5:
+		printerr("H2: 3-cost Wilds should be max_hp=5 under W4, got %d" %
+				w_3c.max_hp())
+		errors += 1
+	if not w_3c.has_keyword(GFEnums.Keyword.CLEAVE):
+		printerr("H2: 3-cost Wilds should have CLEAVE under W4")
+		errors += 1
+	if not w_3c.aura_stats.has(w4):
+		printerr("H2: 3-cost Wilds aura_stats should be keyed on W4")
+		errors += 1
+
+	# ----- H3: a 5-cost Wilds enters — grant shifts -----------------------
+	var w_5c := lane.place_unit(mk_wilds.call(&"W_5c", 5), 3)
+	if w_5c == null:
+		printerr("H3: 5-cost Wilds place_unit returned null")
+		return errors + 1
+	if not w_5c.has_keyword(GFEnums.Keyword.CLEAVE):
+		printerr("H3: 5-cost Wilds should now hold the W4 grant (CLEAVE)")
+		errors += 1
+	if w_5c.max_hp() != 5:
+		printerr("H3: 5-cost Wilds should be max_hp=5 under W4, got %d" %
+				w_5c.max_hp())
+		errors += 1
+	if w_3c.has_keyword(GFEnums.Keyword.CLEAVE):
+		printerr("H3: 3-cost Wilds should have LOST CLEAVE when 5c took the buff")
+		errors += 1
+	if w_3c.max_hp() != 3:
+		printerr("H3: 3-cost Wilds should revert to base max_hp=3 after grant shift, got %d" %
+				w_3c.max_hp())
+		errors += 1
+
+	# ----- H4: tie-break — two 5-cost Wilds, lower tile wins --------------
+	var lane2 := Lane.new(0, 6)
+	var w4_b := lane2.place_unit(mk_w4.call(), 1)
+	var w_5a := lane2.place_unit(mk_wilds.call(&"W_5a", 5), 4)  # higher tile
+	var w_5b := lane2.place_unit(mk_wilds.call(&"W_5b", 5), 2)  # lower tile (closer to base)
+	if w4_b == null or w_5a == null or w_5b == null:
+		printerr("H4: setup failed")
+		return errors + 1
+	# Both are 5-cost; lower-tile (w_5b at tile 2) wins per the tie-break.
+	if not w_5b.has_keyword(GFEnums.Keyword.CLEAVE):
+		printerr("H4: tile-2 5-cost should win tie-break and have CLEAVE")
+		errors += 1
+	if w_5a.has_keyword(GFEnums.Keyword.CLEAVE):
+		printerr("H4: tile-4 5-cost should LOSE tie-break and NOT have CLEAVE")
+		errors += 1
+
+	# ----- H5: holder dies — grant moves to next-highest ------------------
+	# Back to lane 1 (W4 + 3c + 5c). Kill the 5c; the 3c should pick up the grant.
+	w_5c.current_hp = 0
+	lane.cull_dead_units()
+	if not w_3c.has_keyword(GFEnums.Keyword.CLEAVE):
+		printerr("H5: 3-cost should regain CLEAVE after 5c holder died")
+		errors += 1
+	if w_3c.max_hp() != 5:
+		printerr("H5: 3-cost should regain max_hp=5 after 5c died, got %d" %
+				w_3c.max_hp())
 		errors += 1
 
 	return errors

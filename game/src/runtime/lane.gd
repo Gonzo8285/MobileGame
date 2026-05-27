@@ -198,6 +198,18 @@ func _on_unit_entered_lane(new_unit: UnitInstance) -> void:
 		AuraDispatch.maybe_grant(source, new_unit, self)
 	AuraDispatch.maybe_grant(new_unit, null, self)
 	AuraDispatch.re_evaluate_self_auras(self, null)
+	# W4.E1 — dynamic outbound auras (e.g. W4 Bear-Skin Hierophant's
+	# highest-cost-Wilds target) need a clean-slate revoke + re-grant
+	# pass when ANY unit enters lane, since the predicate's target set
+	# may have shifted (a higher-cost Wilds just arrived, demoting the
+	# previous holder).
+	AuraDispatch.re_evaluate_dynamic_outbound_auras(self, null)
+	# W4.E1 — dynamic outbound auras (currently W4 Bear-Skin Hierophant's
+	# "highest-cost Wilds") need a revoke-and-re-grant pass after every
+	# lane change so the target can SHIFT when a higher-cost candidate
+	# enters. Idempotent for static dispatch entries (W42 / L41 are
+	# untouched — only entries flagged by _is_dynamic_outbound_kind fire).
+	AuraDispatch.re_evaluate_dynamic_outbound_auras(self, null)
 
 
 ## Called before a unit is removed from the lane (cull_dead_units, also
@@ -210,6 +222,21 @@ func _on_unit_leaving_lane(leaving_unit: UnitInstance) -> void:
 		return
 	AuraDispatch.revoke_all_from(leaving_unit, self)
 	AuraDispatch.re_evaluate_self_auras(self, leaving_unit)
+	# W4.E1 — re-run dynamic outbound auras with `leaving_unit` excluded,
+	# so a dying Hierophant doesn't get a chance to re-grant during its
+	# own cull pre-hook AND so the surviving Wilds-target loses a buff
+	# tied to the dying source (if the leaving unit was a current holder
+	# of someone else's W4-style grant, revoke_all_from already cleared
+	# it; this pass handles the inverse — surviving Hierophant whose
+	# target just died now picks the next-highest).
+	AuraDispatch.re_evaluate_dynamic_outbound_auras(self, leaving_unit)
+	# W4.E1 — re-evaluate dynamic outbound auras (e.g. W4 Hierophant's
+	# "highest-cost Wilds") so the grant moves to the next-highest holder
+	# when the current target dies. `excluding=leaving_unit` keeps the
+	# dying unit out of the predicate scan during its own cull pre-hook
+	# (it's still in friendly_units at this point — same pattern as the
+	# self-aura re-evaluator's banner-leaving case).
+	AuraDispatch.re_evaluate_dynamic_outbound_auras(self, leaving_unit)
 
 
 ## Cull dead friendly units. Mirrors `cull_dead()` for enemies. Call after
@@ -237,32 +264,4 @@ func unit_count() -> int:
 
 func _to_string() -> String:
 	return "Lane(idx=%d tiles=%d enemies=%d units=%d)" % [
-		lane_index, tile_count, enemies.size(), friendly_units.size()
-	]
-
-
-
-# ============================================================================
-# Damage wrappers (IMV-1 — fires hit signals for flash)
-# ============================================================================
-
-## Apply damage to an enemy and fire `enemy_hit` for view feedback.
-## Returns actual damage taken.
-func apply_damage_to_enemy(enemy: EnemyInstance, damage: int) -> int:
-	if enemy == null or damage <= 0:
-		return 0
-	var actual: int = enemy.take_damage(damage)
-	if actual > 0:
-		enemy_hit.emit(enemy, actual)
-	return actual
-
-
-## Apply damage to a friendly unit and fire `unit_hit` for view feedback.
-## Returns actual damage taken.
-func apply_damage_to_unit(unit: UnitInstance, damage: int) -> int:
-	if unit == null or damage <= 0:
-		return 0
-	var actual: int = unit.take_damage(damage)
-	if actual > 0:
-		unit_hit.emit(unit, actual)
-	return actual
+		lane_index, tile_count, enemies.size(), friendly_units
