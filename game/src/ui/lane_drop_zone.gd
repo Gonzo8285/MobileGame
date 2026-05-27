@@ -80,6 +80,7 @@ func _draw() -> void:
 	# red tint. Helps Paul see at a glance which tiles are free for drops.
 	var lane_full: bool = _is_lane_full()
 	var occupied_tiles := _get_occupied_tile_set()
+	var enemy_tiles := _get_enemy_tile_set()
 	for t in range(1, TILES_PER_LANE):
 		var tile_y: float = h - float(t + 1) * tile_h  # tile t = playable slot t
 		var tile_top: float = tile_y
@@ -87,6 +88,12 @@ func _draw() -> void:
 		if occupied_tiles.has(t):
 			draw_rect(Rect2(0, tile_top, w, tile_bottom - tile_top),
 					Color(0.85, 0.30, 0.25, 0.10), true)
+		if enemy_tiles.has(t):
+			# Darker red tint for enemy presence — pull-the-eye warning marker.
+			draw_rect(Rect2(0, tile_top, w, tile_bottom - tile_top),
+					Color(0.90, 0.15, 0.15, 0.18), true)
+			draw_line(Vector2(0, tile_top), Vector2(w, tile_top),
+					Color(0.95, 0.30, 0.25, 0.55), 1.5)
 	# "Back rank" indicator — auto-place tile (first empty starting from tile 1).
 	var next_tile: int = _next_empty_tile()
 	if next_tile > 0 and next_tile < TILES_PER_LANE:
@@ -146,6 +153,17 @@ func _get_occupied_tile_set() -> Dictionary:
 	for u in lane.friendly_units:
 		if u != null and u.is_alive():
 			out[u.tile] = true
+	return out
+
+
+func _get_enemy_tile_set() -> Dictionary:
+	var out: Dictionary = {}
+	var lane := _get_lane_obj()
+	if lane == null:
+		return out
+	for e in lane.enemies:
+		if e != null and e.is_alive():
+			out[e.tile] = true
 	return out
 
 
