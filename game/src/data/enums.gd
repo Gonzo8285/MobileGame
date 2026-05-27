@@ -181,6 +181,4 @@ enum NodeKind {
 	SHOP,          ## Spend Ash for cards / removes / relics
 	SHRINE,        ## One-time blessing or curse (chapter-randomised)
 	REST,          ## Heal or upgrade-a-card pick
-	HORDE,         ## Wave of many weak enemies — bonus gems on win (IMV-1 8-round gauntlet)
-	BOSS,          ## Chapter boss — Hanging Hour escalation guaranteed
-}
+	HORDE,         ## Wave of many weak enemies

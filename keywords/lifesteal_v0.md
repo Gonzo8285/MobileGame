@@ -17,7 +17,7 @@
 - **Shield interaction.** If the target has Shield-N, Lifesteal heals only for damage that gets through. Attack 3 vs Shield-2 → 1 damage dealt → heal 1.
 - **TAUNT redirection.** TAUNT changes WHO gets hit, not how much. Lifesteal heals based on damage dealt to the redirected target. No special interaction.
 - **PERSIST interaction.** A unit with Lifesteal that dies and PERSISTs back returns at its PERSIST-reduced ATK floor. Lifesteal still works on the returned body — the keyword is on the card, not the instance.
-- **Granted Lifesteal (aura case).** When Lifesteal is granted to a unit at runtime by an aura (e.g. W42 Den-Mother's Wolf-Token aura), the engine treats it identically to native-tagged Lifesteal — same damage-dealt heal rule. Aura removal (Den-Mother dies / leaves lane) immediately strips the Lifesteal from affected units. No residual heal from "in-flight" attacks.
+- **Granted Lifesteal (aura case).** When Lifesteal is granted to a unit at runtime by an aura (e.g. W42 Den-Mother's Wolf-Token aura), the engine treats it identically to native-tagged Lifesteal — same damage-dealt heal rule. Aura removal (Den-Mother dies / leaves lane) immediately strips the Lifesteal from affected units. No residual heal from "in-flight" attacks. **Implementation plumbing for the grant/revoke layer is specified in `keywords/aura_v0.md` (system spec, not a player-facing keyword).** Both LIFESTEAL and the aura system are needed for W42 to function as written.
 - **Tokens with Lifesteal.** Allowed. Wolf-Tokens under W42's aura become 2/3 healing-1-per-hit tokens — strong but not overpowered at the 4-cost aura gate (compare Den-Mother is 4c U / 4 HP / 2 ATK herself + aura body).
 
 ## Why LIFESTEAL, why now
@@ -90,7 +90,4 @@ Sandbox cannot run Godot — Paul confirms `[turn_engine_test] PASS` next time t
 - `game/data/cards/skinward_pact/W3.tres` — **NO CHANGE** (text-only stays per balance reasoning above; flagged for Paul confirmation).
 - `cards_skinward_pact_v1.md` — Open-Q6 marked resolved with cross-reference to this doc; W3 row annotated to note text-only retention pending balance review. **DONE.**
 - `gdd_v0.md` line 37 — Lifesteal already listed in the "intended keywords" sentence; no edit needed (was forward-looking).
-- `faction_bible.md` §4 — Skinward Pact mechanical pillars updated to include LIFESTEAL alongside SUMMON. OWED — single-line edit at next heartbeat.
-- `archetypes_v0.md` E1 Big-Monster archetype — Lifesteal reference upgraded from text-only-flavour to keyword-confirmed. OWED — single-line edit at next heartbeat.
-
-Phase 2.13 Open-Q closed by this spec.
+- `faction_bible.md` §4 — Skinward Pact mechanical pillars updated to include LIFESTEAL alongside SUMMON. OWED — single-line edit at next heartbeat

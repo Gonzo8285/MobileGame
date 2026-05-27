@@ -45,10 +45,4 @@ Each faction = **vibe** (one line) + **visual cue** (silhouette + colour + motif
 - **Why they march on Gallowfell:** A regiment sent by the dying empire to "secure" the town. The curse is in their lungs now, and they can't leave.
 
 ## 5. Skinward Pact — Cinderwood
-- **Vibe:** Beastfolk and wyrd shapeshifters from the half-burnt forest where the gallows-tree was felled. Mournful, ferocious, vengeful — they have remembered the wrong they are owed. Summoner through skin-change; the body remembers what the mind forgets.
-- **Visual cue:** Pelts worn over half-shifted human forms; antlers, fangs, claws growing through tattooed skin; bone-talismans braided into hair; eyes that hold the wrong species' iris-slit. Palette: cinder-black, wolf-grey, blood-bright russet, bone-white.
-- **Motif:** Antler + pelt. Wolf-shadow. Cinder-mark.
-- **Mechanical role:** **Summoner / bestial.** Wolf-Tokens + Cub-Tokens (W27 / W28) as 0-cost draftable tokens AND runtime-summoned by spawner cards. **Primary keywords: SUMMON + LIFESTEAL** (LIFESTEAL added 2026-05-26 by Controller per `keywords/lifesteal_v0.md` — heal-for-damage-dealt, currently aura-granted via W42 Den-Mother of the Cinderwood to friendly Wolf-Tokens in lane; W3 Cinderwood Stalker remains soft-Lifesteal-by-text pending balance review). Big-Monster (E1) and Beast-Summon (E3) archetypes both ride this pillar.
-- **Flagship unit:** _Bear-Skin Hierophant_ — 4-cost R, your highest-cost friendly Wilds unit gains +2 HP and Cleave.
-- **Biome:** Cinderwood. The forest that was burned when the gallows-tree was felled; half the trunks are charcoal, half are saplings; everything that survived remembers the fire.
-- **Why they march on Gallowfell:** The gallows-tree was theirs. The Monarchy cut it down to make a gallows. The curse on the town is the tree's curse, returned.
+- **Vibe:** Beastfolk and wyrd shapeshifters from the half-burnt forest where the gallows-tree was felled. Mournful, ferocious, vengeful — they have remembered the wrong they are owed. Summoner throug

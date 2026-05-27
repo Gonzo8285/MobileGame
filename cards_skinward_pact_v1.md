@@ -200,8 +200,4 @@ Per `archetypes_v0.md` §"Sub-archetype cohesion audit" — E3 Beast-Summon was 
 | Card | Rarity | Cost | Stats | Role |
 |---|---|---|---|---|
 | **W41 Pack-Caller Initiate** | U | 3 | 2 HP / 2 ATK / Range-S / CD-1 | Card-draw engine tied directly to token economy. When a friendly Wolf-Token is summoned in lane, draw 1 (cap once/turn). Differentiates E3 by giving it mid-game velocity E1 doesn't have. |
-| **W42 Den-Mother of the Cinderwood** | U | 4 | 4 HP / 2 ATK / Range-M / CD-1 | Curve-topping spine for E3. Friendly Wolf-Tokens in lane gain +1/+1 and Lifesteal while she is in lane. Anchors the swarm at 4-cost; pairs with W31 Pelt-Bound Shaman (4c R identity) without redundancy. |
-
-`.tres` authored at `game/data/cards/skinward_pact/W41.tres` and `W42.tres`. Both faction-id 4 / card-type UNIT / rarity UNCOMMON / `keywords=[]` (bespoke effects; Lifesteal on W42 is the same soft-keyword pattern as W3 Cinderwood Stalker per open Q6). Pool grows from 40 → 42.
-
-**Open question carried**: same as Q6 in this doc — Lifesteal is text-only on 2 cards now (W3 + W42). At 3 cards we should consider promoting to a real `LIFESTEAL = 16` enum entry. Defer to next balance pass.
+| **W42 Den-Mother of the Cinderwood*
