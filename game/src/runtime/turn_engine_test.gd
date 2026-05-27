@@ -146,15 +146,13 @@ func _run() -> int:
 	print("[turn_engine_test] scene B start"); errors += _scene_b_bleed_dot()
 	print("[turn_engine_test] scene C start"); errors += _scene_c_persist_roundtrip()
 	print("[turn_engine_test] scene D start"); errors += _scene_d_taunt_targeting()
-	# Phase 2.16 scenes — disabled for bisection (re-enable after we confirm
-	# A-D still pass with the new aura/keyword wiring in place).
-	# print("[turn_engine_test] scene E start"); errors += _scene_e_lifesteal_heal_on_attack()
-	# print("[turn_engine_test] scene F start"); errors += _scene_f_aura_dispatch()
-	# print("[turn_engine_test] scene G start"); errors += _scene_g_l41_self_aura()
-	# print("[turn_engine_test] scene H start"); errors += _scene_h_w4_dynamic_outbound()
-	# print("[turn_engine_test] scene I start"); errors += _scene_i_ld3_banner_buff()
-	# print("[turn_engine_test] scene J start"); errors += _scene_j_m41_cost_discount()
-	# print("[turn_engine_test] scene K start"); errors += _scene_k_w41_wolf_summon_draw()
+	print("[turn_engine_test] scene E start"); errors += _scene_e_lifesteal_heal_on_attack()
+	print("[turn_engine_test] scene F start"); errors += _scene_f_aura_dispatch()
+	print("[turn_engine_test] scene G start"); errors += _scene_g_l41_self_aura()
+	print("[turn_engine_test] scene H start"); errors += _scene_h_w4_dynamic_outbound()
+	print("[turn_engine_test] scene I start"); errors += _scene_i_ld3_banner_buff()
+	print("[turn_engine_test] scene J start"); errors += _scene_j_m41_cost_discount()
+	print("[turn_engine_test] scene K start"); errors += _scene_k_w41_wolf_summon_draw()
 	return errors
 
 
