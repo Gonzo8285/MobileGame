@@ -48,6 +48,33 @@ extends Node
 ##     • E3 deferred: Shield-mitigated-damage scaling — B2.7 enemies don't
 ##           carry keywords yet. Re-enable when enemy SHIELD/PIERCE lands.
 ##
+##   SCENE F — AURA dispatch (keywords/aura_v0.md, AURA.E1)
+##     W42 Den-Mother + Wolf-Token plumbing as the representative outbound-
+##     aura case. Other aura cards W4 / banner spine ride the same paths.
+##     • F1: W42 placed in lane with two existing Wolf-Tokens → both tokens
+##           become 2/3 with LIFESTEAL.
+##     • F2: A new Wolf-Token placed after W42 already in lane → gets the
+##           grant on-enter.
+##     • F3: W42 dies and is culled → all tokens revert to base 1/2, no
+##           LIFESTEAL, runtime_keywords / aura_stats empty.
+##     • F4: Two W42s in lane → tokens stack additively to 3/4 with
+##           LIFESTEAL (single keyword set-union). One W42 dies → tokens
+##           revert to 2/3, still LIFESTEAL from the survivor.
+##     • F5: Full-HP token (4/4) under double W42. One W42 dies → HP clamps
+##           to new max (3), not killed.
+##     • F6: Token at 1/4 HP under double W42. Both die → HP floors at 1
+##           (never killed by aura revoke per aura_v0.md spec).
+##
+##   SCENE G — L41 SELF-AURA (keywords/aura_v0.md, L41.E1)
+##     L41 Banner-Bearer of the Crowned Anvil — first self-aura in the
+##     engine. Grants self +1 ATK + PIERCE while a friendly banner (v0
+##     predicate = L34 Crowned Anvil Standard) is in lane.
+##     • G1: L41 enters lane alone → no banner present → no grant
+##           (runtime_keywords / aura_stats empty).
+##     • G2: L34 then enters the same lane → re-evaluate fires → L41 gains
+##           +1 ATK + PIERCE (verified via current_attack() + has_keyword).
+##     • G3: L34 dies and is culled → re-evaluate revokes → L41 reverts to
+##           base ATK without PIERCE.
 ## PASS = 0 errors. Wired into main.gd alongside the other dev tests.
 
 
@@ -66,6 +93,8 @@ func _run() -> int:
 	errors += _scene_c_persist_roundtrip()
 	errors += _scene_d_taunt_targeting()
 	errors += _scene_e_lifesteal_heal_on_attack()
+	errors += _scene_f_aura_dispatch()
+	errors += _scene_g_l41_self_aura()
 	return errors
 
 
@@ -354,4 +383,412 @@ func _scene_d_taunt_targeting() -> int:
 	lane_d3.enemies.append(ei_d3)
 
 	var attacker := UnitInstance.new(
-		mk_card.call(&"D3_atk",
+		mk_card.call(&"D3_atk", 2, 5, 3, false), 1, 0)
+	attacker.cooldown_counter = 0  # ready to swing
+	var bystander_taunt := UnitInstance.new(
+		mk_card.call(&"D3_taunt", 4, 5, 1, true), 1, 1)
+	bystander_taunt.cooldown_counter = 99
+	lane_d3.friendly_units.append(attacker)
+	lane_d3.friendly_units.append(bystander_taunt)
+
+	var res_d3 := TurnEngine.process_turn_end_pre_advance([lane_d3])
+	if res_d3["friendly_atk"] != 1:
+		printerr("D3: expected 1 friendly attack regardless of TAUNT bystander, got %d" %
+				res_d3["friendly_atk"])
+		errors += 1
+	if ei_d3.current_hp != 10 - 3:
+		printerr("D3: enemy should have taken attacker's 3 dmg, got HP=%d" %
+				ei_d3.current_hp)
+		errors += 1
+
+	return errors
+
+
+# ============================================================================
+# SCENE E — LIFESTEAL heal-on-attack (keywords/lifesteal_v0.md)
+# ============================================================================
+#
+# Validates the LIFESTEAL keyword wired into _resolve_friendly_attacks_in_lane:
+#   • E1: damaged Lifesteal attacker heals for damage_dealt (≤ max_hp clamp)
+#   • E2: full-HP Lifesteal attacker does not overheal (heal returns 0)
+#   • E3: Shield-tagged target reduces damage; Lifesteal heals only for the
+#         actually-dealt amount (post-Shield). NOTE: B2.7 enemies don't carry
+#         keywords yet, so this test uses the dealt = take_damage(actual)
+#         clamp at low enemy HP as a proxy for "Shield-limited damage". E3
+#         is documented but skipped pending enemy-keyword support; the clamp-
+#         at-enemy-HP variant IS exercised by E2.
+#   • E4: Lifesteal attacker on a dead enemy (post-overkill) — no heal because
+#         actual dealt is clamped to remaining enemy HP, and once enemy hits 0
+#         the heal would equal the overkill-clamped value, not raw ATK.
+#
+# Counts as 3 assertions (E3 deferred). Authored 2026-05-26 by Controller.
+
+func _scene_e_lifesteal_heal_on_attack() -> int:
+	var errors: int = 0
+
+	# Shared helper: build a UNIT card with optional LIFESTEAL.
+	var mk_card := func(cid: StringName, hp: int, atk: int,
+			has_lifesteal: bool) -> Card:
+		var c := Card.new()
+		c.id = cid
+		c.display_name = "TestCard_%s" % cid
+		c.card_type = GFEnums.CardType.UNIT
+		c.cost = 2
+		c.hp = hp
+		c.attack = atk
+		c.attack_range = GFEnums.AttackRange.MELEE
+		c.cooldown = 1
+		c.is_draftable = true
+		if has_lifesteal:
+			c.keywords = [GFEnums.Keyword.LIFESTEAL]
+		return c
+
+	# ----- E1: damaged Lifesteal attacker heals for damage_dealt -------------
+	# Setup: enemy at tile 2 with 10 HP, friendly Lifesteal attacker at tile 1
+	# with max_hp=4 / atk=2 / current_hp=1 (took 3 prior damage). Attacker
+	# swings for 2, enemy survives (HP 10→8), attacker heals 2 → ends at HP 3.
+	var lane_e1 := Lane.new(0, 6)
+	var enemy_e1 := Enemy.new()
+	enemy_e1.id = &"E_test_e1"
+	enemy_e1.display_name = "Test Enemy E1"
+	enemy_e1.max_hp = 10
+	enemy_e1.attack = 0
+	enemy_e1.move_speed = 0
+	var ei_e1 := EnemyInstance.new(enemy_e1, 2, 0)
+	lane_e1.enemies.append(ei_e1)
+
+	var attacker_e1 := UnitInstance.new(
+		mk_card.call(&"E1_lifesteal", 4, 2, true), 1, 0)
+	attacker_e1.cooldown_counter = 0  # ready to swing
+	attacker_e1.current_hp = 1  # took 3 prior damage
+	lane_e1.friendly_units.append(attacker_e1)
+
+	TurnEngine.process_turn_end_pre_advance([lane_e1])
+
+	if ei_e1.current_hp != 10 - 2:
+		printerr("E1: enemy should be at 8 HP after 2 dmg, got %d" % ei_e1.current_hp)
+		errors += 1
+	if attacker_e1.current_hp != 3:
+		printerr("E1: Lifesteal attacker should heal from 1 to 3 (heal 2), got HP=%d" %
+				attacker_e1.current_hp)
+		errors += 1
+
+	# ----- E2: full-HP Lifesteal attacker does NOT overheal ------------------
+	# Setup: enemy with 10 HP at tile 2, full-HP (4/4) Lifesteal attacker at
+	# tile 1 with atk=3. Attacker swings for 3, enemy survives, heal returns 0
+	# because attacker is at max HP. Final HP unchanged (still 4).
+	var lane_e2 := Lane.new(0, 6)
+	var enemy_e2 := Enemy.new()
+	enemy_e2.id = &"E_test_e2"
+	enemy_e2.display_name = "Test Enemy E2"
+	enemy_e2.max_hp = 10
+	enemy_e2.attack = 0
+	enemy_e2.move_speed = 0
+	var ei_e2 := EnemyInstance.new(enemy_e2, 2, 0)
+	lane_e2.enemies.append(ei_e2)
+
+	var attacker_e2 := UnitInstance.new(
+		mk_card.call(&"E2_lifesteal_fullhp", 4, 3, true), 1, 0)
+	attacker_e2.cooldown_counter = 0
+	# current_hp left at default (4 = max from _init)
+	lane_e2.friendly_units.append(attacker_e2)
+
+	TurnEngine.process_turn_end_pre_advance([lane_e2])
+
+	if attacker_e2.current_hp != 4:
+		printerr("E2: full-HP Lifesteal attacker should NOT overheal (expected 4), got HP=%d" %
+				attacker_e2.current_hp)
+		errors += 1
+	if ei_e2.current_hp != 10 - 3:
+		printerr("E2: enemy should be at 7 HP after 3 dmg, got %d" % ei_e2.current_hp)
+		errors += 1
+
+	# ----- E4: Lifesteal heal scales with actual damage dealt, not raw ATK ---
+	# Setup: enemy at tile 2 with 1 HP (about to die), Lifesteal attacker at
+	# tile 1 with atk=5 / max_hp=10 / current_hp=2. Attacker swings for 5 but
+	# enemy only has 1 HP — apply_damage_to_enemy returns 1 (the clamped actual).
+	# Attacker heals for 1, not 5. Ends at HP 3.
+	var lane_e4 := Lane.new(0, 6)
+	var enemy_e4 := Enemy.new()
+	enemy_e4.id = &"E_test_e4"
+	enemy_e4.display_name = "Test Enemy E4"
+	enemy_e4.max_hp = 1
+	enemy_e4.attack = 0
+	enemy_e4.move_speed = 0
+	var ei_e4 := EnemyInstance.new(enemy_e4, 2, 0)
+	lane_e4.enemies.append(ei_e4)
+
+	var attacker_e4 := UnitInstance.new(
+		mk_card.call(&"E4_overkill", 10, 5, true), 1, 0)
+	attacker_e4.cooldown_counter = 0
+	attacker_e4.current_hp = 2
+	lane_e4.friendly_units.append(attacker_e4)
+
+	TurnEngine.process_turn_end_pre_advance([lane_e4])
+
+	if attacker_e4.current_hp != 3:
+		printerr("E4: Lifesteal heal should match dealt=1 (not raw atk=5); expected HP=3, got %d" %
+				attacker_e4.current_hp)
+		errors += 1
+
+	return errors
+
+
+# ============================================================================
+# SCENE F — AURA dispatch (W42 Den-Mother + Wolf-Token, keywords/aura_v0.md)
+# ============================================================================
+
+func _scene_f_aura_dispatch() -> int:
+	var errors: int = 0
+
+	# Helper: build a Wolf-Token card matching the W28 dispatch target.
+	var mk_wolf := func() -> Card:
+		var c := Card.new()
+		c.id = &"W28"
+		c.display_name = "Wolf-Token"
+		c.card_type = GFEnums.CardType.UNIT
+		c.cost = 0
+		c.hp = 2
+		c.attack = 1
+		c.attack_range = GFEnums.AttackRange.MELEE
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# Helper: build the W42 Den-Mother card matching the dispatch entry.
+	var mk_den_mother := func() -> Card:
+		var c := Card.new()
+		c.id = &"W42"
+		c.display_name = "Den-Mother of the Cinderwood"
+		c.card_type = GFEnums.CardType.UNIT
+		c.cost = 4
+		c.hp = 4
+		c.attack = 2
+		c.attack_range = GFEnums.AttackRange.MELEE
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# ----- F1: W42 enters lane with 2 existing Wolf-Tokens ------------------
+	var lane_f1 := Lane.new(0, 6)
+	var wolf_a := lane_f1.place_unit(mk_wolf.call(), 1)
+	var wolf_b := lane_f1.place_unit(mk_wolf.call(), 2)
+	var den_mother := lane_f1.place_unit(mk_den_mother.call(), 3)
+	if wolf_a == null or wolf_b == null or den_mother == null:
+		printerr("F1: setup failed — place_unit returned null")
+		return errors + 1
+	# Both tokens should now be 2/3 with LIFESTEAL.
+	if wolf_a.current_attack() != 2:
+		printerr("F1: wolf_a current_attack should be 2 under aura, got %d" %
+				wolf_a.current_attack())
+		errors += 1
+	if wolf_a.max_hp() != 3:
+		printerr("F1: wolf_a max_hp should be 3 under aura, got %d" % wolf_a.max_hp())
+		errors += 1
+	if wolf_a.current_hp != 3:
+		printerr("F1: wolf_a current_hp should be raised to 3 by aura grant, got %d" %
+				wolf_a.current_hp)
+		errors += 1
+	if not wolf_a.has_keyword(GFEnums.Keyword.LIFESTEAL):
+		printerr("F1: wolf_a should have LIFESTEAL from aura")
+		errors += 1
+	if wolf_b.current_attack() != 2 or wolf_b.max_hp() != 3:
+		printerr("F1: wolf_b expected 2/3, got %d/%d" %
+				[wolf_b.current_attack(), wolf_b.max_hp()])
+		errors += 1
+
+	# ----- F2: a new Wolf-Token enters after W42 is in lane -----------------
+	var wolf_c := lane_f1.place_unit(mk_wolf.call(), 4)
+	if wolf_c == null:
+		printerr("F2: place_unit returned null for new wolf")
+		errors += 1
+	elif wolf_c.current_attack() != 2 or wolf_c.max_hp() != 3 \
+			or not wolf_c.has_keyword(GFEnums.Keyword.LIFESTEAL):
+		printerr("F2: new wolf should get aura grant on-enter, got %d/%d LIFESTEAL=%s" %
+				[wolf_c.current_attack(), wolf_c.max_hp(),
+				str(wolf_c.has_keyword(GFEnums.Keyword.LIFESTEAL))])
+		errors += 1
+
+	# ----- F3: W42 dies and is culled — all tokens revert -------------------
+	den_mother.current_hp = 0
+	lane_f1.cull_dead_units()
+	if wolf_a.current_attack() != 1:
+		printerr("F3: wolf_a should revert to ATK 1 after W42 cull, got %d" %
+				wolf_a.current_attack())
+		errors += 1
+	if wolf_a.max_hp() != 2:
+		printerr("F3: wolf_a should revert to max_hp 2 after W42 cull, got %d" %
+				wolf_a.max_hp())
+		errors += 1
+	if wolf_a.has_keyword(GFEnums.Keyword.LIFESTEAL):
+		printerr("F3: wolf_a should NOT have LIFESTEAL after W42 cull")
+		errors += 1
+	if not wolf_a.aura_stats.is_empty() or not wolf_a.runtime_keywords.is_empty():
+		printerr("F3: wolf_a aura state should be empty after revoke (stats=%s kws=%s)" %
+				[str(wolf_a.aura_stats), str(wolf_a.runtime_keywords)])
+		errors += 1
+
+	# ----- F4: two W42s in lane → stack additively, one dies ----------------
+	var lane_f4 := Lane.new(0, 6)
+	var w_f4 := lane_f4.place_unit(mk_wolf.call(), 1)
+	var dm_1 := lane_f4.place_unit(mk_den_mother.call(), 2)
+	var dm_2 := lane_f4.place_unit(mk_den_mother.call(), 3)
+	if w_f4 == null or dm_1 == null or dm_2 == null:
+		printerr("F4: setup failed")
+		return errors + 1
+	if w_f4.current_attack() != 3 or w_f4.max_hp() != 4:
+		printerr("F4: wolf under double aura expected 3/4, got %d/%d" %
+				[w_f4.current_attack(), w_f4.max_hp()])
+		errors += 1
+	if not w_f4.has_keyword(GFEnums.Keyword.LIFESTEAL):
+		printerr("F4: wolf under double aura should have LIFESTEAL (set-union)")
+		errors += 1
+	# Kill one Den-Mother.
+	dm_1.current_hp = 0
+	lane_f4.cull_dead_units()
+	if w_f4.current_attack() != 2 or w_f4.max_hp() != 3:
+		printerr("F4: after one W42 dies expected 2/3, got %d/%d" %
+				[w_f4.current_attack(), w_f4.max_hp()])
+		errors += 1
+	if not w_f4.has_keyword(GFEnums.Keyword.LIFESTEAL):
+		printerr("F4: LIFESTEAL should remain from surviving Den-Mother")
+		errors += 1
+
+	# ----- F5: full-HP token under double aura — one source dies clamps HP --
+	var lane_f5 := Lane.new(0, 6)
+	var w_f5 := lane_f5.place_unit(mk_wolf.call(), 1)
+	var dm_5a := lane_f5.place_unit(mk_den_mother.call(), 2)
+	var dm_5b := lane_f5.place_unit(mk_den_mother.call(), 3)
+	if w_f5 == null or dm_5a == null or dm_5b == null:
+		printerr("F5: setup failed")
+		return errors + 1
+	# wolf should be at 4/4 under double aura
+	if w_f5.current_hp != 4 or w_f5.max_hp() != 4:
+		printerr("F5: pre-revoke wolf expected 4/4, got %d/%d" %
+				[w_f5.current_hp, w_f5.max_hp()])
+		errors += 1
+	dm_5a.current_hp = 0
+	lane_f5.cull_dead_units()
+	# new max is 3, current_hp must clamp to 3
+	if w_f5.current_hp != 3:
+		printerr("F5: post-revoke wolf current_hp should clamp to 3, got %d" %
+				w_f5.current_hp)
+		errors += 1
+	if not w_f5.is_alive():
+		printerr("F5: wolf should still be alive after aura revoke")
+		errors += 1
+
+	# ----- F6: damaged token under double aura — both sources die clamp@1 ---
+	var lane_f6 := Lane.new(0, 6)
+	var w_f6 := lane_f6.place_unit(mk_wolf.call(), 1)
+	var dm_6a := lane_f6.place_unit(mk_den_mother.call(), 2)
+	var dm_6b := lane_f6.place_unit(mk_den_mother.call(), 3)
+	if w_f6 == null or dm_6a == null or dm_6b == null:
+		printerr("F6: setup failed")
+		return errors + 1
+	# Damage wolf down to 1 HP (took 3 damage from 4 max).
+	w_f6.current_hp = 1
+	# Kill both Den-Mothers.
+	dm_6a.current_hp = 0
+	dm_6b.current_hp = 0
+	lane_f6.cull_dead_units()
+	# Wolf max is back to 2; current_hp clamps but floors at 1 (never killed
+	# by revoke). Must remain alive.
+	if w_f6.current_hp != 1:
+		printerr("F6: wolf at 1HP post-double-revoke should floor at 1, got %d" %
+				w_f6.current_hp)
+		errors += 1
+	if not w_f6.is_alive():
+		printerr("F6: wolf must still be alive after double aura revoke (revoke never kills)")
+		errors += 1
+
+	return errors
+
+
+# ============================================================================
+# SCENE G — L41 SELF-AURA (keywords/aura_v0.md, L41.E1)
+# ============================================================================
+
+func _scene_g_l41_self_aura() -> int:
+	var errors: int = 0
+
+	# Helper: build L41 Banner-Bearer card matching dispatch entry.
+	var mk_l41 := func() -> Card:
+		var c := Card.new()
+		c.id = &"L41"
+		c.display_name = "Banner-Bearer of the Crowned Anvil"
+		c.card_type = GFEnums.CardType.UNIT
+		c.cost = 3
+		c.hp = 3
+		c.attack = 2
+		c.attack_range = GFEnums.AttackRange.SHORT
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# Helper: build L34 Crowned Anvil Standard — the v0 banner predicate.
+	var mk_l34 := func() -> Card:
+		var c := Card.new()
+		c.id = &"L34"
+		c.display_name = "Crowned Anvil Standard"
+		c.card_type = GFEnums.CardType.UNIT
+		c.cost = 5
+		c.hp = 4
+		c.attack = 0
+		c.attack_range = GFEnums.AttackRange.NONE
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# ----- G1: L41 alone in lane — no banner — no grant --------------------
+	var lane_g := Lane.new(0, 6)
+	var l41 := lane_g.place_unit(mk_l41.call(), 1)
+	if l41 == null:
+		printerr("G1: L41 place_unit returned null")
+		return errors + 1
+	if l41.current_attack() != 2:
+		printerr("G1: L41 should be base ATK=2 with no banner, got %d" %
+				l41.current_attack())
+		errors += 1
+	if l41.has_keyword(GFEnums.Keyword.PIERCE):
+		printerr("G1: L41 should NOT have PIERCE without banner")
+		errors += 1
+	if not l41.aura_stats.is_empty():
+		printerr("G1: L41 aura_stats should be empty without banner condition met")
+		errors += 1
+
+	# ----- G2: L34 enters → re-evaluate fires → L41 gains buff -------------
+	var l34 := lane_g.place_unit(mk_l34.call(), 2)
+	if l34 == null:
+		printerr("G2: L34 place_unit returned null")
+		return errors + 1
+	if l41.current_attack() != 3:
+		printerr("G2: L41 should gain +1 ATK with banner present, got %d (expected 3)" %
+				l41.current_attack())
+		errors += 1
+	if not l41.has_keyword(GFEnums.Keyword.PIERCE):
+		printerr("G2: L41 should have PIERCE with banner present")
+		errors += 1
+	if not l41.aura_stats.has(l41):
+		printerr("G2: L41 self-aura should be stored keyed on self")
+		errors += 1
+
+	# ----- G3: L34 dies → re-evaluate revokes → L41 reverts ----------------
+	l34.current_hp = 0
+	lane_g.cull_dead_units()
+	if l41.current_attack() != 2:
+		printerr("G3: L41 should revert to base ATK=2 after banner culled, got %d" %
+				l41.current_attack())
+		errors += 1
+	if l41.has_keyword(GFEnums.Keyword.PIERCE):
+		printerr("G3: L41 should NOT have PIERCE after banner culled")
+		errors += 1
+	if l41.aura_stats.has(l41):
+		printerr("G3: L41 self-aura should be revoked after banner culled")
+		errors += 1
+
+	return errors
