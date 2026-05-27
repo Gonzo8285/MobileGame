@@ -421,7 +421,14 @@ func _get_drag_data(_at_position: Vector2) -> Variant:
 		modulate = Color(0.7, 0.3, 0.3, 1)
 		create_tween().tween_property(self, "modulate", Color(0.5, 0.5, 0.55, 1), 0.35)
 		return null
-	var preview := duplicate() as CardView
+	# Build the preview from the scene file (NOT duplicate()). duplicate()
+	# copies the children but doesn't rebind the script's @onready / member
+	# var references — so calling bind() on the duplicate ends up appending
+	# a second set of icons to the ORIGINAL CardView's container, causing
+	# the over-sized icon stack Paul reported. A fresh instance gets its
+	# own _stat_row / _kw_strip references via _ready and renders cleanly.
+	var preview_scene: PackedScene = load("res://scenes/card_view.tscn")
+	var preview := preview_scene.instantiate() as CardView
 	preview.modulate.a = 0.7
 	preview.bind(card_data)
 	set_drag_preview(preview)
