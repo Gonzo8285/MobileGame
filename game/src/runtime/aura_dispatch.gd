@@ -48,6 +48,36 @@ class_name AuraDispatch
 ## check `lane.lane_effects` for `kind == BANNER_TOKEN`. Without LaneEffect,
 ## the v0 implementation captures the L34-payoff path only; the L33/L32-
 ## etc. text-only banner condition stays decorative until LaneEffect lands.
+##
+## LD3 batch additions (LD3.E1, 2026-05-27):
+##
+## L30 Crown-Anvil Veteran (3c C, self-aura case):
+##   "While a friendly banner is in your lane, +1 ATK." Mirror of L41's
+##   self-aura but with a simpler grant (+1 ATK only, no PIERCE). Uses the
+##   same `self_if_friendly_banner_in_lane` target_kind + the shared
+##   re_evaluate_self_auras hook.
+##
+## L34 Crowned Anvil Standard (5c R, outbound faction-scoped case):
+##   "Persistent +1 ATK to friendly Legion in lane until destroyed."
+##   New target_kind `friendly_faction_in_lane` — outbound, faction-scoped,
+##   excludes self. NOT dynamic (set doesn't shift on cost/state — just
+##   "every Legion in lane"). Uses the standard maybe_grant on-enter pass;
+##   no re_evaluate hook needed because the predicate doesn't depend on
+##   lane composition beyond per-candidate faction match.
+##
+## DEFERRED L27-L40 cards (NOT wired this heartbeat — reason in each):
+##   L27 Standard-Boy:     on-death event trigger (not a sustained aura)
+##   L28 Banner-Bearer Acolyte: per-turn "first attack" flag (event, not aura)
+##   L29 Iron Wardrum:     SHIELD aura — SHIELD damage-absorbtion not engine-wired
+##   L31 Iron Choir-Standard: FEAR immunity — immunities system not designed
+##   L32 Banner-Sergeant of Vanrik: BANNER_TOKEN spawner — LaneEffect deferred
+##   L33 Banner-Captain of Crowned Anvil: BANNER_TOKEN spawner + aura — same
+##   L35 Standard-Bearer's Cry: one-shot spell (not aura)
+##   L36 Raise the Anvil:  BANNER_TOKEN-spawning spell — deferred
+##   L37 Banner-Defence Trap: trap card (not aura)
+##   L38 Crowned Stake:    trap card (root effect, not aura)
+##   L39 Hammer-Echo Sigil: relic with spell-cast trigger (event, not aura)
+##   L40 Banner of the Last Hour: relic BANNER_TOKEN spawner — deferred
 
 
 # ============================================================================
@@ -163,6 +193,62 @@ static func _entry_for(card_id: StringName) -> Dictionary:
 					"keywords": [GFEnums.Keyword.PIERCE],
 				},
 			}
+		&"W4":
+			# Bear-Skin Hierophant (W4.E1, 2026-05-27). DYNAMIC OUTBOUND
+			# aura: the unique max-cost friendly Skinward Pact unit in
+			# lane (excluding the Hierophant itself per aura_v0.md
+			# open-Q1) gains +2 HP and CLEAVE. Unlike W42 (id-keyed
+			# fixed-target) or L41 (self-aura), W4's target SHIFTS as
+			# lane state changes — a 6-cost Wilds entering after a
+			# 2-cost Wilds was the holder should move the grant.
+			# Re-evaluation hook `re_evaluate_dynamic_outbound_auras`
+			# is called by lane._on_unit_entered_lane and
+			# _on_unit_leaving_lane to revoke-and-re-grant for any
+			# dispatch entry whose target_kind is in the "dynamic"
+			# set (see _is_dynamic_outbound_kind). Tie-break on equal
+			# max-cost: lowest tile wins (closest to base).
+			return {
+				"target_kind": "highest_cost_wilds",
+				"target_param": null,
+				"grant": {
+					"atk": 0,
+					"hp": 2,
+					"keywords": [GFEnums.Keyword.CLEAVE],
+				},
+			}
+		&"L30":
+			# Crown-Anvil Veteran (LD3.E1 self-aura, 2026-05-27). Mirror of
+			# L41's self-aura but with a simpler grant: +1 ATK only, no PIERCE.
+			# "While a friendly banner is in your lane, +1 ATK."
+			return {
+				"target_kind": "self_if_friendly_banner_in_lane",
+				"target_param": null,
+				"grant": {
+					"atk": 1,
+					"hp": 0,
+					"keywords": [],
+				},
+			}
+		&"L34":
+			# Crowned Anvil Standard (LD3.E1 outbound faction-scoped, 2026-05-27).
+			# 5c R artifact-unit. "Persistent +1 ATK to friendly Legion in lane
+			# until destroyed." First faction-scoped outbound aura. L34 itself is
+			# also the v0 banner predicate (satisfies L30 + L41 conditions), so
+			# placing L34 in a lane fires THREE things simultaneously:
+			#   (a) L34 grants +1 ATK to every other Legion in lane
+			#   (b) any L30 in lane gains +1 ATK (banner now present)
+			#   (c) any L41 in lane gains +1 ATK + PIERCE (banner now present)
+			# All three resolve through the standard maybe_grant +
+			# re_evaluate_self_auras passes in lane._on_unit_entered_lane.
+			return {
+				"target_kind": "friendly_faction_in_lane",
+				"target_param": GFEnums.Faction.LAST_LEGION,
+				"grant": {
+					"atk": 1,
+					"hp": 0,
+					"keywords": [],
+				},
+			}
 		_:
 			return {}
 
@@ -202,9 +288,18 @@ static func _matches_target(entry: Dictionary, source: UnitInstance,
 			# (b) the lane must contain a friendly banner. Excluding-list
 			# handling for "banner is currently dying" lives in the lane
 			# hook, which passes `excluding` to re_evaluate_self_auras.
+			# Shared with L30 Crown-Anvil Veteran (LD3.E1).
 			if candidate != source:
 				return false
 			return _is_friendly_banner_in_lane(lane, null)
+		"friendly_faction_in_lane":
+			# L34 Crowned Anvil Standard (LD3.E1 outbound faction-scoped).
+			# Match on Faction enum: every friendly of the specified faction
+			# in lane (excluding source) gets the grant. Static target set
+			# (faction doesn't change), so the standard maybe_grant on-enter
+			# pass is sufficient — no re_evaluate_dynamic_outbound needed.
+			var want_faction: int = int(entry.get("target_param", -1))
+			return candidate.card_data.faction == want_faction
 		_:
 			return false
 
@@ -299,25 +394,4 @@ static func _is_friendly_banner_in_lane(lane: Lane,
 	for u in lane.friendly_units:
 		if u == null or u == excluding:
 			continue
-		if not u.is_alive():
-			continue
-		if u.card_data == null:
-			continue
-		if u.card_data.id == &"L34":
-			return true
-	return false
-
-
-## Reserved for W4 Bear-Skin Hierophant when it's wired into the dispatch
-## table. Returns true iff `candidate` is the unique max-cost Wilds friendly
-## in `lane` excluding `source`. Ties (multiple units sharing max-cost)
-## resolve to lowest tile (closest to base) for determinism; document the
-## tie-break in W4.E1's backlog ticket.
-static func _is_highest_cost_wilds_excluding(source: UnitInstance,
-		candidate: UnitInstance, lane: Lane) -> bool:
-	# Stub for W4.E1 — implementation deferred. Returns false to keep the
-	# dispatch table safe to extend without firing untested code paths.
-	# When wiring W4, replace this stub with the real lookup and add
-	# scene-G tests for "tied max-cost → lower tile wins" + "Hierophant is
-	# alone in lane → no grant (excluded from own target set)".
-	return false
+	

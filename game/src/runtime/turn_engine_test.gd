@@ -91,6 +91,20 @@ extends Node
 ##     • H5: The current holder dies → grant moves to the next-highest
 ##           Wilds in lane via re_evaluate_dynamic_outbound_auras.
 ##
+##   SCENE I — LD3 Banner-Buff spine batch (L30 + L34 dispatch, LD3.E1)
+##     L27-L40 spine survey: only L30 + L34 fit clean self/outbound aura
+##     patterns this heartbeat can wire — rest defer (BANNER_TOKEN spawners,
+##     SHIELD aura, FEAR immunity, on-death events, traps, spells, relics).
+##     • I1: L30 alone in lane → no banner → no grant. L34 then enters →
+##           three things resolve in one place_unit: (a) L34's outbound
+##           grants +1 ATK to L30 (friendly Legion in lane), (b) L30's self-
+##           aura now sees banner-presence and grants itself +1 ATK,
+##           (c) L34 itself doesn't self-grant. Net: L30 sits at base+2 ATK.
+##     • I2: L34 grants +1 ATK to multiple friendly Legion in lane (3 cards),
+##           skipping non-Legion friendlies.
+##     • I3: L34 dies and is culled → L30 reverts to base (banner condition
+##           lost) AND all other Legion units lose L34's +1 ATK outbound grant.
+##
 ## PASS = 0 errors. Wired into main.gd alongside the other dev tests.
 
 
@@ -112,6 +126,7 @@ func _run() -> int:
 	errors += _scene_f_aura_dispatch()
 	errors += _scene_g_l41_self_aura()
 	errors += _scene_h_w4_dynamic_outbound()
+	errors += _scene_i_ld3_banner_buff()
 	return errors
 
 
@@ -920,6 +935,148 @@ func _scene_h_w4_dynamic_outbound() -> int:
 	if w_3c.max_hp() != 5:
 		printerr("H5: 3-cost should regain max_hp=5 after 5c died, got %d" %
 				w_3c.max_hp())
+		errors += 1
+
+	return errors
+
+
+# ============================================================================
+# SCENE I — LD3 Banner-Buff spine batch (L30 + L34 dispatch, LD3.E1)
+# ============================================================================
+
+func _scene_i_ld3_banner_buff() -> int:
+	var errors: int = 0
+
+	# Helper: build L30 Crown-Anvil Veteran (self-aura while banner in lane).
+	var mk_l30 := func() -> Card:
+		var c := Card.new()
+		c.id = &"L30"
+		c.display_name = "Crown-Anvil Veteran"
+		c.card_type = GFEnums.CardType.UNIT
+		c.faction = GFEnums.Faction.LAST_LEGION
+		c.cost = 3
+		c.hp = 3
+		c.attack = 2
+		c.attack_range = GFEnums.AttackRange.SHORT
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# Helper: build L34 Crowned Anvil Standard (outbound faction-scoped + banner).
+	var mk_l34 := func() -> Card:
+		var c := Card.new()
+		c.id = &"L34"
+		c.display_name = "Crowned Anvil Standard"
+		c.card_type = GFEnums.CardType.UNIT
+		c.faction = GFEnums.Faction.LAST_LEGION
+		c.cost = 5
+		c.hp = 8
+		c.attack = 0
+		c.attack_range = GFEnums.AttackRange.NONE
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# Helper: a generic Legion unit (for L34 grant target).
+	var mk_legion := func(cid: StringName, cost: int) -> Card:
+		var c := Card.new()
+		c.id = cid
+		c.display_name = "TestLegion_%s" % cid
+		c.card_type = GFEnums.CardType.UNIT
+		c.faction = GFEnums.Faction.LAST_LEGION
+		c.cost = cost
+		c.hp = 3
+		c.attack = 2
+		c.attack_range = GFEnums.AttackRange.MELEE
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# Helper: a non-Legion friendly (excluded from L34's grant).
+	var mk_neutral := func(cid: StringName) -> Card:
+		var c := Card.new()
+		c.id = cid
+		c.display_name = "TestNeutral_%s" % cid
+		c.card_type = GFEnums.CardType.UNIT
+		c.faction = GFEnums.Faction.NEUTRAL
+		c.cost = 2
+		c.hp = 3
+		c.attack = 2
+		c.attack_range = GFEnums.AttackRange.MELEE
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# ----- I1: L30 alone (no banner) → no grant. L34 enters → L30 base+2 ATK --
+	var lane := Lane.new(0, 6)
+	var l30 := lane.place_unit(mk_l30.call(), 1)
+	if l30 == null:
+		printerr("I1: L30 place_unit returned null")
+		return errors + 1
+	if l30.current_attack() != 2:
+		printerr("I1: L30 should be base ATK=2 without banner, got %d" %
+				l30.current_attack())
+		errors += 1
+	var l34 := lane.place_unit(mk_l34.call(), 5)
+	if l34 == null:
+		printerr("I1: L34 place_unit returned null")
+		return errors + 1
+	# L30 should now have: base 2 + self-aura +1 (banner present) + L34's
+	# outbound +1 = 4 total ATK.
+	if l30.current_attack() != 4:
+		printerr("I1: L30 should be ATK=4 (base 2 + self-aura 1 + L34 outbound 1) — got %d" %
+				l30.current_attack())
+		errors += 1
+	# L34 itself doesn't self-grant (outbound aura excludes source).
+	if not l34.aura_stats.is_empty():
+		printerr("I1: L34 should NOT self-grant; aura_stats=%s" % str(l34.aura_stats))
+		errors += 1
+
+	# ----- I2: L34 grants to multiple Legion, skips non-Legion ---------------
+	var lane2 := Lane.new(0, 6)
+	var legion_a := lane2.place_unit(mk_legion.call(&"L_a", 2), 1)
+	var legion_b := lane2.place_unit(mk_legion.call(&"L_b", 4), 2)
+	var neutral := lane2.place_unit(mk_neutral.call(&"N_1"), 3)
+	var l34_b := lane2.place_unit(mk_l34.call(), 5)
+	if legion_a == null or legion_b == null or neutral == null or l34_b == null:
+		printerr("I2: setup failed")
+		return errors + 1
+	# Both Legion units gain +1 ATK; neutral unaffected.
+	if legion_a.current_attack() != 3:
+		printerr("I2: legion_a expected ATK=3 (base 2 + L34 1), got %d" %
+				legion_a.current_attack())
+		errors += 1
+	if legion_b.current_attack() != 3:
+		printerr("I2: legion_b expected ATK=3 (base 2 + L34 1), got %d" %
+				legion_b.current_attack())
+		errors += 1
+	if neutral.current_attack() != 2:
+		printerr("I2: neutral should be unaffected by L34's faction-scoped grant; expected ATK=2, got %d" %
+				neutral.current_attack())
+		errors += 1
+
+	# ----- I3: L34 dies → L30 reverts + Legion lose +1 outbound grant -------
+	# Back to lane (lane1) — L30 at tile 1, L34 at tile 5, L30 currently at ATK=4.
+	l34.current_hp = 0
+	lane.cull_dead_units()
+	if l30.current_attack() != 2:
+		printerr("I3: L30 should revert to base ATK=2 after L34 dies (banner lost, outbound gone), got %d" %
+				l30.current_attack())
+		errors += 1
+	# Also test lane2's Legion units lose the outbound grant.
+	l34_b.current_hp = 0
+	lane2.cull_dead_units()
+	if legion_a.current_attack() != 2:
+		printerr("I3: legion_a should revert to base ATK=2 after L34_b dies, got %d" %
+				legion_a.current_attack())
+		errors += 1
+	if legion_b.current_attack() != 2:
+		printerr("I3: legion_b should revert to base ATK=2 after L34_b dies, got %d" %
+				legion_b.current_attack())
 		errors += 1
 
 	return errors
