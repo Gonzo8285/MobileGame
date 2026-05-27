@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"C17"
+display_name = "Witch of the Slow Decay"
+faction = 2
+card_type = 0
+rarity = 1
+cost = 3
+hp = 3
+attack = 2
+attack_range = 2
+cooldown = 1
+keywords = Array[int]([3])
+effect_text = "While alive: at end of turn, every Poison stack on enemies in lane gains +1 stack."
+flavour_text = "Decay is patient. So is she."
+art_path = "res://assets/cards/coven/C17.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

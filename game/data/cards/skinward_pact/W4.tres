@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"W4"
+display_name = "Bear-Skin Hierophant"
+faction = 4
+card_type = 0
+rarity = 2
+cost = 4
+hp = 4
+attack = 3
+attack_range = 2
+cooldown = 1
+keywords = Array[int]([])
+effect_text = "Identity. Your highest-cost friendly Wilds unit gains +2 HP and Cleave."
+flavour_text = "He wore the bear and the bear preached through him."
+art_path = "res://assets/cards/skinward_pact/W4.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

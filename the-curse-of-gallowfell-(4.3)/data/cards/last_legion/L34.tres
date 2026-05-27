@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L34"
+display_name = "Crowned Anvil Standard"
+faction = 3
+card_type = 0
+rarity = 2
+cost = 5
+hp = 8
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([])
+effect_text = "Payoff (artifact-unit). Cannot attack. Aura: persistent +1 ATK to friendly Legion in lane until destroyed."
+flavour_text = "Eight men carried it from the foundry. Eight men did not return from the foundry."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M32"
+display_name = "Cinder Bloom"
+faction = 1
+card_type = 1
+rarity = 0
+cost = 2
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([12])
+effect_text = "Deal 1 dmg to every enemy currently in Smoke. Refresh Smoke duration on all Smoke tiles by 1 turn."
+flavour_text = "The smoke has been waiting for this."
+art_path = "res://assets/cards/ash_mourners/M32.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

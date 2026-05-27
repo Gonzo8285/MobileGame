@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L8"
+display_name = "Iron Watchwarden"
+faction = 3
+card_type = 0
+rarity = 1
+cost = 5
+hp = 5
+attack = 3
+attack_range = 3
+cooldown = 2
+keywords = Array[int]([6])
+effect_text = "On play: each friendly Legion in row gains Shield-1."
+flavour_text = "The Watchwarden does not look at you. The Watchwarden looks past you, at the next attacker."
+art_path = "res://assets/cards/last_legion/L8.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

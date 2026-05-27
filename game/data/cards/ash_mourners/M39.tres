@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M39"
+display_name = "The Black Bell"
+faction = 1
+card_type = 1
+rarity = 1
+cost = 0
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([8, 5])
+effect_text = "RELIC. At the start of each combat, summon a 2/2 Ash Wraith with Fear in your lane. (Once per combat.)"
+flavour_text = "Ring it once. The catacombs answer once."
+art_path = "res://assets/cards/ash_mourners/M39.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = false
+is_starter = false
+unlock_tag = &"relic_ash_mourners"

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L20"
+display_name = "Drum-Sergeant of the Foundry"
+faction = 3
+card_type = 0
+rarity = 1
+cost = 5
+hp = 4
+attack = 3
+attack_range = 2
+cooldown = 1
+keywords = Array[int]([])
+effect_text = "On play: replay the on-play of one friendly Legion in lane (once per combat)."
+flavour_text = "Strike the drum. Strike the drum. Strike the drum. The line moves to the drum."
+art_path = "res://assets/cards/last_legion/L20.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

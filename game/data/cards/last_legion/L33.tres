@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L33"
+display_name = "Banner-Captain of the Crowned Anvil"
+faction = 3
+card_type = 0
+rarity = 2
+cost = 4
+hp = 4
+attack = 3
+attack_range = 2
+cooldown = 1
+keywords = Array[int]([6, 15])
+effect_text = "Identity. On play: Banner-Token (3 turns); while it stands, all Legion in row gain +1 ATK and Shield-1."
+flavour_text = "Three turns is enough. Three turns has always been enough."
+art_path = "res://assets/cards/last_legion/L33.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

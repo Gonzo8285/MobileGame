@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"P41"
+display_name = "Last Vows"
+faction = 0
+card_type = 1
+rarity = 0
+cost = 0
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([9, 2])
+effect_text = "Sacrifice a friendly Penitent. Apply Bleed-2 to up to 2 enemies in lane."
+flavour_text = "He went smiling. He always went smiling."
+art_path = "res://assets/cards/iron_penitents/P41.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

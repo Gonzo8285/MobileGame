@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L19"
+display_name = "Repeating Bayonet"
+faction = 3
+card_type = 0
+rarity = 1
+cost = 4
+hp = 3
+attack = 3
+attack_range = 2
+cooldown = 1
+keywords = Array[int]([1])
+effect_text = "While 3+ friendly Legion in row, this unit's attacks Echo once."
+flavour_text = "The bayonet does not tire. The man on the end of it does."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

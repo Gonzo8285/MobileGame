@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L14"
+display_name = "Forge-Light Runner"
+faction = 3
+card_type = 0
+rarity = 0
+cost = 1
+hp = 1
+attack = 1
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([])
+effect_text = "On attack, gain +1 ATK this turn (stacks if the attack is repeated)."
+flavour_text = "He runs the message that says the message has already arrived."
+art_path = "res://assets/cards/last_legion/L14.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

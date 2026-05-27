@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M18"
+display_name = "Funeral Choir"
+faction = 1
+card_type = 0
+rarity = 0
+cost = 4
+hp = 4
+attack = 2
+attack_range = 2
+cooldown = 2
+keywords = Array[int]([11])
+effect_text = "Aura: enemies adjacent to this unit gain Dread-1 each turn."
+flavour_text = "Four mourners. One dirge. The chord sits in the chest."
+art_path = "res://assets/cards/ash_mourners/M18.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

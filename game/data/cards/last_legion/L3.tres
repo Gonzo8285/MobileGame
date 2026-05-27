@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L3"
+display_name = "Anvil-Drilled Recruit"
+faction = 3
+card_type = 0
+rarity = 0
+cost = 2
+hp = 3
+attack = 1
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([])
+effect_text = "+1 HP while another friendly Legion is in lane."
+flavour_text = "Drilled on the anvil, scarred by it, blessed by it."
+art_path = "res://assets/cards/last_legion/L3.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

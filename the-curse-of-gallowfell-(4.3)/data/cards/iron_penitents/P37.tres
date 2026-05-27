@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"P37"
+display_name = "Iron Pews"
+faction = 0
+card_type = 2
+rarity = 0
+cost = 1
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([0])
+effect_text = "First enemy on tile: 1 dmg + adjacent enemies take 1 dmg."
+flavour_text = "Sit, kneel, bleed."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

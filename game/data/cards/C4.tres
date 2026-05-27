@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"C4"
+display_name = "Toad-Caller"
+faction = 2
+card_type = 0
+rarity = 1
+cost = 2
+hp = 2
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([8])
+effect_text = "Each turn: Summon a Bog-Spawn if you have fewer than 3 Bog-Spawns in play."
+flavour_text = "She does not call. She agrees with the bog, and the bog responds."
+art_path = "res://assets/cards/cards/C4.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = true
+unlock_tag = &""

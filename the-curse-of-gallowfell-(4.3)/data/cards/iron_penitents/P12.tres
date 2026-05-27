@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"P12"
+display_name = "Bone-Lash Whipster"
+faction = 0
+card_type = 0
+rarity = 1
+cost = 3
+hp = 3
+attack = 2
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([2, 10])
+effect_text = "On attack: Bleed-1 to target AND adjacent friendly Penitent (triggers Penance)."
+flavour_text = "Pain shared is faith doubled."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M13"
+display_name = "Funeral Bellringer"
+faction = 1
+card_type = 0
+rarity = 1
+cost = 4
+hp = 3
+attack = 2
+attack_range = 2
+cooldown = 1
+keywords = Array[int]([8])
+effect_text = "When a trap triggers in your lane, summon a 1/1 Ash Wraith on the nearest empty tile. Cap 3 Wraiths per combat."
+flavour_text = "The bell speaks for those the trap takes."
+art_path = "res://assets/cards/ash_mourners/M13.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

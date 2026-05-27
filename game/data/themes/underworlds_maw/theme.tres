@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="ThemePack" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/data/theme_pack.gd" id="1_theme"]
+[ext_resource type="Script" path="res://src/data/card_theme_treatment.gd" id="2_ctt"]
+
+[sub_resource type="Resource" id="ctt_0"]
+script = ExtResource("2_ctt")
+card_id = &"M3"
+theme_pack_id = &"underworlds_maw"
+art_path = ""
+display_name = "The Sibyl at the Cleft"
+flavour_text = "Woman over chasm, breathing oracle-smoke, painted in Attic-vase silhouette."
+frame_variant = &"meander_key"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_1"]
+script = ExtResource("2_ctt")
+card_id = &"P2"
+theme_pack_id = &"underworlds_maw"
+art_path = ""
+display_name = "The Fury's Lash"
+flavour_text = "Winged fury with serpent-tail whip; blood-droplet motif."
+frame_variant = &"meander_key"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_2"]
+script = ExtResource("2_ctt")
+card_id = &"C4"
+theme_pack_id = &"underworlds_maw"
+art_path = ""
+display_name = "The Three Moirai"
+flavour_text = "Klotho / Lachesis / Atropos — Attic-vase trio with thread, rod, shears."
+frame_variant = &"meander_key"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_3"]
+script = ExtResource("2_ctt")
+card_id = &"L11"
+theme_pack_id = &"underworlds_maw"
+art_path = ""
+display_name = "Charon's Standard"
+flavour_text = "Dark oarsman with banner-stern; River Styx visible behind."
+frame_variant = &"meander_key"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_4"]
+script = ExtResource("2_ctt")
+card_id = &"W7"
+theme_pack_id = &"underworlds_maw"
+art_path = ""
+display_name = "The Cerberus Tongue"
+flavour_text = "Three-headed dog-warrior; collar of bones."
+frame_variant = &"meander_key"
+sfx_variant = &""
+icon_path = ""
+
+[resource]
+script = ExtResource("1_theme")
+id = &"underworlds_maw"
+display_name = "The Underworld's Maw"
+category = 0
+era = "greek_underworld"
+status = 1
+palette = Array[Color]([Color("#1A0A0A"), Color("#A82A2A"), Color("#C9A35A"), Color("#0A0A0A"), Color("#5C2A2A")])
+fonts = {}
+frame_default_variant = &"meander_key"
+preview_art_path = ""
+price_tier_gbp = 5.99
+bundle_includes_board = true
+bundle_includes_back = true
+bundle_includes_avatar_frame = true
+pass_plus_free_in_season = &""
+subscription_quarterly_free = false
+always_owned = false
+owned_at_account_create = false
+card_theme_treatments = Array[ExtResource("2_ctt")]([SubResource("ctt_0"), SubResource("ctt_1"), SubResource("ctt_2"), SubResource("ctt_3"), SubResource("ctt_4")])
+pitch = "Greek underworld. Hades / Cerberus / Sisyphus / Charon / the Furies. Iron Penitents = Spartan hoplite phalanx of the dead; Ash Mourners = Furies and shade-priests; Coven = oracles at the bone-altar; Last Legion = Charon's ferrymen-army; Skinward Pact = satyr/centaur shape-bound. Palette: Attic-vase black-and-red, ochre gold. Frame: meander key-border and laurel-wreath corners."
+ip_notes = "Greek mythology — all Olympian + chthonic + monster — fully PD. Audit 2026-05-25."

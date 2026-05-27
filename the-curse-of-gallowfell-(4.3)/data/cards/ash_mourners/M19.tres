@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M19"
+display_name = "Catacomb Cherub"
+faction = 1
+card_type = 0
+rarity = 0
+cost = 1
+hp = 1
+attack = 1
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([7, 5])
+effect_text = "On death: 50% chance to return as a 1/1 Ash Wraith with Fear."
+flavour_text = "He never grew. The catacombs preferred him this size."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

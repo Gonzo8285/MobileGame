@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="ThemePack" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/data/theme_pack.gd" id="1_theme"]
+[ext_resource type="Script" path="res://src/data/card_theme_treatment.gd" id="2_ctt"]
+
+[sub_resource type="Resource" id="ctt_0"]
+script = ExtResource("2_ctt")
+card_id = &"M3"
+theme_pack_id = &"universal_dread"
+art_path = ""
+display_name = "The Phantom of the Aisle"
+flavour_text = "Masked figure at organ; falling chandelier shadow; greyscale + red rose."
+frame_variant = &"art_deco_poster"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_1"]
+script = ExtResource("2_ctt")
+card_id = &"P6"
+theme_pack_id = &"universal_dread"
+art_path = ""
+display_name = "The Bandaged Pharaoh"
+flavour_text = "Mummified king on throne, bandages unspooling; greyscale + red eye-glow."
+frame_variant = &"art_deco_poster"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_2"]
+script = ExtResource("2_ctt")
+card_id = &"C7"
+theme_pack_id = &"universal_dread"
+art_path = ""
+display_name = "The Count's Bride"
+flavour_text = "Pale woman in black gown, fangs visible, red ribbon at throat."
+frame_variant = &"art_deco_poster"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_3"]
+script = ExtResource("2_ctt")
+card_id = &"L5"
+theme_pack_id = &"universal_dread"
+art_path = ""
+display_name = "The Reanimated Regiment"
+flavour_text = "Stitch-suture army in trenchcoats; greyscale + red lightning-arc."
+frame_variant = &"art_deco_poster"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_4"]
+script = ExtResource("2_ctt")
+card_id = &"W7"
+theme_pack_id = &"universal_dread"
+art_path = ""
+display_name = "The Howl Under Moon"
+flavour_text = "Wolfman mid-transformation, full moon backdrop; greyscale + red eyes."
+frame_variant = &"art_deco_poster"
+sfx_variant = &""
+icon_path = ""
+
+[resource]
+script = ExtResource("1_theme")
+id = &"universal_dread"
+display_name = "The Universal Dread"
+category = 0
+era = "classic_monster_cinema"
+status = 1
+palette = Array[Color]([Color("#0A0A0A"), Color("#E8E8E8"), Color("#A82A2A"), Color("#3A3A3A"), Color("#7A7A7A")])
+fonts = {}
+frame_default_variant = &"art_deco_poster"
+preview_art_path = ""
+price_tier_gbp = 5.99
+bundle_includes_board = true
+bundle_includes_back = true
+bundle_includes_avatar_frame = true
+pass_plus_free_in_season = &""
+subscription_quarterly_free = false
+always_owned = false
+owned_at_account_create = false
+card_theme_treatments = Array[ExtResource("2_ctt")]([SubResource("ctt_0"), SubResource("ctt_1"), SubResource("ctt_2"), SubResource("ctt_3"), SubResource("ctt_4")])
+pitch = "Classic horror monster cinema treatment. Black-and-white film grain over the entire card surface — one theme that ships a unique shader on top of the art. Dracula's coven for the Coven faction; Frankenstein's lab-army for Last Legion; Wolfman pack for Skinward Pact; Mummy / Egyptian-tomb keepers for Iron Penitents; opera-house Phantom ghosts for Ash Mourners. Palette: greyscale only with one accent (blood red) per card."
+ip_notes = "Source novels PD (Dracula 1897 / Frankenstein 1818 / Wolfman folklore / Mummy folklore / Phantom 1909 / Jekyll-Hyde 1886). AVOID specific Universal Studios film designs from 1931+ which have separate copyright — use generic iconography, NOT Karloff-Lugosi specifics. Audit 2026-05-25."

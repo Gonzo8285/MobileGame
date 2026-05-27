@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="ThemePack" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/data/theme_pack.gd" id="1_theme"]
+[ext_resource type="Script" path="res://src/data/card_theme_treatment.gd" id="2_ctt"]
+
+[sub_resource type="Resource" id="ctt_0"]
+script = ExtResource("2_ctt")
+card_id = &"M3"
+theme_pack_id = &"ash_pantheon"
+art_path = ""
+display_name = "The Norn at the Loom"
+flavour_text = "Three-faced woman at loom, threads of fate spilling around her feet."
+frame_variant = &"knotwork_rune"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_1"]
+script = ExtResource("2_ctt")
+card_id = &"P2"
+theme_pack_id = &"ash_pantheon"
+art_path = ""
+display_name = "The Berserker's Whip"
+flavour_text = "Bear-pelted warrior with iron-knotted scourge, frost on shoulders."
+frame_variant = &"knotwork_rune"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_2"]
+script = ExtResource("2_ctt")
+card_id = &"C7"
+theme_pack_id = &"ash_pantheon"
+art_path = ""
+display_name = "Hel of the Half-Face"
+flavour_text = "Half-living half-corpse queen, throne of bone."
+frame_variant = &"knotwork_rune"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_3"]
+script = ExtResource("2_ctt")
+card_id = &"L5"
+theme_pack_id = &"ash_pantheon"
+art_path = ""
+display_name = "The Einherjar Standard"
+flavour_text = "Golden eagle on storm-grey field; Valhalla longhouse silhouette."
+frame_variant = &"knotwork_rune"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_4"]
+script = ExtResource("2_ctt")
+card_id = &"W7"
+theme_pack_id = &"ash_pantheon"
+art_path = ""
+display_name = "The Wolf-Skinned"
+flavour_text = "Warrior mid-transformation into Fenrir-pup form."
+frame_variant = &"knotwork_rune"
+sfx_variant = &""
+icon_path = ""
+
+[resource]
+script = ExtResource("1_theme")
+id = &"ash_pantheon"
+display_name = "The Ash Pantheon"
+category = 0
+era = "norse_ragnarok"
+status = 1
+palette = Array[Color]([Color("#3A4A6A"), Color("#E8EAEC"), Color("#7A1A1A"), Color("#C9A35A"), Color("#1A2A3A")])
+fonts = {}
+frame_default_variant = &"knotwork_rune"
+preview_art_path = ""
+price_tier_gbp = 5.99
+bundle_includes_board = true
+bundle_includes_back = true
+bundle_includes_avatar_frame = true
+pass_plus_free_in_season = &"season_4"
+subscription_quarterly_free = false
+always_owned = false
+owned_at_account_create = false
+card_theme_treatments = Array[ExtResource("2_ctt")]([SubResource("ctt_0"), SubResource("ctt_1"), SubResource("ctt_2"), SubResource("ctt_3"), SubResource("ctt_4")])
+pitch = "Norse mythology re-skin. Ragnarok-eve as Gallowfell-the-gallows-town. Iron Penitents = Einherjar; Ash Mourners = Hel's court; Coven = Norns weaving fate; Last Legion = Loki's giant-army; Skinward Pact = berserkers. Palette: rune-iron blue-grey, frost-white, blood-on-snow red, gold-amber. Frame: knotwork runes, longhouse-beam corners, raven motifs."
+ip_notes = "Norse mythology — Odin / Thor / Loki / Fenrir / Hel / Ragnarok / Valkyries / Yggdrasil all PD (oral tradition + Prose/Poetic Edda 13th century). Audit 2026-05-25."

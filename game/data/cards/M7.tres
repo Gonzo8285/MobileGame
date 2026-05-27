@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M7"
+display_name = "Smother"
+faction = 1
+card_type = 1
+rarity = 0
+cost = 1
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([11, 4])
+effect_text = "Apply Dread-2 and Root for 1 turn to a single enemy."
+flavour_text = "Press the linen down. Hold."
+art_path = "res://assets/cards/cards/M7.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = true
+unlock_tag = &""

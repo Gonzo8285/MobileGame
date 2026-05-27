@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L37"
+display_name = "Banner-Defence Trap"
+faction = 3
+card_type = 2
+rarity = 0
+cost = 1
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([13])
+effect_text = "First enemy on tile: take 2 dmg. If a friendly banner is in this lane, take 4 dmg + Slow-1 instead."
+flavour_text = "The banner watches the trap. The trap watches the banner."
+art_path = "res://assets/cards/last_legion/L37.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

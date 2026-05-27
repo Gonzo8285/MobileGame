@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M37"
+display_name = "Mourning Reach"
+faction = 1
+card_type = 1
+rarity = 0
+cost = 1
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([])
+effect_text = "Give a friendly Mourner Range-S boost (or +1 tile if already S/L) for 1 turn."
+flavour_text = "Reach further. The dead are patient about distance."
+art_path = "res://assets/cards/ash_mourners/M37.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

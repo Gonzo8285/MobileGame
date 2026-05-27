@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"W39"
+display_name = "Antler-Crown Sigil"
+faction = 4
+card_type = 1
+rarity = 1
+cost = 0
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([])
+effect_text = "RELIC. The first Transformation each combat costs 0 mana."
+flavour_text = "Antler in iron. Iron in antler. The sigil chooses each time."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = false
+is_starter = false
+unlock_tag = &"relic_skinward_pact"

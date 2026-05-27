@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"C39"
+display_name = "The Drowned Coin"
+faction = 2
+card_type = 1
+rarity = 1
+cost = 0
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([])
+effect_text = "RELIC. Start of each turn: if you sacrificed any unit last turn, gain +1 mana this turn."
+flavour_text = "It glints in the silt. It does not float."
+art_path = "res://assets/cards/coven/C39.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = false
+is_starter = false
+unlock_tag = &"relic_coven"

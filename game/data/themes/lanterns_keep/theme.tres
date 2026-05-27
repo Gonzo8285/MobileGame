@@ -1,0 +1,82 @@
+[gd_resource type="Resource" script_class="ThemePack" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/data/theme_pack.gd" id="1_theme"]
+[ext_resource type="Script" path="res://src/data/card_theme_treatment.gd" id="2_ctt"]
+
+[sub_resource type="Resource" id="ctt_0"]
+script = ExtResource("2_ctt")
+card_id = &"M3"
+theme_pack_id = &"lanterns_keep"
+art_path = ""
+display_name = "The Lantern-Granny"
+flavour_text = "Kindly old woman with copper lantern, knitted shawl, tabby cat at hem."
+frame_variant = &"knotted_wood_ivy"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_1"]
+script = ExtResource("2_ctt")
+card_id = &"P4"
+theme_pack_id = &"lanterns_keep"
+art_path = ""
+display_name = "The Toad-Knight"
+flavour_text = "Armoured toad-folk warrior with mushroom-helm, oversized wooden mallet."
+frame_variant = &"knotted_wood_ivy"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_2"]
+script = ExtResource("2_ctt")
+card_id = &"C7"
+theme_pack_id = &"lanterns_keep"
+art_path = ""
+display_name = "The Tea-Witch"
+flavour_text = "Cottage-coven elder pouring tea from a singing kettle; hedgehog familiar."
+frame_variant = &"knotted_wood_ivy"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_3"]
+script = ExtResource("2_ctt")
+card_id = &"L3"
+theme_pack_id = &"lanterns_keep"
+art_path = ""
+display_name = "The Badger-Drummer"
+flavour_text = "Small badger in regimental coat, beating tiny drum."
+frame_variant = &"knotted_wood_ivy"
+sfx_variant = &""
+icon_path = ""
+
+[sub_resource type="Resource" id="ctt_4"]
+script = ExtResource("2_ctt")
+card_id = &"W7"
+theme_pack_id = &"lanterns_keep"
+art_path = ""
+display_name = "The Stag-Friend"
+flavour_text = "Kindly stag-folk, antlers strung with ribbons, mushroom growing on shoulder."
+frame_variant = &"knotted_wood_ivy"
+sfx_variant = &""
+icon_path = ""
+
+[resource]
+script = ExtResource("1_theme")
+id = &"lanterns_keep"
+display_name = "The Lantern's Keep"
+category = 1
+era = "cozy_cottagecore"
+status = 1
+palette = Array[Color]([Color("#E8B26C"), Color("#3A5A3A"), Color("#E8DEB6"), Color("#5C3A6A"), Color("#A06A3A")])
+fonts = {}
+frame_default_variant = &"knotted_wood_ivy"
+preview_art_path = ""
+price_tier_gbp = 3.99
+bundle_includes_board = true
+bundle_includes_back = true
+bundle_includes_avatar_frame = true
+pass_plus_free_in_season = &""
+subscription_quarterly_free = false
+always_owned = false
+owned_at_account_create = false
+card_theme_treatments = Array[ExtResource("2_ctt")]([SubResource("ctt_0"), SubResource("ctt_1"), SubResource("ctt_2"), SubResource("ctt_3"), SubResource("ctt_4")])
+pitch = "Cozy-fantasy theme. Warm lantern light, soft palette, mushroom forests, knitted-hat hedgehog warriors, lantern-keeper grandmothers. Iron Penitents = forest-keeper rangers; Ash Mourners = mushroom-druid herbalists; Coven = tea-witches; Last Legion = badger-knight order; Skinward Pact = friendly were-creatures. Tonal counterpoint to canonical Gallowfell."
+ip_notes = "Internal inspiration only: Wildfrost's tone (Chucklefish, do NOT name in customer copy). All names here are Gallowfell-original. Audit 2026-05-25."

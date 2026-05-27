@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L18"
+display_name = "Echo-Sergeant"
+faction = 3
+card_type = 0
+rarity = 2
+cost = 4
+hp = 4
+attack = 2
+attack_range = 2
+cooldown = 1
+keywords = Array[int]([])
+effect_text = "Identity. When you play a 2-cost-or-less Legion unit, replay its on-play effect once."
+flavour_text = "He drills the line, and then he drills it again, and then he drills it again."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

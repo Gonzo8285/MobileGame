@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"L27"
+display_name = "Standard-Boy"
+faction = 3
+card_type = 0
+rarity = 0
+cost = 1
+hp = 1
+attack = 1
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([6])
+effect_text = "On death: a friendly Legion in lane gains Shield-1."
+flavour_text = "He dies clutching it. They all die clutching it."
+art_path = "res://assets/cards/last_legion/L27.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

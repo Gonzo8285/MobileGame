@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"C36"
+display_name = "Sigil-Stake Snare"
+faction = 2
+card_type = 2
+rarity = 0
+cost = 1
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([3])
+effect_text = "First enemy entering tile: apply Poison-2."
+flavour_text = "The stake is old. The sigil is older. The poison is patient."
+art_path = "res://assets/cards/coven/C36.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

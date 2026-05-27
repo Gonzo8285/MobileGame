@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"C33"
+display_name = "Bog-Sigil"
+faction = 2
+card_type = 1
+rarity = 0
+cost = 2
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([8, 3])
+effect_text = "Summon a Bog-Spawn AND apply Poison-1 to enemies in adjacent tiles."
+flavour_text = "Draw the sigil in mud. The mud responds in turn."
+art_path = ""
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""

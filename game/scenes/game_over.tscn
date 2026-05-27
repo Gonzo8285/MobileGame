@@ -1,0 +1,15 @@
+[gd_scene load_steps=2 format=3 uid="uid://gallowfell_game_over"]
+
+[ext_resource type="Script" path="res://src/ui/game_over.gd" id="1_game_over"]
+
+[node name="GameOver" type="Control"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1_game_over")
+
+[node name="BG" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.02, 0.04, 1)
