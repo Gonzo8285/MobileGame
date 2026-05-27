@@ -105,6 +105,29 @@ extends Node
 ##     • I3: L34 dies and is culled → L30 reverts to base (banner condition
 ##           lost) AND all other Legion units lose L34's +1 ATK outbound grant.
 ##
+##   SCENE J — M41 Wraith-Caller cost-discount trigger (M41.E1)
+##     Tests the GameState.arm_mourner_discount + compute_play_cost +
+##     consume_mourner_discount path. The combat.gd lane.unit_killed
+##     subscriber is exercised indirectly — these scenes drive the GameState
+##     API directly to keep the test headless (Combat scene-tree wiring is
+##     covered by combat_test.gd).
+##     • J1: flag clear → compute_play_cost(M-card) returns base cost
+##     • J2: arm_mourner_discount → compute_play_cost(M-card) returns base-1
+##           (floor 0); non-Mourner card still returns base
+##     • J3: consume_mourner_discount clears the flag; second M-card same
+##           turn pays base cost (cap once/turn)
+##     • J4: arm again same turn → no-op (already-fired lock holds)
+##
+##   SCENE K — W41 Pack-Caller Initiate draw trigger (W41.E1)
+##     Tests the GameState.try_trigger_wolf_summon_draw path. Combat.gd
+##     subscriber is exercised in combat_test.gd; here we drive GameState
+##     directly with a synthetic deck + hand.
+##     • K1: try_trigger with deck having ≥1 card → returns true, hand grows
+##           by 1, fired-this-turn flag set
+##     • K2: second try_trigger same turn → returns false (cap), hand unchanged
+##     • K3: empty deck + empty discard → returns false, fired-flag stays
+##           clear (failed attempts don't burn the per-turn window)
+##
 ## PASS = 0 errors. Wired into main.gd alongside the other dev tests.
 
 
@@ -127,6 +150,8 @@ func _run() -> int:
 	errors += _scene_g_l41_self_aura()
 	errors += _scene_h_w4_dynamic_outbound()
 	errors += _scene_i_ld3_banner_buff()
+	errors += _scene_j_m41_cost_discount()
+	errors += _scene_k_w41_wolf_summon_draw()
 	return errors
 
 
@@ -1078,5 +1103,167 @@ func _scene_i_ld3_banner_buff() -> int:
 		printerr("I3: legion_b should revert to base ATK=2 after L34_b dies, got %d" %
 				legion_b.current_attack())
 		errors += 1
+
+	return errors
+
+
+# ============================================================================
+# SCENE J — M41 Wraith-Caller cost-discount trigger (M41.E1)
+# ============================================================================
+#
+# Drives the GameState API directly (arm_mourner_discount / compute_play_cost
+# / consume_mourner_discount) to keep the test headless. The combat.gd
+# lane.unit_killed subscriber that calls arm_mourner_discount is exercised
+# in combat_test.gd's integration tests.
+
+func _scene_j_m41_cost_discount() -> int:
+	var errors: int = 0
+
+	# Helper: build a card with a given faction + cost.
+	var mk_card := func(cid: StringName, faction: GFEnums.Faction, cost: int) -> Card:
+		var c := Card.new()
+		c.id = cid
+		c.display_name = "TestCard_%s" % cid
+		c.card_type = GFEnums.CardType.UNIT
+		c.faction = faction
+		c.cost = cost
+		c.hp = 3
+		c.attack = 2
+		c.attack_range = GFEnums.AttackRange.MELEE
+		c.cooldown = 1
+		c.is_draftable = true
+		c.keywords = []
+		return c
+
+	# Reset GameState flags to a clean slate (test ordering safety).
+	GameState.mourner_discount_armed = false
+	GameState._mourner_discount_fired_this_turn = false
+
+	var mourner_card: Card = mk_card.call(&"M_test", GFEnums.Faction.ASH_MOURNERS, 3)
+	var legion_card: Card = mk_card.call(&"L_test", GFEnums.Faction.LAST_LEGION, 3)
+
+	# ----- J1: flag clear → compute_play_cost returns base ------------------
+	var j1_cost := GameState.compute_play_cost(mourner_card)
+	if j1_cost != 3:
+		printerr("J1: expected base cost 3 with flag clear, got %d" % j1_cost)
+		errors += 1
+
+	# ----- J2: arm → Mourner discounted, non-Mourner full -------------------
+	GameState.arm_mourner_discount()
+	var j2_mourner := GameState.compute_play_cost(mourner_card)
+	if j2_mourner != 2:
+		printerr("J2: armed Mourner should cost 2, got %d" % j2_mourner)
+		errors += 1
+	var j2_legion := GameState.compute_play_cost(legion_card)
+	if j2_legion != 3:
+		printerr("J2: armed Legion (non-Mourner) should cost 3, got %d" % j2_legion)
+		errors += 1
+
+	# ----- J3: consume → next Mourner pays full (once/turn cap) ------------
+	GameState.consume_mourner_discount()
+	var j3_cost := GameState.compute_play_cost(mourner_card)
+	if j3_cost != 3:
+		printerr("J3: post-consume Mourner should cost 3 (cap held), got %d" % j3_cost)
+		errors += 1
+
+	# ----- J4: arm again same turn → no-op (fired-this-turn lock) ----------
+	GameState.arm_mourner_discount()
+	if GameState.mourner_discount_armed:
+		printerr("J4: arm same turn after fire should be no-op; armed flag should stay false")
+		errors += 1
+	var j4_cost := GameState.compute_play_cost(mourner_card)
+	if j4_cost != 3:
+		printerr("J4: Mourner should still cost 3 after re-arm attempt, got %d" % j4_cost)
+		errors += 1
+
+	# Reset for any downstream test isolation.
+	GameState.mourner_discount_armed = false
+	GameState._mourner_discount_fired_this_turn = false
+
+	return errors
+
+
+# ============================================================================
+# SCENE K — W41 Pack-Caller Wolf-Token draw trigger (W41.E1)
+# ============================================================================
+
+func _scene_k_w41_wolf_summon_draw() -> int:
+	var errors: int = 0
+
+	# Build a synthetic deck with 2 cards + an empty hand + empty discard so
+	# we can drive try_trigger_wolf_summon_draw without the full Combat path.
+	var deck := Deck.new()
+	var hand := Hand.new()
+	var discard := Discard.new()
+	var c1 := Card.new()
+	c1.id = &"K_filler1"
+	c1.display_name = "Filler 1"
+	c1.card_type = GFEnums.CardType.UNIT
+	c1.cost = 1
+	c1.hp = 1
+	c1.attack = 1
+	c1.attack_range = GFEnums.AttackRange.MELEE
+	c1.cooldown = 1
+	deck.add_to_top(c1)
+	var c2 := Card.new()
+	c2.id = &"K_filler2"
+	c2.display_name = "Filler 2"
+	c2.card_type = GFEnums.CardType.UNIT
+	c2.cost = 1
+	c2.hp = 1
+	c2.attack = 1
+	c2.attack_range = GFEnums.AttackRange.MELEE
+	c2.cooldown = 1
+	deck.add_to_top(c2)
+
+	# Plug into GameState (the helpers read from it).
+	var saved_deck = GameState.deck
+	var saved_hand = GameState.hand
+	var saved_discard = GameState.discard
+	var saved_fired: bool = GameState._wolf_summon_draw_fired_this_turn
+	GameState.deck = deck
+	GameState.hand = hand
+	GameState.discard = discard
+	GameState._wolf_summon_draw_fired_this_turn = false
+
+	# ----- K1: first try with deck non-empty → fires, hand+1 ----------------
+	var k1_fired: bool = GameState.try_trigger_wolf_summon_draw()
+	if not k1_fired:
+		printerr("K1: first try_trigger should fire, returned false")
+		errors += 1
+	if hand.size() != 1:
+		printerr("K1: hand should grow to 1 after fire, got %d" % hand.size())
+		errors += 1
+	if not GameState._wolf_summon_draw_fired_this_turn:
+		printerr("K1: fired-flag should be set after first fire")
+		errors += 1
+
+	# ----- K2: second try same turn → blocked by cap ------------------------
+	var k2_fired: bool = GameState.try_trigger_wolf_summon_draw()
+	if k2_fired:
+		printerr("K2: second try_trigger same turn should return false (cap)")
+		errors += 1
+	if hand.size() != 1:
+		printerr("K2: hand should stay at 1 (no extra draw), got %d" % hand.size())
+		errors += 1
+
+	# ----- K3: empty deck+discard → failed attempt doesn't burn window ------
+	GameState._wolf_summon_draw_fired_this_turn = false
+	while deck.size() > 0:
+		deck.draw_one(discard)
+	discard.clear()
+	var k3_fired: bool = GameState.try_trigger_wolf_summon_draw()
+	if k3_fired:
+		printerr("K3: empty deck+discard should not fire (no card available)")
+		errors += 1
+	if GameState._wolf_summon_draw_fired_this_turn:
+		printerr("K3: failed attempt should NOT burn the per-turn window (fired-flag stays false)")
+		errors += 1
+
+	# Restore prior state.
+	GameState.deck = saved_deck
+	GameState.hand = saved_hand
+	GameState.discard = saved_discard
+	GameState._wolf_summon_draw_fired_this_turn = saved_fired
 
 	return errors
