@@ -51,9 +51,13 @@ static func play_card(
 	if not _hand_contains(hand, card):
 		return _fail("card not in hand")
 
-	# 2. Cost
-	if card.cost > GameState.mana:
-		return _fail("not enough mana (cost %d, have %d)" % [card.cost, GameState.mana])
+	# 2. Cost — read effective cost via GameState.compute_play_cost so any
+	# active discount triggers (Phase 2.16 M41.E1 Wraith-Caller for Ash-Mourners,
+	# future trigger cards) are honoured at the mana check + spend. The discount
+	# is consumed AFTER a successful commit, never on rejected plays.
+	var effective_cost: int = GameState.compute_play_cost(card)
+	if effective_cost > GameState.mana:
+		return _fail("not enough mana (cost %d, have %d)" % [effective_cost, GameState.mana])
 
 	# 3. Type-specific target validation
 	match card.card_type:
@@ -70,21 +74,22 @@ static func play_card(
 			if lane.is_tile_occupied(tile_idx):
 				return _fail("tile %d already occupied" % tile_idx)
 			# All checks passed — commit.
-			GameState.spend_mana(card.cost)
+			GameState.spend_mana(effective_cost)
 			var removed: Card = hand.remove(card)
 			if removed == null:
 				# Defensive: should never trigger thanks to step 1 check, but
 				# if hand state changed mid-call we surface it cleanly rather
 				# than corrupting mana.
-				GameState.gain_mana(card.cost)  # refund
+				GameState.gain_mana(effective_cost)  # refund
 				return _fail("hand.remove returned null (race)")
 			var unit: UnitInstance = lane.place_unit(card, tile_idx)
 			if unit == null:
 				# Belt-and-braces: place_unit re-validated and bailed. Refund.
-				GameState.gain_mana(card.cost)
+				GameState.gain_mana(effective_cost)
 				hand.add(card)
 				return _fail("place_unit returned null (post-validation race)")
 			discard.add(card)
+			_consume_play_discounts(card)
 			return _ok({"unit": unit})
 
 		GFEnums.CardType.SPELL:
@@ -92,12 +97,13 @@ static func play_card(
 			# engine (damage shapes, area buffs, status applies, draw, etc.)
 			# is B2.7. The target dict is preserved on the result for future
 			# effect-engine consumers to read.
-			GameState.spend_mana(card.cost)
+			GameState.spend_mana(effective_cost)
 			var removed_s: Card = hand.remove(card)
 			if removed_s == null:
-				GameState.gain_mana(card.cost)
+				GameState.gain_mana(effective_cost)
 				return _fail("hand.remove returned null (race)")
 			discard.add(card)
+			_consume_play_discounts(card)
 			return _ok({"spell_target": target})
 
 		GFEnums.CardType.TRAP:
@@ -108,12 +114,13 @@ static func play_card(
 			var lane_idx_t: int = int(target.get("lane", -1))
 			if lane_idx_t < 0 or lane_idx_t >= lanes.size():
 				return _fail("invalid trap lane %d" % lane_idx_t)
-			GameState.spend_mana(card.cost)
+			GameState.spend_mana(effective_cost)
 			var removed_t: Card = hand.remove(card)
 			if removed_t == null:
-				GameState.gain_mana(card.cost)
+				GameState.gain_mana(effective_cost)
 				return _fail("hand.remove returned null (race)")
 			discard.add(card)
+			_consume_play_discounts(card)
 			return _ok({"trap_lane": lane_idx_t})
 
 		_:
@@ -148,3 +155,16 @@ static func _hand_contains(hand: Hand, card: Card) -> bool:
 		if c == card:
 			return true
 	return false
+
+
+## After a successful play, consume any active per-card-faction discounts.
+## Currently only the Phase 2.16 M41.E1 Ash-Mourner discount (Wraith-Caller of
+## the Dirge). Centralised here so future faction-discount triggers slot into
+## the same hook (one if-branch per trigger). Pure dispatch — GameState owns
+## the state mutation + signal emission.
+static func _consume_play_discounts(card: Card) -> void:
+	if card == null:
+		return
+	if card.faction == GFEnums.Faction.ASH_MOURNERS \
+			and GameState.mourner_discount_armed:
+		GameState.consume_mourner_discount()

@@ -205,6 +205,27 @@ func _on_unit_placed(unit: UnitInstance) -> void:
 	uv.bind(unit)
 	add_child(uv)
 	_unit_views[unit] = uv
+	# Phase 2.16 / W41.E1 — Pack-Caller Initiate Wolf-Token draw trigger.
+	# Per Phase 2.13 N3: "When a friendly Wolf-Token is summoned in your lane,
+	# draw 1 card. Once per turn." Conditions:
+	#   - placed unit's card.id == &"W28" (Wolf-Token)
+	#   - a friendly W41 (Pack-Caller Initiate) is alive in the SAME lane as
+	#     the newly-placed Wolf-Token (per spec: "in your lane" = W41's lane)
+	#   - the trigger has not already fired this turn (GameState's
+	#     try_trigger_wolf_summon_draw() returns false if fired-this-turn)
+	# The just-placed Wolf-Token is in `lane.friendly_units` by the time this
+	# signal fires (lane.place_unit appends BEFORE emitting unit_placed), but
+	# the trigger checks for ANY alive friendly W41 in the lane — W28 is never
+	# W41 itself, so there's no self-trigger risk.
+	if unit.card_data != null and unit.card_data.id == &"W28":
+		var placed_lane_idx: int = unit.lane_index
+		if placed_lane_idx >= 0 and placed_lane_idx < lanes.size():
+			var placed_lane: Lane = lanes[placed_lane_idx]
+			for u in placed_lane.friendly_units:
+				if u != null and u.is_alive() and u.card_data != null \
+						and u.card_data.id == &"W41":
+					GameState.try_trigger_wolf_summon_draw()
+					break
 
 
 func _on_unit_killed(unit: UnitInstance) -> void:
@@ -220,6 +241,27 @@ func _on_unit_killed(unit: UnitInstance) -> void:
 			and not unit.has_persisted \
 			and not unit.is_token:
 		_pending_persists.append(unit)
+	# Phase 2.16 / M41.E1 — Wraith-Caller of the Dirge cost-discount trigger.
+	# Per Phase 2.13 N1: "When a friendly Mourner dies, the next Mourner you
+	# play this turn costs 1 less. Cap once per turn." Conditions:
+	#   - dying unit's faction == ASH_MOURNERS
+	#   - a friendly M41 (Wraith-Caller of the Dirge) is alive in the SAME lane
+	#     as the dying unit (per spec: "friendly M41 in lane")
+	#   - the trigger has not already fired this turn (handled by GameState's
+	#     two-flag model: arm_mourner_discount is a no-op if fired-this-turn)
+	# By the time _on_unit_killed fires, the dying unit has been removed from
+	# `lane.friendly_units` by `cull_dead_units`, so M41 dying does not
+	# inadvertently satisfy the "M41 in lane" check on its own death.
+	if unit.card_data != null \
+			and unit.card_data.faction == GFEnums.Faction.ASH_MOURNERS:
+		var dying_lane_idx: int = unit.lane_index
+		if dying_lane_idx >= 0 and dying_lane_idx < lanes.size():
+			var dying_lane: Lane = lanes[dying_lane_idx]
+			for u in dying_lane.friendly_units:
+				if u != null and u.is_alive() and u.card_data != null \
+						and u.card_data.id == &"M41":
+					GameState.arm_mourner_discount()
+					break
 	# Clean up the visual.
 	if not _unit_views.has(unit):
 		return

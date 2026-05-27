@@ -416,4 +416,7 @@ The v0.1 structural property (every archetype deals 1 + receives 1) is preserved
 - `cards_iron_penitents_v1.md` — annotate P3 with the TAUNT keyword flag (M5-style markdown flag, .tres edit at E1).
 - `cards_last_legion_v1.md` — annotate L7/L11/L18/L33 with TAUNT flags.
 - `archetypes_v0.md` — this v0.2 section (now appended).
-- `keywords/taunt_v0.md` — add cross-reference to
+- `keywords/taunt_v0.md` — add cross-reference to this v0.2 audit + the §"Emergent design considerations" balance flags.
+- `playtest_sim_brief.md` (C7, future) — must include the 4 v0.2 deltas as targeted scenarios.
+
+— Controller, 2026-05-26 (M6 complete)

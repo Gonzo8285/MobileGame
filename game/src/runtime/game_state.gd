@@ -139,6 +139,47 @@ var xp_multiplier_sources: Dictionary = {}
 var _xp_pending_consume: Array[StringName] = []
 
 
+# ---------- M41 Wraith-Caller cost-discount trigger (Phase 2.16 M41.E1) -----
+#
+# Per Phase 2.13 N1 + Phase 2.16 M41.E1: "When a friendly Mourner dies, the
+# next Mourner you play this turn costs 1 less. Cap once per turn."
+#
+# Two-flag model enforces strict cap-once-per-turn:
+#   - `mourner_discount_armed` — is a discount currently sitting on the next
+#     Ash-Mourner play? Set by Combat._on_unit_killed when a friendly Ash-Mourner
+#     dies AND a friendly M41 is alive in the same lane. Cleared by CardPlay
+#     when consumed at play-time. Cleared at turn_started regardless.
+#   - `_mourner_discount_fired_this_turn` — has the trigger fired (armed OR
+#     consumed) yet this turn? Prevents re-arming after consume. Cleared at
+#     turn_started.
+#
+# Not an aura — discrete event trigger; ships independently of AURA.E1.
+var mourner_discount_armed: bool = false
+var _mourner_discount_fired_this_turn: bool = false
+
+signal mourner_discount_armed_changed(armed: bool)  ## HUD hint for play-cost overlay
+
+
+# ---------- W41 Pack-Caller Initiate Wolf-Token draw trigger (Phase 2.16 W41.E1)
+#
+# Per Phase 2.13 N3 + Phase 2.16 W41.E1: "When a friendly Wolf-Token is summoned
+# in your lane, draw 1 card. Once per turn."
+#
+# Discrete event trigger (not an aura). Single-flag model — there is no
+# "armed waiting for next play" state because the draw resolves immediately on
+# placement; we just need to know whether the trigger has fired this turn.
+#   - `_wolf_summon_draw_fired_this_turn` — set when try_trigger_wolf_summon_draw()
+#     successfully draws. Cleared at turn_started. Acts as the cap-once-per-turn
+#     lock.
+#
+# Combat._on_unit_placed calls `try_trigger_wolf_summon_draw()` when a Wolf-Token
+# (card.id == &"W28") is placed in a lane that contains an alive friendly W41.
+# Anti-P2W invariant: no monetisation state involved. Pure combat trigger.
+var _wolf_summon_draw_fired_this_turn: bool = false
+
+signal wolf_summon_draw_triggered  ## HUD hint for "Pack-Caller drew" overlay
+
+
 func _ready() -> void:
 	print("[GameState] autoload ready")
 
@@ -249,6 +290,17 @@ func next_turn() -> void:
 	if max_mana < MANA_CAP:
 		max_mana += 1
 	mana = max_mana
+	# M41.E1 — reset the Wraith-Caller cost-discount trigger at turn start.
+	# Any armed-but-unconsumed discount is dropped; the "fired this turn" lock
+	# clears so a fresh trigger window opens for the new turn.
+	var had_discount := mourner_discount_armed
+	mourner_discount_armed = false
+	_mourner_discount_fired_this_turn = false
+	if had_discount:
+		mourner_discount_armed_changed.emit(false)
+	# W41.E1 — reset the Pack-Caller Wolf-Token draw trigger at turn start.
+	# Cap-once-per-turn lock clears so a fresh trigger window opens.
+	_wolf_summon_draw_fired_this_turn = false
 	mana_changed.emit(mana, max_mana)
 	turn_started.emit(turn)
 
@@ -601,3 +653,93 @@ func gem_reward_for_kind(kind: int) -> int:
 		GFEnums.NodeKind.BOSS:  return GEM_REWARD_BOSS
 		GFEnums.NodeKind.ELITE: return GEM_REWARD_ELITE
 		_:                      return GEM_REWARD_NORMAL
+
+
+# ============================================================================
+# M41 Wraith-Caller cost-discount trigger (Phase 2.16 M41.E1)
+# ============================================================================
+#
+# Combat._on_unit_killed calls `arm_mourner_discount()` when a friendly
+# Ash-Mourner dies AND a friendly M41 (Wraith-Caller of the Dirge) is alive in
+# the same lane AND the trigger has not yet fired this turn.
+#
+# CardPlay.play_card calls `compute_play_cost(card)` to read the effective
+# cost (1 less for an Ash-Mourner if armed, floor 0), then
+# `consume_mourner_discount()` after a successful play to clear the armed flag.
+# Consume does NOT clear the "fired this turn" lock — that's a turn-start reset
+# only, so re-arming after consume within the same turn is blocked.
+#
+# Anti-P2W invariant: no monetisation state involved. Pure combat trigger.
+
+
+## Arm the Wraith-Caller cost discount on the next Mourner play this turn.
+## No-op if already armed or already fired this turn. Idempotent.
+func arm_mourner_discount() -> void:
+	if mourner_discount_armed or _mourner_discount_fired_this_turn:
+		return
+	mourner_discount_armed = true
+	_mourner_discount_fired_this_turn = true
+	mourner_discount_armed_changed.emit(true)
+
+
+## Consume the discount (call from CardPlay after a successful Ash-Mourner play).
+## No-op if not armed. Leaves `_mourner_discount_fired_this_turn` set so the
+## trigger cannot re-arm within the same turn.
+func consume_mourner_discount() -> void:
+	if not mourner_discount_armed:
+		return
+	mourner_discount_armed = false
+	mourner_discount_armed_changed.emit(false)
+
+
+## Effective play cost for `card` given current discount state.
+## Returns base cost minus 1 (floor 0) if the discount is armed AND the card
+## is faction == ASH_MOURNERS. Otherwise base cost. Pure read; does NOT consume.
+## Used by CardPlay to compute mana-check + spend, and by UI to show the
+## strike-through preview on hand cards.
+func compute_play_cost(card: Card) -> int:
+	if card == null:
+		return 0
+	var base_cost: int = card.cost
+	if mourner_discount_armed and card.faction == GFEnums.Faction.ASH_MOURNERS:
+		return maxi(0, base_cost - 1)
+	return base_cost
+
+
+# ============================================================================
+# W41 Pack-Caller Initiate Wolf-Token draw trigger (Phase 2.16 W41.E1)
+# ============================================================================
+#
+# Combat._on_unit_placed calls `try_trigger_wolf_summon_draw()` when a Wolf-Token
+# (card.id == &"W28") is placed in a lane that contains an alive friendly W41
+# (Pack-Caller Initiate). The function gates on the once-per-turn lock and,
+# if eligible, draws 1 card from the deck into hand (overflow → discard via
+# the standard hand.overflowed wiring set up by Combat.start).
+#
+# Returns true if a draw fired this call, false if blocked (already fired this
+# turn, or deck+discard both empty so no card is available).
+##
+## Try to fire the W41 Pack-Caller Wolf-Token draw trigger.
+## Returns true if a card was actually drawn; false if blocked (cap exhausted
+## or no card available).
+func try_trigger_wolf_summon_draw() -> bool:
+	if _wolf_summon_draw_fired_this_turn:
+		return false
+	if deck == null or hand == null:
+		return false
+	var card: Card = deck.draw_one(discard)
+	if card == null:
+		# Deck + discard both empty — burn-mill terminal state; no draw fired
+		# so we deliberately DO NOT set the fired flag. A later Wolf-Token
+		# placement this turn won't get to retry either — but if a previous
+		# discard-cycle reseeds the deck mid-turn (rare; spell effect), the
+		# trigger can still fire because the flag is still clear. Matches the
+		# M41 convention: failed attempts don't burn the per-turn window.
+		return false
+	_wolf_summon_draw_fired_this_turn = true
+	# Route to hand; if hand is full, the hand.overflowed signal (wired by
+	# Combat.start) sends the card to discard per the burn-mill rule.
+	if not hand.add(card) and discard != null:
+		discard.add(card)
+	wolf_summon_draw_triggered.emit()
+	return true

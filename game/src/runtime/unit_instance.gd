@@ -146,18 +146,26 @@ func apply_aura_grant(source: UnitInstance, atk_buff: int, hp_buff: int,
 ## dies, or its trigger condition fails. Stats shrink; current_hp is clamped
 ## at the new max with a floor of 1 (revoke never kills — see aura_v0.md
 ## "HP buff handling on revoke" for the design rationale).
+##
+## The floor only fires for a unit that was ALIVE pre-revoke. A unit already
+## at current_hp=0 (a mid-cull dying target, or one killed by some other
+## effect this tick) must not be resurrected to 1 HP by an unrelated aura
+## revoke. Discovered via W4.E1 Scene H4: W8 held W4's aura, W8 died,
+## subsequent revoke_all_from(W4) in the cull pre-hook re-floored W8 to 1
+## → cull no longer saw W8 as dead, target-shift-on-death broke.
 func revoke_aura_grant(source: UnitInstance) -> void:
 	if source == null:
 		return
 	if not aura_stats.has(source):
 		return
+	var was_alive: bool = is_alive()
 	aura_stats.erase(source)
 	runtime_keywords.erase(source)
 	var new_max := max_hp()
 	if new_max < 1:
 		new_max = 1
 	current_hp = mini(current_hp, new_max)
-	if current_hp < 1:
+	if current_hp < 1 and was_alive:
 		current_hp = 1
 
 

@@ -90,4 +90,7 @@ Sandbox cannot run Godot — Paul confirms `[turn_engine_test] PASS` next time t
 - `game/data/cards/skinward_pact/W3.tres` — **NO CHANGE** (text-only stays per balance reasoning above; flagged for Paul confirmation).
 - `cards_skinward_pact_v1.md` — Open-Q6 marked resolved with cross-reference to this doc; W3 row annotated to note text-only retention pending balance review. **DONE.**
 - `gdd_v0.md` line 37 — Lifesteal already listed in the "intended keywords" sentence; no edit needed (was forward-looking).
-- `faction_bible.md` §4 — Skinward Pact mechanical pillars updated to include LIFESTEAL alongside SUMMON. OWED — single-line edit at next heartbeat
+- `faction_bible.md` §4 — Skinward Pact mechanical pillars updated to include LIFESTEAL alongside SUMMON. OWED — single-line edit at next heartbeat.
+- `archetypes_v0.md` E1 Big-Monster archetype — Lifesteal reference upgraded from text-only-flavour to keyword-confirmed. OWED — single-line edit at next heartbeat.
+
+Phase 2.13 Open-Q closed by this spec.

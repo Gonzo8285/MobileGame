@@ -258,4 +258,10 @@ Five M1-flagged cards have been keyword-tagged with PERSIST in their `.tres` fil
 - Any Persist-tagged Mourner + Coven C41 Bog-Bargain Recall → return to hand, replay, Persist marker reset, infinite-ish loop bounded by mana cost.
 - All five + Coven C42 Black Mire Pact → each Persist death pops a 0/1 Bog-Spawn (3 charges). Mourner + Coven combo deck becomes a real shape.
 
-**Open Q for Paul (not blocking M3):** M22 Hollow Mortician's "+1 ATK this turn" on-death trigger interacts oddly with Persist — when the Mortician itself dies and Persists back, does its own death trigger fire and pre-buff its returning body? Engine an
+**Open Q for Paul (not blocking M3):** M22 Hollow Mortician's "+1 ATK this turn" on-death trigger interacts oddly with Persist — when the Mortician itself dies and Persists back, does its own death trigger fire and pre-buff its returning body? Engine answer is "no" (the buff is on the Mortician's instance, which is gone; the new instance is fresh). Design answer is unclear. Recommend keeping engine answer; revisit only if Mortician underperforms.
+
+---
+
+## M7 cohesion-audit additions — superseded by Phase 2.13 N1 (M41)
+
+**SUPERSEDED 2026-05-26 evening (Controller).** This section originally added an M42 "Wraith-Caller of the Dirge" as the B2 Resurrect-Spam spine fix. That add was authored in a prior Controller pass that didn't yet see N1 (M41, same name, same role, different stats) had been queued in `backlog.md` Phase 2.13. M41 is the canonical N1 card per the backlog tick; M42 was a duplicate. `M42.tres` and this section's table have been removed to keep the spec doc and disk state in sync. **No card is lost** — the B2 spine fix is M41 (see the M41 row at line 89 of this doc and the v1.1 change-log entry above for the canonical record). M41 stats: 3c U / 3 HP / 2 ATK / MELEE / CD-1. Reconciliation recorded in `backlog.md` Phase 2.13 closing note.
