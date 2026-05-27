@@ -129,6 +129,7 @@ func start() -> void:
 	_refresh_status_hud("Turn 1 — drag a card to a lane to play it")
 	_refresh_base_hp_hud()
 	_refresh_zone_counts_hud()
+	_refresh_wave_hud()
 
 
 # ============================================================================
@@ -148,6 +149,7 @@ func _on_turn_started(turn_num: int) -> void:
 func _on_turn_ended(turn_num: int) -> void:
 	_refresh_zone_counts_hud()
 	_refresh_base_hp_hud()
+	_refresh_wave_hud()
 	if is_over:
 		return
 	# B2.7 turn-end phase order — see TurnEngine docstring.
@@ -413,6 +415,7 @@ func _on_card_play_attempted(result: Dictionary) -> void:
 		var reason: String = result.get("reason", "rejected")
 		_refresh_status_hud("Cannot play: %s" % reason)
 	_refresh_zone_counts_hud()
+	_refresh_wave_hud()
 
 
 func _on_hp_changed(_new_hp: int, _max_hp: int) -> void:
@@ -441,6 +444,26 @@ func _refresh_zone_counts_hud() -> void:
 	var h: int = GameState.hand.size() if GameState.hand != null else 0
 	var dc: int = GameState.discard.size() if GameState.discard != null else 0
 	lbl.text = "Deck: %d   Hand: %d   Discard: %d" % [d, h, dc]
+
+
+func _refresh_wave_hud() -> void:
+	var lbl: Label = get_node_or_null("HUD/WaveLabel") as Label
+	if lbl == null:
+		return
+	var enemies_in_lanes: int = 0
+	for lane in lanes:
+		for e in lane.enemies:
+			if e != null and e.is_alive():
+				enemies_in_lanes += 1
+	var max_turns: int = current_wave.turn_count if current_wave != null else 0
+	var spawns_remaining: int = 0
+	if current_wave != null:
+		for entry in current_wave.spawns:
+			if entry != null and entry.turn > GameState.turn:
+				spawns_remaining += 1
+	lbl.text = "Turn %d of %d   |   Enemies in lanes: %d   |   Spawns remaining: %d" % [
+		GameState.turn, max_turns, enemies_in_lanes, spawns_remaining
+	]
 
 
 ## Detach this combat from GameState. Idempotent; safe to call after a

@@ -58,6 +58,17 @@ offset_bottom = 1400.0
 offset_left = 30.0
 offset_top = 20.0
 offset_right = 1050.0
-offset_bottom = 70.0
-text = "Combat — drag cards from hand to a lane. End Turn (right) when ready."
+offset_bottom = 60.0
+text = "Combat — drag cards from hand to a lane."
 horizontal_alignment = 1
+
+[node name="WaveLabel" type="Label" parent="HUD"]
+offset_left = 30.0
+offset_top = 60.0
+offset_right = 1050.0
+offset_bottom = 95.0
+theme_override_font_sizes/font_size = 18
+text = "Turn 0 of 0   |   Enemies in lanes: 0   |   Spawns remaining: 0"
+horizontal_alignment = 1
+
+[node name="BaseHpLabel" typ
