@@ -19,6 +19,9 @@ var _hp_bar: ColorRect = null
 var _hp_bar_bg: ColorRect = null
 var _stats_label: Label = null
 var _name_label: Label = null
+var _last_atk: int = -1   ## tracks stat changes for pulse animation
+var _last_hp: int = -1
+var _last_max_hp: int = -1
 
 
 func _ready() -> void:
@@ -136,7 +139,9 @@ func _refresh_display() -> void:
 	if not is_instance_valid(_name_label):
 		return
 	_name_label.text = unit.card_data.display_name
-	var max_hp: int = unit.card_data.hp
+	# AURA.E1 — max HP includes runtime aura grants now, not just card.hp
+	var max_hp: int = unit.max_hp() if unit.has_method("max_hp") else unit.card_data.hp
+	var atk: int = unit.current_attack()
 	var hp_frac: float = float(unit.current_hp) / float(max(max_hp, 1))
 	if is_instance_valid(_hp_bar):
 		_hp_bar.size.x = (UNIT_WIDTH - 12) * clamp(hp_frac, 0.0, 1.0)
@@ -145,9 +150,28 @@ func _refresh_display() -> void:
 		var cd_text: String = ""
 		if unit.cooldown_counter > 0:
 			cd_text = " (CD %d)" % unit.cooldown_counter
-		_stats_label.text = "ATK %d  HP %d/%d%s" % [unit.current_attack(), unit.current_hp, max_hp, cd_text]
+		_stats_label.text = "ATK %d  HP %d/%d%s" % [atk, unit.current_hp, max_hp, cd_text]
+	# Stat-change pulse: green if ATK or max_hp went UP (aura grant landed),
+	# red if current_hp went DOWN (took damage). Skip on first paint
+	# (_last_* still at -1 sentinel).
+	if _last_atk >= 0:
+		if atk > _last_atk or max_hp > _last_max_hp:
+			_pulse_stats(Color(0.4, 1.0, 0.5, 1))
+		elif atk < _last_atk or max_hp < _last_max_hp:
+			_pulse_stats(Color(1.0, 0.6, 0.3, 1))  # buff dropped — orange tint
+	_last_atk = atk
+	_last_hp = unit.current_hp
+	_last_max_hp = max_hp
 	# Reposition in case tile changed (rare for friendlies but defensive).
 	_position_for_unit()
+
+
+func _pulse_stats(tint: Color) -> void:
+	if _stats_label == null or not is_instance_valid(_stats_label) or not is_inside_tree():
+		return
+	var t := create_tween()
+	t.tween_property(_stats_label, "modulate", tint, 0.10)
+	t.tween_property(_stats_label, "modulate", Color(1, 1, 1, 1), 0.40)
 
 
 func _hp_bar_colour(frac: float) -> Color:

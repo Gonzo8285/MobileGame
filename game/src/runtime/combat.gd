@@ -119,7 +119,16 @@ func start() -> void:
 		card_play_attempted.connect(_on_card_play_attempted)
 	if not GameState.mana_changed.is_connected(_on_mana_changed):
 		GameState.mana_changed.connect(_on_mana_changed)
+	if not GameState.hp_changed.is_connected(_on_hp_changed):
+		GameState.hp_changed.connect(_on_hp_changed)
+	# End-turn button — wire to combat.end_turn()
+	var btn: Button = get_node_or_null("HUD/EndTurnButton") as Button
+	if btn != null and not btn.pressed.is_connected(end_turn):
+		btn.pressed.connect(end_turn)
+	# Initial HUD paint
 	_refresh_status_hud("Turn 1 — drag a card to a lane to play it")
+	_refresh_base_hp_hud()
+	_refresh_zone_counts_hud()
 
 
 # ============================================================================
@@ -137,6 +146,8 @@ func _on_turn_started(turn_num: int) -> void:
 
 
 func _on_turn_ended(turn_num: int) -> void:
+	_refresh_zone_counts_hud()
+	_refresh_base_hp_hud()
 	if is_over:
 		return
 	# B2.7 turn-end phase order — see TurnEngine docstring.
@@ -401,6 +412,35 @@ func _on_card_play_attempted(result: Dictionary) -> void:
 	else:
 		var reason: String = result.get("reason", "rejected")
 		_refresh_status_hud("Cannot play: %s" % reason)
+	_refresh_zone_counts_hud()
+
+
+func _on_hp_changed(_new_hp: int, _max_hp: int) -> void:
+	_refresh_base_hp_hud()
+
+
+func _refresh_base_hp_hud() -> void:
+	var lbl: Label = get_node_or_null("HUD/BaseHpLabel") as Label
+	if lbl == null:
+		return
+	var hp_frac: float = float(GameState.base_hp) / float(max(GameState.max_base_hp, 1))
+	var tint: Color = Color(0.9, 0.9, 0.9, 1)
+	if hp_frac < 0.33:
+		tint = Color(1, 0.4, 0.4, 1)
+	elif hp_frac < 0.66:
+		tint = Color(1, 0.85, 0.4, 1)
+	lbl.add_theme_color_override("font_color", tint)
+	lbl.text = "Base HP: %d / %d" % [GameState.base_hp, GameState.max_base_hp]
+
+
+func _refresh_zone_counts_hud() -> void:
+	var lbl: Label = get_node_or_null("HUD/ZoneCountsLabel") as Label
+	if lbl == null:
+		return
+	var d: int = GameState.deck.size() if GameState.deck != null else 0
+	var h: int = GameState.hand.size() if GameState.hand != null else 0
+	var dc: int = GameState.discard.size() if GameState.discard != null else 0
+	lbl.text = "Deck: %d   Hand: %d   Discard: %d" % [d, h, dc]
 
 
 ## Detach this combat from GameState. Idempotent; safe to call after a
