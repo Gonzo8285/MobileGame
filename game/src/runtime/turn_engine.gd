@@ -238,17 +238,21 @@ static func _resolve_friendly_attacks_in_lane(lane: Lane) -> int:
 		var dealt: int = lane.apply_damage_to_enemy(target, dmg)
 		# On-hit keyword application — only BLEED/POISON for B2.7. Other
 		# on-hit keywords (CLEAVE, PIERCE) are deferred to a balance pass.
+		# All keyword checks go via UnitInstance.has_keyword() (not the raw
+		# card_data) so aura-granted keywords fire too (AURA.E1, 2026-05-27)
+		# — e.g. a Wolf-Token under W42's aura should heal-on-attack even
+		# though its base Card has no keywords.
 		if u.card_data != null:
-			if u.card_data.has_keyword(GFEnums.Keyword.BLEED):
+			if u.has_keyword(GFEnums.Keyword.BLEED):
 				target.add_status(GFEnums.Keyword.BLEED, 1)
-			if u.card_data.has_keyword(GFEnums.Keyword.POISON):
+			if u.has_keyword(GFEnums.Keyword.POISON):
 				target.add_status(GFEnums.Keyword.POISON, 1)
 			# LIFESTEAL (keywords/lifesteal_v0.md) — heal attacker for
 			# damage_dealt, capped at max HP via UnitInstance.heal(). Only
 			# triggers on positive damage (Shield/Pierce already resolved
 			# inside apply_damage_to_enemy / take_damage). No friendly-fire
 			# or self-target case — friendly attacks always target enemies.
-			if u.card_data.has_keyword(GFEnums.Keyword.LIFESTEAL) and dealt > 0:
+			if u.has_keyword(GFEnums.Keyword.LIFESTEAL) and dealt > 0:
 				u.heal(dealt)
 		u.reset_cooldown()
 		attacks += 1

@@ -161,6 +161,11 @@ func first_empty_tile() -> int:
 ## Place a unit on the given tile. Returns the UnitInstance on success, or
 ## null if the tile is invalid / occupied. The Card's hp / attack_range etc.
 ## are read by the engine from `unit.card_data`.
+##
+## After the unit is appended, fires the aura on-enter hook (AURA.E1):
+## existing aura sources in lane get a chance to grant onto the new unit,
+## and if the new unit is itself an aura source, it walks existing
+## friendlies and grants onto each.
 func place_unit(card: Card, tile_idx: int) -> UnitInstance:
 	if card == null or card.card_type != GFEnums.CardType.UNIT:
 		return null
@@ -170,17 +175,56 @@ func place_unit(card: Card, tile_idx: int) -> UnitInstance:
 		return null
 	var u := UnitInstance.new(card, tile_idx, lane_index)
 	friendly_units.append(u)
+	_on_unit_entered_lane(u)
 	unit_placed.emit(u)
 	return u
+
+
+## AURA.E1 — granted-keyword & granted-stat plumbing per
+## `keywords/aura_v0.md`. Called after `place_unit()` appends the new unit
+## and after Persist resurrects a unit (Combat drain queue). Three passes:
+##   (1) walk every existing source in lane and let it `maybe_grant` onto
+##       `new_unit` (outbound auras from existing sources)
+##   (2) call `maybe_grant(new_unit, null, self)` so `new_unit` (if it's a
+##       source) grants onto all existing friendlies
+##   (3) `re_evaluate_self_auras(self)` so self-aura conditions like L41's
+##       "while a friendly banner is in lane" reflow.
+func _on_unit_entered_lane(new_unit: UnitInstance) -> void:
+	if new_unit == null:
+		return
+	for source in friendly_units:
+		if source == null or source == new_unit:
+			continue
+		AuraDispatch.maybe_grant(source, new_unit, self)
+	AuraDispatch.maybe_grant(new_unit, null, self)
+	AuraDispatch.re_evaluate_self_auras(self, null)
+
+
+## Called before a unit is removed from the lane (cull_dead_units, also
+## Sacrifice when wired). Strips all aura grants whose source is the
+## leaving unit, then re-evaluates self-auras passing `leaving_unit` as
+## `excluding` so the dying banner doesn't keep L41's PIERCE alive past
+## its own death.
+func _on_unit_leaving_lane(leaving_unit: UnitInstance) -> void:
+	if leaving_unit == null:
+		return
+	AuraDispatch.revoke_all_from(leaving_unit, self)
+	AuraDispatch.re_evaluate_self_auras(self, leaving_unit)
 
 
 ## Cull dead friendly units. Mirrors `cull_dead()` for enemies. Call after
 ## any phase that can damage friendlies (B2.7 enemy attacks, sacrifice
 ## resolution, etc).
+##
+## Fires `_on_unit_leaving_lane()` BEFORE erase so any aura grants the
+## dying unit was projecting onto others get cleanly revoked (AURA.E1).
+## Order matters: revoke first, then unit_killed signal — listeners
+## including Combat's Persist-queue capture see consistent aura state.
 func cull_dead_units() -> int:
 	var removed: int = 0
 	for u in friendly_units.duplicate():
 		if not u.is_alive():
+			_on_unit_leaving_lane(u)
 			friendly_units.erase(u)
 			unit_killed.emit(u)
 			removed += 1
