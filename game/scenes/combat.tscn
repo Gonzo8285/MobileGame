@@ -48,9 +48,9 @@ color = Color(0.36, 0.06, 0.06, 1)
 
 [node name="HandView" parent="." instance=ExtResource("3_hand_view")]
 offset_left = 0.0
-offset_top = 1610.0
+offset_top = 1090.0
 offset_right = 1080.0
-offset_bottom = 1920.0
+offset_bottom = 1400.0
 
 [node name="HUD" type="CanvasLayer" parent="."]
 

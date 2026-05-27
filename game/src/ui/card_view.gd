@@ -198,9 +198,9 @@ func _build_visuals() -> void:
 	_stat_row = HBoxContainer.new()
 	_stat_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_stat_row.offset_left = 8
-	_stat_row.offset_top = 222
+	_stat_row.offset_top = 224
 	_stat_row.offset_right = 192
-	_stat_row.offset_bottom = 248
+	_stat_row.offset_bottom = 244
 	_stat_row.add_theme_constant_override("separation", 10)
 	add_child(_stat_row)
 
@@ -208,9 +208,9 @@ func _build_visuals() -> void:
 	_kw_strip = HBoxContainer.new()
 	_kw_strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_kw_strip.offset_left = 8
-	_kw_strip.offset_top = 250
+	_kw_strip.offset_top = 252
 	_kw_strip.offset_right = 192
-	_kw_strip.offset_bottom = 274
+	_kw_strip.offset_bottom = 270
 	_kw_strip.add_theme_constant_override("separation", 4)
 	add_child(_kw_strip)
 
@@ -299,7 +299,7 @@ func _refresh_icons() -> void:
 		if rng != null and card_data.attack_range != GFEnums.AttackRange.NONE:
 			var r := TextureRect.new()
 			r.texture = rng
-			r.custom_minimum_size = Vector2(22, 22)
+			r.custom_minimum_size = Vector2(16, 16)
 			r.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			r.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			_stat_row.add_child(r)
@@ -318,7 +318,7 @@ func _refresh_icons() -> void:
 			continue
 		var ir := TextureRect.new()
 		ir.texture = t
-		ir.custom_minimum_size = Vector2(22, 22)
+		ir.custom_minimum_size = Vector2(16, 16)
 		ir.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		ir.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		ir.tooltip_text = GFEnums.Keyword.keys()[kw].capitalize()
@@ -331,7 +331,7 @@ func _add_stat(row: HBoxContainer, stem: String, value: int) -> bool:
 		return false
 	var ic := TextureRect.new()
 	ic.texture = tex
-	ic.custom_minimum_size = Vector2(22, 22)
+	ic.custom_minimum_size = Vector2(16, 16)
 	ic.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	ic.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(ic)
