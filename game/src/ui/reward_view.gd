@@ -56,18 +56,30 @@ func _clear() -> void:
 func _build() -> void:
 	_clear()
 
+	# Decorative banner background — Snap-style draws focus to the reveal.
+	var banner_bg := ColorRect.new()
+	banner_bg.position = Vector2(0, 0)
+	banner_bg.size = Vector2(1080, 180)
+	banner_bg.color = Color(0.13, 0.10, 0.15, 0.85)
+	add_child(banner_bg)
+
 	_title_label = Label.new()
-	_title_label.text = "Reward — pick one"
-	_title_label.add_theme_font_size_override("font_size", 36)
+	_title_label.text = "★  VICTORY REWARD  ★"
+	_title_label.add_theme_font_size_override("font_size", 48)
+	_title_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.7, 1))
+	_title_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
+	_title_label.add_theme_constant_override("outline_size", 8)
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.position = Vector2(40, 40)
 	_title_label.size = Vector2(1000, 60)
 	add_child(_title_label)
 
 	var sub := Label.new()
-	sub.text = "Or skip to gain nothing this node."
-	sub.add_theme_font_size_override("font_size", 18)
-	sub.modulate = Color(1, 1, 1, 0.7)
-	sub.position = Vector2(40, 100)
+	sub.text = "Pick a card to add it to your deck — or skip to draw nothing."
+	sub.add_theme_font_size_override("font_size", 22)
+	sub.add_theme_color_override("font_color", Color(0.95, 0.92, 0.85, 0.85))
+	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub.position = Vector2(40, 110)
 	sub.size = Vector2(1000, 40)
 	add_child(sub)
 
@@ -82,17 +94,25 @@ func _build() -> void:
 	for i in range(_offer.cards.size()):
 		var card: Card = _offer.cards[i]
 		var btn := _make_card_button(card, i)
-		btn.position = Vector2(x_start + i * (CARD_WIDTH + CARD_GAP), y_top)
+		var final_pos := Vector2(x_start + i * (CARD_WIDTH + CARD_GAP), y_top)
+		btn.position = final_pos + Vector2(0, 240)  # start below final
 		btn.size = Vector2(CARD_WIDTH, CARD_HEIGHT)
+		btn.modulate.a = 0.0
 		add_child(btn)
 		_card_buttons.append(btn)
+		# Snap-style staggered reveal: each card flies up + fades in 100ms apart.
+		var t := create_tween().set_parallel(true)
+		t.tween_interval(0.10 * float(i))
+		t.chain().tween_property(btn, "position", final_pos, 0.45)				.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		t.parallel().tween_property(btn, "modulate:a", 1.0, 0.30)
 
 	# Skip button at bottom.
 	_skip_button = Button.new()
-	_skip_button.text = "Skip"
+	_skip_button.text = "Skip — draw nothing"
 	_skip_button.add_theme_font_size_override("font_size", 22)
-	_skip_button.position = Vector2(440, y_top + CARD_HEIGHT + 60)
-	_skip_button.size = Vector2(200, 70)
+	_skip_button.position = Vector2(380, y_top + CARD_HEIGHT + 80)
+	_skip_button.size = Vector2(320, 80)
+	_skip_button.modulate = Color(0.85, 0.85, 0.9, 0.85)
 	_skip_button.pressed.connect(_on_skip_pressed)
 	add_child(_skip_button)
 
@@ -102,12 +122,14 @@ func _make_card_button(card: Card, index: int) -> Button:
 	var faction_colour := _faction_colour(card.faction)
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = faction_colour
-	sb.border_color = Color(1, 1, 1, 0.4)
-	sb.set_border_width_all(2)
-	sb.corner_radius_top_left = 12
-	sb.corner_radius_top_right = 12
-	sb.corner_radius_bottom_left = 12
-	sb.corner_radius_bottom_right = 12
+	sb.border_color = _rarity_border_colour(card.rarity)
+	sb.set_border_width_all(4)
+	sb.corner_radius_top_left = 16
+	sb.corner_radius_top_right = 16
+	sb.corner_radius_bottom_left = 16
+	sb.corner_radius_bottom_right = 16
+	sb.shadow_color = _rarity_border_colour(card.rarity) * Color(1, 1, 1, 0.45)
+	sb.shadow_size = 8
 	btn.add_theme_stylebox_override("normal", sb)
 
 	# Compose card body via a child container.
@@ -178,6 +200,16 @@ func _populate_card_button(btn: Button, card: Card) -> void:
 	flavour.size = Vector2(CARD_WIDTH - 28, 60)
 	flavour.autowrap_mode = TextServer.AUTOWRAP_WORD
 	btn.add_child(flavour)
+
+
+func _rarity_border_colour(rarity: int) -> Color:
+	match rarity:
+		GFEnums.Rarity.COMMON:    return Color(0.8, 0.8, 0.85, 0.6)    # silver-grey
+		GFEnums.Rarity.UNCOMMON:  return Color(0.4, 0.85, 0.5, 0.85)  # green glow
+		GFEnums.Rarity.RARE:      return Color(0.4, 0.6, 1.0, 0.95)   # blue glow
+		GFEnums.Rarity.EPIC:      return Color(0.85, 0.4, 1.0, 1.0)   # purple
+		GFEnums.Rarity.LEGENDARY: return Color(1.0, 0.85, 0.3, 1.0)   # gold
+		_: return Color(0.7, 0.7, 0.75, 0.6)
 
 
 func _faction_colour(faction: int) -> Color:
