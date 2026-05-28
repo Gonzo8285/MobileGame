@@ -19,6 +19,7 @@ const TILES_PER_LANE: int = 6
 var combat_root: Node = null
 var _is_hovered_with_drag: bool = false
 var _lane_label: Label = null
+var _power_label: Label = null
 
 
 func _ready() -> void:
@@ -36,6 +37,19 @@ func _ready() -> void:
 	_lane_label.offset_bottom = 32
 	_lane_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_lane_label)
+	# Marvel-Snap-style lane power total — sum of ATK across friendly units.
+	_power_label = Label.new()
+	_power_label.text = "Power 0"
+	_power_label.add_theme_font_size_override("font_size", 22)
+	_power_label.add_theme_color_override("font_color", Color(1, 0.92, 0.6, 0.95))
+	_power_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+	_power_label.add_theme_constant_override("outline_size", 4)
+	_power_label.offset_left = 8
+	_power_label.offset_top = 32
+	_power_label.offset_right = 200
+	_power_label.offset_bottom = 60
+	_power_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_power_label)
 	# Custom drawing for tile dividers.
 	queue_redraw()
 
@@ -100,6 +114,23 @@ func _draw() -> void:
 		var back_y: float = h - float(next_tile + 1) * tile_h
 		draw_rect(Rect2(0, back_y, w, tile_h), Color(0.3, 0.7, 0.3, 0.18), true)
 		draw_line(Vector2(0, back_y), Vector2(w, back_y), Color(0.4, 0.85, 0.4, 0.50), 2.0)
+	# Spawn warning: count enemies scheduled to spawn next turn in this lane.
+	# Draws faint ghost rectangles at the spawn edge (top of the lane).
+	var incoming: int = _count_spawns_next_turn()
+	if incoming > 0:
+		var tile_h: float = h / float(TILES_PER_LANE)
+		var warn_y: float = 4.0  # near top of lane = enemy entry edge
+		var warn_w: float = min(120.0, w - 20)
+		var warn_h: float = 20.0
+		var warn_x: float = (w - warn_w) * 0.5
+		draw_rect(Rect2(warn_x, warn_y, warn_w, warn_h),
+				Color(0.95, 0.30, 0.30, 0.45), true)
+		var font := ThemeDB.fallback_font
+		if font != null:
+			draw_string(font, Vector2(warn_x, warn_y + 18),
+					"⚠ %d incoming" % incoming,
+					HORIZONTAL_ALIGNMENT_CENTER, warn_w, 14,
+					Color(1, 1, 1, 0.95))
 	# Drag highlight — green when droppable, RED when lane is full.
 	if _is_hovered_with_drag:
 		if lane_full:
@@ -167,6 +198,26 @@ func _get_enemy_tile_set() -> Dictionary:
 	return out
 
 
+## Count enemies scheduled to spawn in THIS lane on the next turn. Reads
+## from combat_root.current_wave.entries_for_turn(GameState.turn + 1).
+func _count_spawns_next_turn() -> int:
+	if combat_root == null:
+		return 0
+	var wave = combat_root.get("current_wave")
+	if wave == null:
+		return 0
+	var next_turn: int = GameState.turn + 1
+	var entries = wave.entries_for_turn(next_turn)
+	var count: int = 0
+	for entry in entries:
+		if entry == null:
+			continue
+		# WaveSpawnEntry is a Resource with .lane (0..2) and .on_turn fields.
+		if entry.lane == lane_index:
+			count += 1
+	return count
+
+
 # ============================================================================
 # Reset highlight if Godot doesn't send us a drop_exited (it doesn't, natively).
 # ============================================================================
@@ -182,6 +233,19 @@ func _process(_delta: float) -> void:
 	# units enter/die. Could be event-driven via lane signals but this is
 	# 3 lanes × ~16 draws/sec for the highlighted lane, negligible cost.
 	queue_redraw()
+	_refresh_power_label()
+
+
+func _refresh_power_label() -> void:
+	if _power_label == null:
+		return
+	var lane := _get_lane_obj()
+	var total: int = 0
+	if lane != null:
+		for u in lane.friendly_units:
+			if u != null and u.is_alive():
+				total += u.current_attack()
+	_power_label.text = "Power %d" % total
 
 
 # ============================================================================

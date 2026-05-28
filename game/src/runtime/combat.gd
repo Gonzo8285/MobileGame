@@ -415,6 +415,14 @@ func _refresh_status_hud(message: String) -> void:
 	var mana_str: String = "Mana %d/%d" % [GameState.mana, GameState.max_mana]
 	var turn_str: String = "Turn %d" % GameState.turn
 	lbl.text = "%s   |   %s   |   %s" % [turn_str, mana_str, message]
+	# Pulse the label briefly when a notable event ran. Helps draw the eye to
+	# new messages — Snap/MTG game-feel: every event should register visually.
+	if message.begins_with("Played ") or message.begins_with("Cannot play:"):
+		var tint := Color(0.95, 0.92, 0.5, 1) if message.begins_with("Played ") \
+				else Color(1.0, 0.45, 0.45, 1)
+		var t := create_tween()
+		t.tween_property(lbl, "modulate", tint, 0.10)
+		t.tween_property(lbl, "modulate", Color(1, 1, 1, 1), 0.40)
 
 
 func _on_mana_changed(_new_mana: int, _ceiling: int) -> void:
