@@ -127,6 +127,17 @@ func start() -> void:
 	var btn: Button = get_node_or_null("HUD/EndTurnButton") as Button
 	if btn != null and not btn.pressed.is_connected(end_turn):
 		btn.pressed.connect(end_turn)
+	# Concede button — forfeits the combat (HP = 0 → run_ended(false))
+	var concede_btn: Button = get_node_or_null("HUD/ConcedeButton") as Button
+	if concede_btn != null and not concede_btn.pressed.is_connected(_on_concede_pressed):
+		concede_btn.pressed.connect(_on_concede_pressed)
+	# Discard inspector toggle
+	var discard_btn: Button = get_node_or_null("HUD/DiscardButton") as Button
+	if discard_btn != null and not discard_btn.pressed.is_connected(_on_discard_pressed):
+		discard_btn.pressed.connect(_on_discard_pressed)
+	var close_btn: Button = get_node_or_null("HUD/DiscardOverlay/CloseButton") as Button
+	if close_btn != null and not close_btn.pressed.is_connected(_on_discard_close):
+		close_btn.pressed.connect(_on_discard_close)
 	# Initial HUD paint
 	_refresh_status_hud("Turn 1 — drag a card to a lane to play it")
 	_refresh_base_hp_hud()
@@ -517,6 +528,48 @@ func _flash_turn_banner(turn_num: int) -> void:
 	t.tween_interval(0.5)
 	t.tween_property(banner, "modulate:a", 0.0, 0.5)
 	t.tween_callback(banner.queue_free)
+
+
+# ============================================================================
+# Concede + discard inspector (MTG-style QoL)
+# ============================================================================
+
+func _on_concede_pressed() -> void:
+	print("[combat] player conceded — forfeiting combat")
+	if is_over:
+		return
+	is_over = true
+	GameState.take_damage(GameState.base_hp)  # drop to 0, fires run_ended(false)
+	combat_ended.emit(false)
+
+
+func _on_discard_pressed() -> void:
+	var overlay: Panel = get_node_or_null("HUD/DiscardOverlay") as Panel
+	if overlay == null:
+		return
+	var list_lbl: RichTextLabel = overlay.get_node_or_null("List") as RichTextLabel
+	if list_lbl != null and GameState.discard != null:
+		var lines: Array[String] = []
+		var i: int = 1
+		for c in GameState.discard.cards():
+			if c == null:
+				continue
+			var cost_str: String = "[%d]" % c.cost
+			var type_str: String = "UNIT" if c.card_type == GFEnums.CardType.UNIT \
+					else ("SPELL" if c.card_type == GFEnums.CardType.SPELL else "TRAP")
+			lines.append("%2d. %s  %s  [%s]" % [i, cost_str, c.display_name, type_str])
+			i += 1
+		if lines.is_empty():
+			list_lbl.text = "[i](discard pile is empty — no cards played yet)[/i]"
+		else:
+			list_lbl.text = "\n".join(lines)
+	overlay.visible = true
+
+
+func _on_discard_close() -> void:
+	var overlay: Panel = get_node_or_null("HUD/DiscardOverlay") as Panel
+	if overlay != null:
+		overlay.visible = false
 
 
 ## Detach this combat from GameState. Idempotent; safe to call after a
