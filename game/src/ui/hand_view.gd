@@ -73,7 +73,22 @@ func _add_view_for(card: Card) -> CardView:
 	var view: CardView = CARD_VIEW_SCENE.instantiate() as CardView
 	view.bind(card)
 	hbox.add_child(view)
+	# Snap-style entrance: card starts below the strip + dim then springs up.
+	# `deferred` so HBoxContainer has laid out the new child by the time the
+	# tween's `position_from` baseline is read.
+	call_deferred("_animate_card_arrival", view)
 	return view
+
+
+func _animate_card_arrival(view: CardView) -> void:
+	if not is_instance_valid(view) or not view.is_inside_tree():
+		return
+	var target_pos: Vector2 = view.position
+	view.position = target_pos + Vector2(0, 240)
+	view.modulate.a = 0.0
+	var t := create_tween().set_parallel(true)
+	t.tween_property(view, "position", target_pos, 0.30)			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	t.tween_property(view, "modulate:a", 1.0, 0.18)
 
 
 func _find_view_for(card: Card) -> CardView:

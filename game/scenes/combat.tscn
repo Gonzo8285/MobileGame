@@ -17,7 +17,7 @@ offset_left = 20.0
 offset_top = 80.0
 offset_right = 360.0
 offset_bottom = 970.0
-color = Color(0.13, 0.13, 0.15, 1)
+color = Color(0.17, 0.10, 0.10, 1)
 script = ExtResource("2_lane_drop")
 lane_index = 0
 
@@ -26,7 +26,7 @@ offset_left = 370.0
 offset_top = 80.0
 offset_right = 710.0
 offset_bottom = 970.0
-color = Color(0.16, 0.16, 0.18, 1)
+color = Color(0.13, 0.10, 0.17, 1)
 script = ExtResource("2_lane_drop")
 lane_index = 1
 
@@ -35,7 +35,7 @@ offset_left = 720.0
 offset_top = 80.0
 offset_right = 1060.0
 offset_bottom = 970.0
-color = Color(0.13, 0.13, 0.15, 1)
+color = Color(0.10, 0.16, 0.13, 1)
 script = ExtResource("2_lane_drop")
 lane_index = 2
 

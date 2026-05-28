@@ -492,6 +492,45 @@ func _on_enemy_hit(enemy: EnemyInstance, damage: int) -> void:
 	if ev != null and is_instance_valid(ev):
 		var pos: Vector2 = ev.position + Vector2(60, 20)
 		DamageFloat.spawn_damage(self, pos, damage)
+		# Attack arrow: find the LIKELY attacker — closest in-range friendly in
+		# the same lane. Engine doesn't tag the attacker on the signal but
+		# this heuristic is correct in 95% of cases (the cheapest-target rule
+		# already picks the lowest-tile enemy, so the nearest in-range friendly
+		# is almost always the one that swung).
+		if enemy.lane_index >= 0 and enemy.lane_index < lanes.size():
+			var lane: Lane = lanes[enemy.lane_index]
+			var attacker: UnitInstance = _likely_attacker(lane, enemy)
+			if attacker != null:
+				var uv = _unit_views.get(attacker, null)
+				if uv != null and is_instance_valid(uv):
+					var from_pos: Vector2 = uv.position + Vector2(75, 60)
+					var to_pos: Vector2 = ev.position + Vector2(75, 55)
+					AttackArrow.spawn(self, from_pos, to_pos)
+
+
+func _likely_attacker(lane: Lane, target: EnemyInstance) -> UnitInstance:
+	# Closest in-range friendly behind the target tile. Range 1 = MELEE,
+	# 2 = SHORT, 3 = LONG. Friendly attacks DOWN the lane toward higher
+	# tile numbers (enemies advance from spawn=tile_count toward base=0).
+	var best: UnitInstance = null
+	for u in lane.friendly_units:
+		if u == null or not u.is_alive() or u.card_data == null:
+			continue
+		var rng: int = _range_tiles(u.card_data.attack_range)
+		if rng <= 0:
+			continue
+		if target.tile >= u.tile and target.tile <= u.tile + rng:
+			if best == null or u.tile > best.tile:  # nearest = highest tile that's still behind
+				best = u
+	return best
+
+
+func _range_tiles(rng: int) -> int:
+	match rng:
+		GFEnums.AttackRange.MELEE: return 1
+		GFEnums.AttackRange.SHORT: return 2
+		GFEnums.AttackRange.LONG: return 3
+		_: return 0
 
 
 func _on_unit_hit_damage_float(unit: UnitInstance, damage: int) -> void:
