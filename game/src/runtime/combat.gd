@@ -343,7 +343,38 @@ func _finish(victory: bool) -> void:
 		GameState.turn_started.disconnect(_gs_turn_started_cb)
 	if _gs_turn_ended_cb.is_valid() and GameState.turn_ended.is_connected(_gs_turn_ended_cb):
 		GameState.turn_ended.disconnect(_gs_turn_ended_cb)
+	# Snap-style hero moment: flash a big banner before signaling.
+	_flash_outcome_banner(victory)
 	combat_ended.emit(victory)
+
+
+func _flash_outcome_banner(victory: bool) -> void:
+	var banner := Label.new()
+	banner.text = "★  VICTORY  ★" if victory else "DEFEAT"
+	banner.add_theme_font_size_override("font_size", 128)
+	var tint: Color = Color(1.0, 0.92, 0.4, 1) if victory else Color(1.0, 0.25, 0.25, 1)
+	banner.add_theme_color_override("font_color", tint)
+	banner.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
+	banner.add_theme_constant_override("outline_size", 16)
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	banner.position = Vector2(0, 600)
+	banner.size = Vector2(1080, 300)
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.modulate.a = 0.0
+	banner.scale = Vector2(0.5, 0.5)
+	banner.pivot_offset = Vector2(540, 150)
+	var hud := get_node_or_null("HUD")
+	if hud != null:
+		hud.add_child(banner)
+	else:
+		add_child(banner)
+	var t := create_tween().set_parallel(true)
+	t.tween_property(banner, "modulate:a", 1.0, 0.3)
+	t.tween_property(banner, "scale", Vector2(1.0, 1.0), 0.4)			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	t.chain().tween_interval(1.4)
+	t.chain().tween_property(banner, "modulate:a", 0.0, 0.6)
+	t.chain().tween_callback(banner.queue_free)
 	# We don't end the run here — that's the meta-progression's call. A loss
 	# in a non-boss combat just means "node failed"; the run-end check sits
 	# higher up. For the B2.5 smoke test we leave that hook to the test.
