@@ -151,6 +151,19 @@ func _refresh_display() -> void:
 		if unit.cooldown_counter > 0:
 			cd_text = " (CD %d)" % unit.cooldown_counter
 		_stats_label.text = "ATK %d  HP %d/%d%s" % [atk, unit.current_hp, max_hp, cd_text]
+	# MTG-style tapped/exhausted look: unit on cooldown leans ~8 degrees and
+	# desaturates so the player can see at-a-glance which units have already
+	# acted this turn. Ready-to-attack units sit upright with full colour.
+	if unit.cooldown_counter > 0:
+		rotation = deg_to_rad(-6)
+		modulate = Color(0.65, 0.65, 0.70, 1)
+	else:
+		rotation = 0.0
+		# Preserve any pulse modulate set by _pulse_stats (tween restores
+		# white anyway); only force-reset modulate when not on cooldown to
+		# avoid stomping a buff-pulse mid-animation.
+		if modulate.r < 0.85 and modulate.g < 0.85:
+			modulate = Color(1, 1, 1, 1)
 	# Stat-change pulse: green if ATK or max_hp went UP (aura grant landed),
 	# red if current_hp went DOWN (took damage). Skip on first paint
 	# (_last_* still at -1 sentinel).

@@ -84,10 +84,50 @@ func _ready() -> void:
 	if not GameState.mana_changed.is_connected(_mana_cb):
 		GameState.mana_changed.connect(_mana_cb)
 
+	# Hover preview: when mouse rests over the card, spawn a 2x-scaled
+	# read-only popup near the top of the screen so the player can read
+	# effect text without squinting. MTG Arena pattern.
+	mouse_entered.connect(_on_card_hover_enter)
+	mouse_exited.connect(_on_card_hover_exit)
+
 
 func _exit_tree() -> void:
 	if _mana_cb.is_valid() and GameState.mana_changed.is_connected(_mana_cb):
 		GameState.mana_changed.disconnect(_mana_cb)
+	_close_hover_preview()
+
+
+# ============================================================================
+# Hover preview popup (MTG Arena pattern)
+# ============================================================================
+
+var _hover_preview: CardView = null
+
+func _on_card_hover_enter() -> void:
+	if card_data == null or _hover_preview != null:
+		return
+	var viewport_root := get_tree().root
+	if viewport_root == null:
+		return
+	var preview_scene: PackedScene = load("res://scenes/card_view.tscn")
+	var preview: CardView = preview_scene.instantiate() as CardView
+	preview.scale = Vector2(1.6, 1.6)
+	preview.position = Vector2(540, 100)  # Top-centre of 1080-wide viewport
+	preview.modulate = Color(1, 1, 1, 0.95)
+	preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	viewport_root.add_child(preview)
+	preview.bind(card_data)
+	_hover_preview = preview
+
+
+func _on_card_hover_exit() -> void:
+	_close_hover_preview()
+
+
+func _close_hover_preview() -> void:
+	if _hover_preview != null and is_instance_valid(_hover_preview):
+		_hover_preview.queue_free()
+	_hover_preview = null
 
 
 func bind(card: Card) -> void:

@@ -71,6 +71,8 @@ func _init_lanes(tiles_per_lane: int) -> void:
 		lane.enemy_reached_base.connect(_on_enemy_reached_base)
 		lane.unit_placed.connect(_on_unit_placed)
 		lane.unit_killed.connect(_on_unit_killed)
+		lane.enemy_hit.connect(_on_enemy_hit)
+		lane.unit_hit.connect(_on_unit_hit_damage_float)
 		# IMV-1 visuals: visualize enemies on lane (HP bars, advance feedback).
 		lane.enemy_spawned.connect(_on_enemy_spawned)
 		lane.enemy_killed.connect(_on_enemy_killed)
@@ -139,6 +141,10 @@ func start() -> void:
 func _on_turn_started(turn_num: int) -> void:
 	if is_over or spawner == null:
 		return
+	# Snap-style turn flash. Skipped on turn 1 (covered by combat_started banner
+	# later if we add one) since it'd compete with the initial draw animation.
+	if turn_num > 0:
+		_flash_turn_banner(turn_num)
 	# B2.7 turn-start phase: status duration decay + cooldown ticks + draw 1.
 	# Spawn happens AFTER so newly-spawned enemies don't get an immediate
 	# duration decay on turn-of-spawn (clean status semantics).
@@ -464,6 +470,53 @@ func _refresh_wave_hud() -> void:
 	lbl.text = "Turn %d of %d   |   Enemies in lanes: %d   |   Spawns remaining: %d" % [
 		GameState.turn, max_turns, enemies_in_lanes, spawns_remaining
 	]
+
+
+# ============================================================================
+# Damage-float spawners (Snap/MTG visual feedback layer)
+# ============================================================================
+
+func _on_enemy_hit(enemy: EnemyInstance, damage: int) -> void:
+	var ev = _enemy_views.get(enemy, null)
+	if ev != null and is_instance_valid(ev):
+		var pos: Vector2 = ev.position + Vector2(60, 20)
+		DamageFloat.spawn_damage(self, pos, damage)
+
+
+func _on_unit_hit_damage_float(unit: UnitInstance, damage: int) -> void:
+	var uv = _unit_views.get(unit, null)
+	if uv != null and is_instance_valid(uv):
+		var pos: Vector2 = uv.position + Vector2(60, 20)
+		DamageFloat.spawn_damage(self, pos, damage)
+
+
+# ============================================================================
+# Turn-start banner — flashes "TURN N" centered at start of each player turn
+# ============================================================================
+
+func _flash_turn_banner(turn_num: int) -> void:
+	var banner := Label.new()
+	banner.text = "TURN %d" % turn_num
+	banner.add_theme_font_size_override("font_size", 96)
+	banner.add_theme_color_override("font_color", Color(1.0, 0.92, 0.7, 1))
+	banner.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.95))
+	banner.add_theme_constant_override("outline_size", 12)
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	banner.position = Vector2(0, 400)
+	banner.size = Vector2(1080, 200)
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner.modulate.a = 0.0
+	var hud := get_node_or_null("HUD")
+	if hud != null:
+		hud.add_child(banner)
+	else:
+		add_child(banner)
+	var t := create_tween()
+	t.tween_property(banner, "modulate:a", 1.0, 0.25)
+	t.tween_interval(0.5)
+	t.tween_property(banner, "modulate:a", 0.0, 0.5)
+	t.tween_callback(banner.queue_free)
 
 
 ## Detach this combat from GameState. Idempotent; safe to call after a
