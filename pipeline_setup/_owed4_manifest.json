@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "generated_for": "owed-4 completion batch 2026-06-01 (M41/L41/W41/W42)",
+  "checkpoint_preference": [
+    "juggernautXL",
+    "sd_xl_base",
+    "sdxl"
+  ],
+  "loras": "OMIT_FOR_SHOWCASE_BATCH — base SDXL + heavy prompt targeting. Full LoRA stack lives in D-VALIDATE-1.",
+  "negative_baseline": "anime, cartoon, modern clothing, text, watermark, deformed, low quality, blurry, jpeg artifacts, extra limbs, bad anatomy, signature, username, logo, explicit gore, severed limbs, exposed organs, blood pools",
+  "tiles": [
+    {
+      "tile_id": "M41",
+      "display_name": "Wraith-Caller of the Dirge",
+      "role": "spine (phase 2.13 n1 — splash spine into resurrect-spam)",
+      "spec_path": "art_specs/ash_mourners/m41_wraith_caller_of_the_dirge.md",
+      "positive_prompt": "masterpiece, magic the gathering card art, oil painting, painterly, photographic depth, low-key lighting, cinematic, atmospheric, dark fantasy, grimdark, gallows-haunted mood, doomed grandeur, muted earth-tone palette, single accent colour focal, in the style of Steve Argyle and Volkan Baga, a feral non-humanoid monster, bestial creature with animal anatomy, aberrant beast, not a person, no humanoid form, gothic-cathedral funerary aesthetic, court-shroud robes, ink-stained hands, raven-quill flourishes, no-shadow figures, dusk-purple accent, catacomb-vault background, Victorian mourning sensibility, Wraith-Caller of the Dirge — hooded mourner mid-incantation, wraith-shape coalescing from her open palm, dirge-bell at her belt, dusk-purple smoke ribbons, court-shroud robe, upper body portrait, three-quarter pose, looking-into-camera, single focal figure dominating frame, atmospheric blurred background, volumetric haze, no text overlay, no logo, no watermark, extremely detailed, sharp focus, professional, intricate brushwork, volumetric lighting, oil-paint texture visible in highlights, 8k, hyper-detailed, masterpiece quality",
+      "negative_prompt": "anime, cartoon, modern clothing, text, watermark, deformed, low quality, blurry, jpeg artifacts, extra limbs, bad anatomy, signature, username, logo, explicit gore, severed limbs, exposed organs, blood pools, beautiful woman, attractive female, glamour model, pretty face, makeup, smooth flawless skin, fashion portrait, elegant, supermodel, humanoid pin-up, human, humanoid, man, woman, person, standing person, robed figure, orc, goblin, elf, knight, soldier",
+      "seed": 54141,
+      "output_subdir": "_showcase/full/ash_mourners",
+      "output_filename": "m41_wraith_caller_of_the_dirge.png",
+      "width": 832,
+      "height": 1216,
+      "steps": 30,
+      "cfg": 6.5,
+      "sampler": "dpmpp_2m",
+      "scheduler": "karras"
+    },
+    {
+      "tile_id": "L41",
+      "display_name": "Banner-Bearer of the Crowned Anvil",
+      "role": "spine (phase 2.13 n2 — d3 banner-buff keystone)",
+      "spec_path": "art_specs/last_legion/l41_banner_bearer_of_the_crowned_anvil.md",
+      "positive_prompt": "masterpiece, magic the gathering card art, oil painting, painterly, photographic depth, low-key lighting, cinematic, atmospheric, dark fantasy, grimdark, gallows-haunted mood, doomed grandeur, muted earth-tone palette, single accent colour focal, in the style of Steve Argyle and Volkan Baga, soot-blackened cuirass, brass officer gorget, ironwood baton, chain-bound hair, foundry-rivet armour, decayed-knight elden-ring scale, brass accent, smoke-and-coal background, Banner-Bearer of the Crowned Anvil — soot-blackened legionnaire hoisting a hammered-brass standard, anvil-sigil crown atop pole, brass officer gorget, chain-bound polearm braced for advance, foundry-rivet armour, upper body portrait, three-quarter pose, looking-into-camera, single focal figure dominating frame, atmospheric blurred background, volumetric haze, no text overlay, no logo, no watermark, extremely detailed, sharp focus, professional, intricate brushwork, volumetric lighting, oil-paint texture visible in highlights, 8k, hyper-detailed, masterpiece quality",
+      "negative_prompt": "anime, cartoon, modern clothing, text, watermark, deformed, low quality, blurry, jpeg artifacts, extra limbs, bad anatomy, signature, username, logo, explicit gore, severed limbs, exposed organs, blood pools",
+      "seed": 74141,
+      "output_subdir": "_showcase/full/last_legion",
+      "output_filename": "l41_banner_bearer_of_the_crowned_anvil.png",
+      "width": 832,
+      "height": 1216,
+      "steps": 30,
+      "cfg": 6.5,
+      "sampler": "dpmpp_2m",
+      "scheduler": "karras"
+    },
+    {
+      "tile_id": "W41",
+      "display_name": "Pack-Caller Initiate",
+      "role": "spine (phase 2.13 n3 — e3 beast-summon mid-game velocity)",
+      "spec_path": "art_specs/skinward_pact/w41_pack_caller_initiate.md",
+      "positive_prompt": "masterpiece, magic the gathering card art, oil painting, painterly, photographic depth, low-key lighting, cinematic, atmospheric, dark fantasy, grimdark, gallows-haunted mood, doomed grandeur, muted earth-tone palette, single accent colour focal, in the style of Steve Argyle and Volkan Baga, antler-crown sprouting through bone, hide cloak layered, mismatched eyes, smoke-trailing fingers, druidic shaman with phyrexian undertones, bark-brown accent, cinderwood-grove background, Pack-Caller Initiate — young druid-warrior mid-howl, two-part horn raised to lips, wolf-pelt half-cloak across one shoulder, antler-fragment necklace, bark-brown war-paint, twilight cinderwood grove, upper body portrait, three-quarter pose, looking-into-camera, single focal figure dominating frame, atmospheric blurred background, volumetric haze, no text overlay, no logo, no watermark, extremely detailed, sharp focus, professional, intricate brushwork, volumetric lighting, oil-paint texture visible in highlights, 8k, hyper-detailed, masterpiece quality",
+      "negative_prompt": "anime, cartoon, modern clothing, text, watermark, deformed, low quality, blurry, jpeg artifacts, extra limbs, bad anatomy, signature, username, logo, explicit gore, severed limbs, exposed organs, blood pools",
+      "seed": 84141,
+      "output_subdir": "_showcase/full/skinward_pact",
+      "output_filename": "w41_pack_caller_initiate.png",
+      "width": 832,
+      "height": 1216,
+      "steps": 30,
+      "cfg": 6.5,
+      "sampler": "dpmpp_2m",
+      "scheduler": "karras"
+    },
+    {
+      "tile_id": "W42",
+      "display_name": "Den-Mother of the Cinderwood",
+      "role": "spine (phase 2.13 n4 — e3 beast-summon curve-topping anchor)",
+      "spec_path": "art_specs/skinward_pact/w42_den_mother_of_the_cinderwood.md",
+      "positive_prompt": "masterpiece, magic the gathering card art, oil painting, painterly, photographic depth, low-key lighting, cinematic, atmospheric, dark fantasy, grimdark, gallows-haunted mood, doomed grandeur, muted earth-tone palette, single accent colour focal, in the style of Steve Argyle and Volkan Baga, antler-crown sprouting through bone, hide cloak layered, mismatched eyes, smoke-trailing fingers, druidic shaman with phyrexian undertones, bark-brown accent, cinderwood-grove background, Den-Mother of the Cinderwood — grizzled she-druid kneeling among three wolf-cubs, hide cloak heavy with bone-tokens, antler-circlet, soot-blackened fingers, ember-eyed wolves at heel, cinderwood-burrow background, upper body portrait, three-quarter pose, looking-into-camera, single focal figure dominating frame, atmospheric blurred background, volumetric haze, no text overlay, no logo, no watermark, extremely detailed, sharp focus, professional, intricate brushwork, volumetric lighting, oil-paint texture visible in highlights, 8k, hyper-detailed, masterpiece quality",
+      "negative_prompt": "anime, cartoon, modern clothing, text, watermark, deformed, low quality, blurry, jpeg artifacts, extra limbs, bad anatomy, signature, username, logo, explicit gore, severed limbs, exposed organs, blood pools",
+      "seed": 84242,
+      "output_subdir": "_showcase/full/skinward_pact",
+      "output_filename": "w42_den_mother_of_the_cinderwood.png",
+      "width": 832,
+      "height": 1216,
+      "steps": 30,
+      "cfg": 6.5,
+      "sampler": "dpmpp_2m",
+      "scheduler": "karras"
+    }
+  ]
+}
