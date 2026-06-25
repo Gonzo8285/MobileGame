@@ -42,6 +42,11 @@ var deck: Deck = null
 var hand: Hand = null
 var discard: Discard = null
 
+# Deck persistence (DB-2). The last deck the player assembled in the deck-builder,
+# as an ordered id list, so the builder can offer "Use last deck". In-memory for
+# now — like the gem economy below, cross-session restore is IMV-2 (needs a save).
+var last_deck_ids: Array[StringName] = []
+
 # Run economy
 var ash: int = 0          ## generic run currency (shop, reroll)
 var keys: int = 0         ## chest keys / event gates
@@ -211,6 +216,20 @@ func start_run(starter_pool: Array[Card], warlord_id: StringName, seed_value: in
 
 	run_started.emit(run_seed, warlord_id)
 	set_phase(GFEnums.RunPhase.MAP)
+
+
+## Record the deck the player assembled (DB-2), as an ordered id list. Stored so
+## the deck-builder can offer "Use last deck". In-memory this session; a future
+## save system (IMV-2) will persist it across launches.
+func set_last_deck(ids: Array[StringName]) -> void:
+	last_deck_ids = ids.duplicate()
+
+
+## Start a run from an ordered id list (DB-2). Thin wrapper over start_run that
+## resolves ids -> deep-copied Cards via CardDatabase, so the deck-builder works
+## in ids while combat keeps receiving Array[Card]. start_run stays untouched.
+func start_run_from_ids(ids: Array, warlord_id: StringName, seed_value: int = 0) -> void:
+	start_run(CardDatabase.resolve_deck(ids), warlord_id, seed_value)
 
 
 ## End the current run. Emits `run_ended` and sets the terminal phase. The

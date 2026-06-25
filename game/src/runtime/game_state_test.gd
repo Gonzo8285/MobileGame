@@ -114,6 +114,24 @@ func _run() -> int:
 	errors += _expect_at_least("hp_changed fired ≥3",
 			_count_prefix(signal_log, "hp_changed:"), 3)
 
+	# ---- DB-2: deck persistence + start_run_from_ids -------------------
+	# set_last_deck stores a defensive copy (mutating the source must not bleed).
+	var src_ids: Array[StringName] = [&"DB2_A", &"DB2_B"]
+	GameState.set_last_deck(src_ids)
+	src_ids.append(&"DB2_C")
+	errors += _expect_eq("set_last_deck stored a copy", GameState.last_deck_ids.size(), 2)
+
+	# start_run_from_ids resolves real ids -> a deck of matching size via CardDatabase.
+	var db2_ids: Array[StringName] = []
+	for c in CardDatabase.all_cards():
+		db2_ids.append(c.id)
+		if db2_ids.size() >= 5:
+			break
+	GameState.start_run_from_ids(db2_ids, &"db2_warlord", 777)
+	errors += _expect_eq("start_run_from_ids built deck", GameState.deck.size(), db2_ids.size())
+	errors += _expect_eq("start_run_from_ids set warlord", GameState.active_warlord_id, &"db2_warlord")
+	errors += _expect_eq("start_run_from_ids set seed", GameState.run_seed, 777)
+
 	print("Signals fired (%d total): %s" % [signal_log.size(), str(signal_log)])
 	return errors
 
