@@ -118,7 +118,6 @@ func _draw() -> void:
 	# Draws faint ghost rectangles at the spawn edge (top of the lane).
 	var incoming: int = _count_spawns_next_turn()
 	if incoming > 0:
-		var tile_h: float = h / float(TILES_PER_LANE)
 		var warn_y: float = 4.0  # near top of lane = enemy entry edge
 		var warn_w: float = min(120.0, w - 20)
 		var warn_h: float = 20.0

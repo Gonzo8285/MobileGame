@@ -382,7 +382,10 @@ func _scene_d_taunt_targeting() -> int:
 	lane_d1.friendly_units.append(taunter)
 
 	var lanes_d1: Array[Lane] = [lane_d1]
-	TurnEngine.process_turn_end_pre_advance(lanes_d1)
+	# Enemy stand-attacks resolve in the POST-advance phase (friendly attacks go
+	# in pre-advance). The enemy is pre-positioned on the collision tile, so we
+	# call post-advance directly to exercise the redirect.
+	TurnEngine.process_turn_end_post_advance(lanes_d1)
 
 	if taunter.current_hp != 10 - 2:
 		printerr("D1: TAUNT body should have taken the 2 dmg, got HP=%d (expected %d)" %
@@ -415,7 +418,7 @@ func _scene_d_taunt_targeting() -> int:
 	lane_d2.friendly_units.append(filler2)
 	lane_d2.friendly_units.append(faraway_taunt)
 
-	TurnEngine.process_turn_end_pre_advance([lane_d2])
+	TurnEngine.process_turn_end_post_advance([lane_d2])
 
 	if filler2.current_hp != 10 - 3:
 		printerr("D2: out-of-tile TAUNT should NOT pull aggro — expected filler2 HP=%d, got %d" %
@@ -846,7 +849,10 @@ func _scene_g_l41_self_aura() -> int:
 		printerr("G3: L41 should NOT have PIERCE after banner culled")
 		errors += 1
 	if l41.aura_stats.has(l41):
-		printerr("G3: L41 self-aura should be revoked after bann
+		printerr("G3: L41 self-aura should be revoked after banner culled")
+		errors += 1
+
+	return errors
 
 
 # ============================================================================

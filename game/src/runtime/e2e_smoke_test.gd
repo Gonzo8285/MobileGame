@@ -100,8 +100,8 @@ func _run() -> int:
 
 	# ===== ENTER CHAPTER ==================================================
 	var graph: MapGraph = GameState.enter_chapter(1)
-	if graph == null or graph.size() != 5:
-		errors += 1; printerr("AS4: chapter 1 graph not 5 nodes")
+	if graph == null or graph.size() != 8:
+		errors += 1; printerr("AS4: chapter 1 graph not 8 nodes (IMV-1 linear gauntlet)")
 	if chapter_started_args.size() != 1:
 		errors += 1; printerr("AS5: expected 1 chapter_started emit, got %d" % chapter_started_args.size())
 	if GameState.current_node_id != graph.start_id:

@@ -21,7 +21,6 @@ static func spawn(parent: Node, from_pos: Vector2, to_pos: Vector2,
 	arrow.width = 5.0
 	arrow.add_point(from_pos)
 	arrow.add_point(to_pos)
-	arrow.mouse_filter = Control.MOUSE_FILTER_IGNORE if arrow is Control else 0
 	parent.add_child(arrow)
 	# Pulse alpha to 0 then queue_free.
 	var t := arrow.create_tween()

@@ -197,17 +197,17 @@ func _run() -> int:
 
 	var t1_bad: Resource = load("res://src/data/tier_content.gd").new()
 	t1_bad.tier = 1
-	t1_bad.variant_passives = [&"flagellant_rite", &"ash_vow"]
+	t1_bad.variant_passives.assign([&"flagellant_rite", &"ash_vow"])
 	errors += _expect_eq("T1 with variants fails", t1_bad.validate().size() > 0, true)
 
 	var t2: Resource = load("res://src/data/tier_content.gd").new()
 	t2.tier = 2
-	t2.variant_passives = [&"flagellant_rite", &"ash_vow"]
+	t2.variant_passives.assign([&"flagellant_rite", &"ash_vow"])
 	errors += _expect_eq("T2 with 2 variants validates", t2.validate().size(), 0)
 
 	var t3: Resource = load("res://src/data/tier_content.gd").new()
 	t3.tier = 3
-	t3.variant_passives = [&"flagellant_rite", &"ash_vow"]
+	t3.variant_passives.assign([&"flagellant_rite", &"ash_vow"])
 	# alt_fire_spell missing → should fail
 	errors += _expect_eq("T3 without alt_fire fails", t3.validate().size() > 0, true)
 

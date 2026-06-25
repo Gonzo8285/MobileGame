@@ -316,17 +316,43 @@ static func _resolve_enemy_attacks_in_lane(lane: Lane) -> int:
 
 
 static func _friendly_on_tile(lane: Lane, tile_idx: int) -> UnitInstance:
+	# TAUNT redirect (AC4): a real, drafted board unit carrying the TAUNT keyword
+	# absorbs the enemy stand-attack ahead of any cheaper non-taunt body sharing
+	# the tile. Spawned tokens (is_token) and non-draftable units never pull
+	# aggro. Among units of equal taunt-status the cheapest card is picked (least
+	# valuable defender) — the original deterministic tie-break.
 	var best: UnitInstance = null
+	var best_taunt: bool = false
 	for u in lane.friendly_units:
 		if u == null or not u.is_alive():
 			continue
 		if u.tile != tile_idx:
 			continue
-		# Tie-break: cheapest card cost first (least valuable defender). Stable
-		# enough for tests; revisit if it ever feels arbitrary in playtest.
-		if best == null or (u.card_data != null and best.card_data != null and u.card_data.cost < best.card_data.cost):
+		var pulls: bool = _unit_pulls_aggro(u)
+		if best == null:
+			best = u
+			best_taunt = pulls
+		elif pulls and not best_taunt:
+			best = u
+			best_taunt = pulls
+		elif pulls == best_taunt and _cheaper(u, best):
 			best = u
 	return best
+
+
+## TAUNT redirect eligibility (AC4): only a non-token, draftable unit carrying
+## the TAUNT keyword pulls an enemy stand-attack onto itself.
+static func _unit_pulls_aggro(u: UnitInstance) -> bool:
+	if u.card_data == null or u.is_token or not u.card_data.is_draftable:
+		return false
+	return u.has_keyword(GFEnums.Keyword.TAUNT)
+
+
+## True if `a` is a strictly cheaper defender than `b` (deterministic tie-break).
+static func _cheaper(a: UnitInstance, b: UnitInstance) -> bool:
+	if a.card_data == null or b.card_data == null:
+		return false
+	return a.card_data.cost < b.card_data.cost
 
 
 # ----- Status duration decay ------------------------------------------------
