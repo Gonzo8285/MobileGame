@@ -23,6 +23,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameState="*res://src/runtime/game_state.gd"
+CardDatabase="*res://src/runtime/card_database.gd"
 
 [display]
 
