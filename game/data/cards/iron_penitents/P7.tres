@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"M9"
-display_name = "Smoke Veil"
-faction = 1
-card_type = 2
+id = &"P7"
+display_name = "Self-Mortification"
+faction = 0
+card_type = 1
 rarity = 0
-cost = 1
+cost = 0
 hp = 0
 attack = 0
 attack_range = 0
 cooldown = 0
-keywords = Array[int]([12, 5])
-effect_text = "First enemy on tile: Fear-1; its ATK halved next turn."
-flavour_text = "A grey curtain. They will not see what comes through."
-art_path = "res://assets/cards/cards/M9.webp"
+keywords = Array[int]([])
+effect_text = "Deal 1 dmg to all friendly Penitents. Draw 1 card per Penitent damaged (cap 3)."
+flavour_text = "Suffering is the cheapest form of revelation."
+art_path = "res://assets/cards/iron_penitents/P7.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""

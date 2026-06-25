@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"C3"
-display_name = "Leech-Tender"
-faction = 2
+id = &"P1"
+display_name = "Nail-Choir Flagellant"
+faction = 0
 card_type = 0
 rarity = 0
-cost = 2
+cost = 1
 hp = 2
 attack = 1
 attack_range = 1
 cooldown = 1
-keywords = Array[int]([3])
-effect_text = "Poison-1 on attack."
-flavour_text = "He keeps them in jars. They keep him company."
-art_path = "res://assets/cards/cards/C3.webp"
+keywords = Array[int]([10])
+effect_text = "Penance: +1 ATK each time a friendly Penitent dies this run."
+flavour_text = "They sing through the iron in their throats."
+art_path = "res://assets/cards/iron_penitents/P1.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""

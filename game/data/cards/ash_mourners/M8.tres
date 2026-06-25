@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"P9"
-display_name = "Procession of Nails"
-faction = 0
+id = &"M8"
+display_name = "Cinder Tide"
+faction = 1
 card_type = 1
-rarity = 1
-cost = 3
+rarity = 2
+cost = 4
 hp = 0
 attack = 0
 attack_range = 0
 cooldown = 0
-keywords = Array[int]([9])
-effect_text = "Friendly Penitents gain +2 ATK this turn. End of turn: sacrifice your lowest-HP Penitent."
-flavour_text = "March to the hill. One of you stays there."
-art_path = "res://assets/cards/cards/P9.webp"
+keywords = Array[int]([5])
+effect_text = "All enemies in lane: -2 ATK and Fear-1 for 2 turns."
+flavour_text = "The ash comes in like water. It does not recede."
+art_path = "res://assets/cards/ash_mourners/M8.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""

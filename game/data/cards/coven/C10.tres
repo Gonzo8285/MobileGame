@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"C4"
-display_name = "Toad-Caller"
+id = &"C10"
+display_name = "Briar Snare"
 faction = 2
-card_type = 0
+card_type = 2
 rarity = 1
 cost = 2
-hp = 2
+hp = 0
 attack = 0
 attack_range = 0
 cooldown = 0
-keywords = Array[int]([8])
-effect_text = "Each turn: Summon a Bog-Spawn if you have fewer than 3 Bog-Spawns in play."
-flavour_text = "She does not call. She agrees with the bog, and the bog responds."
-art_path = "res://assets/cards/cards/C4.webp"
+keywords = Array[int]([4, 3])
+effect_text = "First enemy on tile: Root 2 turns. While rooted, Poison-1 stack each turn."
+flavour_text = "The thorns are not the trap. The waiting is the trap."
+art_path = "res://assets/cards/coven/C10.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""

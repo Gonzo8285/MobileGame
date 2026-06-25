@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"P3"
-display_name = "Crowned Martyr"
-faction = 0
+id = &"M2"
+display_name = "Censer-Bearer"
+faction = 1
 card_type = 0
 rarity = 0
 cost = 2
-hp = 4
+hp = 3
 attack = 1
-attack_range = 1
-cooldown = 1
-keywords = Array[int]([2, 15])
-effect_text = "Bleed-1 to any unit that attacks it."
-flavour_text = "Crowned in iron, hollowed by piety."
-art_path = "res://assets/cards/cards/P3.webp"
+attack_range = 2
+cooldown = 2
+keywords = Array[int]([])
+effect_text = "Aura: enemies within 1 tile have ATK -1."
+flavour_text = "The smoke remembers what the body forgets."
+art_path = "res://assets/cards/ash_mourners/M2.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""

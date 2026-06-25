@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"C8"
-display_name = "Antler Crown"
-faction = 2
+id = &"M7"
+display_name = "Smother"
+faction = 1
 card_type = 1
 rarity = 0
-cost = 2
+cost = 1
 hp = 0
 attack = 0
 attack_range = 0
 cooldown = 0
-keywords = Array[int]([9, 8])
-effect_text = "Sacrifice a friendly unit. Summon a Bog-Spawn with that unit's ATK."
-flavour_text = "What is taken is given back, only smaller, only meaner."
-art_path = "res://assets/cards/cards/C8.webp"
+keywords = Array[int]([11, 4])
+effect_text = "Apply Dread-2 and Root for 1 turn to a single enemy."
+flavour_text = "Press the linen down. Hold."
+art_path = "res://assets/cards/ash_mourners/M7.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""

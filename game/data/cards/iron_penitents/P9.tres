@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"M10"
-display_name = "Ash-Shroud"
-faction = 1
-card_type = 2
+id = &"P9"
+display_name = "Procession of Nails"
+faction = 0
+card_type = 1
 rarity = 1
-cost = 2
+cost = 3
 hp = 0
 attack = 0
 attack_range = 0
 cooldown = 0
-keywords = Array[int]([11])
-effect_text = "Triggered: all enemies on the row gain Dread-2."
-flavour_text = "Cloth woven from the burnings of nine cathedrals."
-art_path = "res://assets/cards/cards/M10.webp"
+keywords = Array[int]([9])
+effect_text = "Friendly Penitents gain +2 ATK this turn. End of turn: sacrifice your lowest-HP Penitent."
+flavour_text = "March to the hill. One of you stays there."
+art_path = "res://assets/cards/iron_penitents/P9.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""

@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"P2"
-display_name = "Whip-Brother"
+id = &"P6"
+display_name = "The Crucified Saint"
 faction = 0
 card_type = 0
-rarity = 0
-cost = 1
-hp = 1
-attack = 2
+rarity = 2
+cost = 5
+hp = 6
+attack = 4
 attack_range = 1
 cooldown = 1
-keywords = Array[int]([])
-effect_text = "On death: deal 1 dmg to an adjacent friendly Penitent."
-flavour_text = "Pain shared is faith doubled."
-art_path = "res://assets/cards/cards/P2.webp"
+keywords = Array[int]([10])
+effect_text = "On play: deal 2 dmg to all friendly Penitents in lane (triggers Penance)."
+flavour_text = "Nailed to his own banner; he refuses to come down."
+art_path = "res://assets/cards/iron_penitents/P6.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""

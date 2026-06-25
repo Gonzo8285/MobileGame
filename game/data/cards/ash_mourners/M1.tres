@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"M2"
-display_name = "Censer-Bearer"
+id = &"M1"
+display_name = "Mourning Acolyte"
 faction = 1
 card_type = 0
 rarity = 0
-cost = 2
-hp = 3
+cost = 1
+hp = 2
 attack = 1
 attack_range = 2
-cooldown = 2
-keywords = Array[int]([])
-effect_text = "Aura: enemies within 1 tile have ATK -1."
-flavour_text = "The smoke remembers what the body forgets."
-art_path = "res://assets/cards/cards/M2.webp"
+cooldown = 1
+keywords = Array[int]([11])
+effect_text = "Applies Dread-1 to first enemy hit each turn."
+flavour_text = "Her veil has not been lifted in a hundred years."
+art_path = "res://assets/cards/ash_mourners/M1.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""

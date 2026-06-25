@@ -4,20 +4,20 @@
 
 [resource]
 script = ExtResource("1_card")
-id = &"P5"
-display_name = "Iron Choir-Master"
-faction = 0
+id = &"C2"
+display_name = "Bog-Witch Initiate"
+faction = 2
 card_type = 0
-rarity = 1
-cost = 4
-hp = 4
-attack = 2
+rarity = 0
+cost = 1
+hp = 1
+attack = 1
 attack_range = 2
 cooldown = 1
-keywords = Array[int]([])
-effect_text = "Aura: friendly Penitents in lane gain +1 ATK while it lives."
-flavour_text = "He keeps time with a hammer to the ribs."
-art_path = "res://assets/cards/cards/P5.webp"
+keywords = Array[int]([8])
+effect_text = "On play: Summon a Bog-Spawn on an adjacent tile."
+flavour_text = "First bargain: a name. Second bargain: a finger."
+art_path = "res://assets/cards/coven/C2.webp"
 icon_path = ""
 sfx_play = ""
 sfx_death = ""
