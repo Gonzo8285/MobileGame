@@ -462,6 +462,37 @@ func _scene_d_taunt_targeting() -> int:
 				ei_d3.current_hp)
 		errors += 1
 
+	# ----- D4: a token with TAUNT does NOT pull aggro (AC4 defensive gate) --
+	# A token unit (Card.is_token) carrying TAUNT must not redirect even though
+	# it shares the enemy's tile, so the cheaper non-token filler takes the hit.
+	var lane_d4 := Lane.new(0, 6)
+	var enemy_d4 := Enemy.new()
+	enemy_d4.id = &"E_test_d4"
+	enemy_d4.display_name = "Test Enemy D4"
+	enemy_d4.max_hp = 5
+	enemy_d4.attack = 2
+	enemy_d4.move_speed = 0
+	lane_d4.enemies.append(EnemyInstance.new(enemy_d4, 1, 0))
+
+	var tok_card: Card = mk_card.call(&"D4_token", 4, 10, 1, true)
+	tok_card.is_token = true
+	var token_taunt := UnitInstance.new(tok_card, 1, 0)
+	token_taunt.cooldown_counter = 99
+	var plain_filler := UnitInstance.new(
+		mk_card.call(&"D4_filler", 1, 10, 1, false), 1, 1)
+	plain_filler.cooldown_counter = 99
+	lane_d4.friendly_units.append(token_taunt)
+	lane_d4.friendly_units.append(plain_filler)
+
+	TurnEngine.process_turn_end_post_advance([lane_d4])
+	if token_taunt.current_hp != 10:
+		printerr("D4: token-with-TAUNT must not pull aggro, got HP=%d" % token_taunt.current_hp)
+		errors += 1
+	if plain_filler.current_hp != 10 - 2:
+		printerr("D4: non-token filler should take the 2 dmg, expected HP=%d got %d" %
+				[10 - 2, plain_filler.current_hp])
+		errors += 1
+
 	return errors
 
 

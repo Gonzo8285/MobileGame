@@ -22,5 +22,6 @@ icon_path = ""
 sfx_play = ""
 sfx_death = ""
 is_draftable = true
+is_token = true
 is_starter = true
 unlock_tag = &""

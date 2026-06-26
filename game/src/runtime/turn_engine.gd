@@ -343,7 +343,7 @@ static func _friendly_on_tile(lane: Lane, tile_idx: int) -> UnitInstance:
 ## TAUNT redirect eligibility (AC4): only a non-token, draftable unit carrying
 ## the TAUNT keyword pulls an enemy stand-attack onto itself.
 static func _unit_pulls_aggro(u: UnitInstance) -> bool:
-	if u.card_data == null or u.is_token or not u.card_data.is_draftable:
+	if u.card_data == null or u.is_token or u.card_data.is_token or not u.card_data.is_draftable:
 		return false
 	return u.has_keyword(GFEnums.Keyword.TAUNT)
 

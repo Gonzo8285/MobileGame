@@ -38,6 +38,7 @@ class_name Card
 ## Draftability + economy flags.
 @export_group("Meta")
 @export var is_draftable: bool = true         ## False = token-only (e.g. summoned units)
+@export var is_token: bool = false            ## True = summoned/spawned token; never pulls TAUNT aggro (AC4)
 @export var is_starter: bool = false          ## True = available in MVP starter decks
 @export var unlock_tag: StringName = &""      ## Optional gate (e.g. &"warlord_iron_choirmaster")
 
