@@ -1,6 +1,7 @@
 # PvP design + architecture — v0 draft
 
-**Status:** v0 draft authored 2026-05-26 by Cowork Claude. **Not yet locked.**
+**Status:** v0 draft authored 2026-05-26 by Cowork Claude. PvP reversal endorsed 2026-05-28 by Cowork via `extended_game_modes_v0.md` §0 (Paul's ungate-everything directive). This doc is now the **architecture supplement** to `extended_game_modes_v0.md` (which is the **mode-catalogue + canon-framing** canon). Read `extended_game_modes` first for the 5-mode landscape + anti-P2W contract; this doc deep-dives the engineering surface specifically for Mode B (Ghost Duel) and Mode D (Live 1v1) — RNG determinism contract, authority model, deckbuilder UI, code surfaces affected, phased estimates. **Where the two docs disagree, `extended_game_modes` wins on design (modes, rewards, ship order); this doc wins on engineering shape (rules engine, netcode, code surfaces).**
+
 Captures the scope, architecture, and phasing required to add a player-vs-
 player mode to *The Curse of Gallowfell*. Written cold from the live codebase
 + `gdd_v0.md` + `internal_mvp_scope.md` + `HOW_TO_TEST.md` so any Claude or

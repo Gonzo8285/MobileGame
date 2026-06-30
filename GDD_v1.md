@@ -178,6 +178,8 @@ Per `faction_bible.md` v1 (canonical):
 
 Each faction's flagship card and biome are locked in `faction_bible.md`.
 
+**Card pool target (canonical):** **40–45 draftable cards per faction** + the faction's tier-system Warlord card. Total content target ≈ 200–225 draftable + 11 Warlords. (Updated 2026-05-28 from the original "40 per faction" anchor — see `c7_v0_2_balance_audit.md` §8b Q6: M2 sacrifice-loop + M7 archetype-cohesion audits identified real mechanical gaps that justified +1–2 cards per faction; re-tightening to strict 40 would force re-cutting that work. Per-faction headcount as of 2026-05-28: Iron Penitents 41, Ash-Mourners 41, Coven 41, Last Legion 41, Skinward Pact 42 = 206 + 11 Warlords = 217 total.)
+
 ---
 
 ## 7. Commercial loops

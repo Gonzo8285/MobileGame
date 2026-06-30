@@ -34,13 +34,13 @@ Adds a defensive control dimension to the player's lane-placement decision witho
 
 ## TAUNT candidates — existing cards to retag
 
-**Last Legion** (target: 4 cards, ~10% of the 40-card pool):
+**Last Legion** (target: ~~4~~ **3** cards after the L11 drift reconciliation 2026-05-28; ~7-8% of the 40-card pool):
 
 | Card | Rarity | Current keywords | Why TAUNT fits | Note |
 |---|---|---|---|---|
 | L7 Sergeant-Smith Vikar | R | SHIELD-1 + RALLY | Flagship 4-cost rare; the "hold the line" leader. TAUNT confirms his role. | Stat-line untouched. |
 | L33 Banner-Captain of the Crowned Anvil | R | SHIELD-1 + RALLY-2 | Banner-Captain payoff. Standing in front of the banner is the fantasy. | Stat-line untouched. |
-| L11 Iron Watch Standard-Bearer | U | RALLY | Mid-curve front-line body. | Pre-Phase-2.7 banner pack. |
+| ~~L11~~ — **REMOVED** | — | — | — | **Doc-data drift reconciled 2026-05-28 by Cowork** per Paul's ungate-everything directive: live `L11.tres` is the SPELL "Form Ranks", not a UNIT named "Iron Watch Standard-Bearer". TAUNT cannot apply to a SPELL (it's a unit-position keyword). The original spec drifted from data; data is canon. **Action:** L11 dropped from the TAUNT-tagged list — it would always have no-op'd. If a future Banner-pack content cycle introduces an actual front-line-bearer UNIT card, it can be TAUNT-tagged then under a fresh id. Last Legion TAUNT count is now **3** (L7 / L18 / L33) instead of 4. |
 | L18 Echo-Sergeant | R | ECHO | Inverted from the flagship — Echo+Taunt creates a "replays the soak" loop that's flavour-perfect for the Tempo-Echo archetype. | Echo proc on Taunt absorption is a B3 polish detail. |
 
 **Iron Penitents** (target: 2 cards, ~5% of the 40-card pool):

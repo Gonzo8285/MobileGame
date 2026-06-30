@@ -1832,3 +1832,116 @@ _Claude-Code git heartbeat 2026-05-26 16:07 — pushed db9e3e8 "feat: theme pack
 _Claude-Code git heartbeat 2026-05-26 20:07 — pushed 71e045d "feat: card and keyword design updates ...and more"_
 
 _Claude-Code git heartbeat 2026-05-27 20:07 — pushed 72c5649 "feat: c8 AI/deck/playtest design v0 ...and more"_
+
+## Cowork-Paul liaison turn (Cowork Claude, 2026-05-28)
+
+Paul asked for "more fully-autonomous engine/data tasks the heartbeat can pull without my sign-off, instead of all-design-docs-all-the-time" + "communicate with cowork as much as possible". This turn delivered both:
+
+**Authored — Phase 2.17 "Cowork-Paul liaison: autonomous queue" appended to `backlog.md`.** 9 items (AC1–AC9), all genuinely no-Paul-input, tagged by collision risk (`cold` / `engine-safe` / `engine-hot`) so the Controller hourly cycle can interleave without colliding with Phase 2.16 engine work. Pickable in any order; full files + acceptance criteria spec'd inline. Topics: data layout cleanup (AC1–AC2), doc-data drift reconciliation (AC3), `is_token` schema + TAUNT filter tightening (AC4), CardDatabase validation hook (AC5), audio stubs for IMV-1 (AC6), RNG determinism audit for PvP-1 (AC7), doc index for the now-50+ `*_v0.md` corpus (AC8), and a settle on the dormant `icon_path` field (AC9).
+
+**Done live this turn — AC1 (P3 file relocation):**
+- `game/data/cards/P3.tres` → `game/data/cards/iron_penitents/P3.tres` (faction = 0 = IRON_PENITENTS, belongs there)
+- `game/assets/cards/cards/P3.webp` → `game/assets/cards/iron_penitents/P3.webp`
+- `P3.tres` `art_path` updated to `res://assets/cards/iron_penitents/P3.webp`
+- Stale `cards/cards/P3.webp.import` removed (Godot will regen the sidecar at next editor open)
+- Verified: no code references the old path; CardDatabase (DB-1, queued) will index the new location identically when it lands
+
+**Surfaced — broader data drift:** the P3 move uncovered that **29 root-level cards** (`C1–C10`, `M1–M11`, `P1–P9`) follow the same legacy "no faction subfolder" layout. Not duplicates — they're the canonical original cards from before the subfolder convention. Captured as AC2 with full spec; ~30 min Controller work, fully scoped, low collision risk. Recommend a Controller cycle pick that up before DB-1 ships so the deck-builder doesn't index 29 cards via the "cards" pseudo-faction.
+
+**Collision avoidance taken this turn:** all engine `.gd` (turn_engine / combat / game_state / aura_dispatch / lane / card_play / turn_engine_test) are Controller-hot — I deliberately did NOT edit them this turn since cycle #22 just landed W41.E1. Anything in Phase 2.17 tagged `engine-hot` should be scheduled between Controller cycles, or queued for when Phase 2.16 quiesces.
+
+**Note re: TAUNT E1 (Cowork-authored 2026-05-26):** Controller cycle (likely #17–#22) extended my SCENE D in `turn_engine_test.gd` by completing the D2 truncation + adding SCENE E (LIFESTEAL) + SCENE F (AURA dispatch). Per the W41.E1 done-note that work is now complete. AC4 above adds a Scene D4 (token-with-TAUNT-does-not-pull) as a defensive completeness assertion once `is_token` exists.
+
+**PvP design doc** (`pvp_design_v0.md`) was authored 2026-05-26 by Cowork. Heartbeat appears to have independently produced `extended_game_modes_v0.md` covering similar ground from the design side. **Action queued:** Paul or a future Controller cycle should mark which is canonical and merge or cross-link to avoid future fork. (Not in Phase 2.17 — that's a Paul / Controller-judgement item, not a pure-autonomous one.)
+
+
+## Ungate-cascade turn (Cowork Claude, 2026-05-28)
+
+Paul's directive: "ungate anything I have gated right now — if there is no cost implication other than what's already allocated, you just smash through stuff." Cleared every doc-/data-level gate that didn't have a pod-cost or Civitai-network implication.
+
+**Decisions taken, ranked by downstream unblock impact:**
+
+1. **C7-v0.2 audit §8 Open Qs (all 7) resolved.** Appended `## 8b. Resolutions` section to `c7_v0_2_balance_audit.md` with per-Q rationale. Each endorsed the embedded recommendation. **Unblocks C8.D3b / D4 / D5** (gate on Q1 Option β cleared). Also generated two follow-on items (Phase 2.17 AC10 Fear-Caller text+engine from Q4; AC11 GDD pool-target from Q6).
+
+2. **PvP reversal endorsed in `extended_game_modes_v0.md` §0.** "PvE only" lock from `gdd_v0.md` / `shop_economy_v0.md` / `monetisation_map.md` superseded by the limited-PvP-with-cosmetic-only-rewards model. Anti-P2W invariant is *stronger* in the new form than blanket prohibition. Cross-linked with `pvp_design_v0.md` (the architecture supplement; that doc updated to point at extended_game_modes as canon). **Unblocks PvP design+spec work**; engineering still gates on soft-launch validation per the ship-order tables. Follow-on: Phase 2.17 AC12 captures the three downstream doc edits (gdd/shop/monetisation) that need to land.
+
+3. **W3 Cinderwood Stalker retagged to LIFESTEAL.** Phase 2.16 W3.E1-or-balance-call ticked. `W3.tres` keywords `[]→[16]`, effect_text → "Lifesteal." Buff is bounded (max_hp=3 cap on heal-per-hit); keyword consistency wins over bespoke effect_text. Full rationale + nerf-path-if-needed documented in `cards_skinward_pact_v1.md` Open-Q6.
+
+4. **AC3 L11 doc-data drift fixed.** Live `L11.tres` is SPELL "Form Ranks", not the markdown's UNIT "Iron Watch Standard-Bearer". TAUNT can't apply to a SPELL — kept the data, struck-through the markdown row in `keywords/taunt_v0.md` with reconciliation note. Last Legion TAUNT count canonicalised to **3** (L7/L18/L33).
+
+5. **AC9 `icon_path` resolution flipped from "drop the field" to "keep + document".** Investigation found `theme_pack_manager.gd` (lines 165, 176-177) AND `card_theme_treatment.gd` both consume `icon_path` — dropping it would break the theme-pack bundling pipeline. Added `art_direction.md §8` clarifying the three icon-related surfaces (`art_path` per-card portrait, `icon_path` per-card theme-pack thumb, `game/assets/icons/{kw_,stat_}*.svg` shared UI icons). Field stays empty per card until theme-pack UI needs the thumbs; populate-script outline noted for that future heartbeat.
+
+**Items genuinely still Paul-only (will not auto-ungate):**
+
+- `D-VALIDATE-1` Stage A LoRA anchors — Civitai 451 geo-block from Cowork's UK IP. Network-level, not a sign-off question. Paul or `.151` must run.
+- Anything that would require live pod-spend without a pre-allocated budget. Phase 2.17 AC6 (audio stub sourcing) is pod-zero; AC7 (RNG audit) is pod-zero. AC10 wiring is engine-hot, not gated.
+
+**Net effect on the autonomous queue:** Phase 2.16 has **zero open items** now (W3 was the last). Phase 2.15 (C8 chain) has D3b/D4/D5 ungated for the next Controller cycle. Phase 2.17 grew from AC1-AC9 to AC1-AC12; AC1, AC3, AC9 ticked done. Heartbeat has a clean runway.
+
+**Coordinating with `extended_game_modes_v0.md` author:** that doc was Controller round 5 (2026-05-25), one day before my `pvp_design_v0.md`. Now cross-linked. If a future Controller cycle wants to merge the two, the natural shape is: extended_game_modes owns mode design + reward shape; pvp_design stays as the engineering-architecture appendix for Modes B/D. No code edits required for the dedup.
+
+
+## Cowork status snapshot — 2026-05-28 end-of-session (Cowork Claude)
+
+_Written so the next heartbeat / Controller hourly cycle can orient in 60s without reconstructing from git log + scattered notes. Read once; tick what's relevant._
+
+### Where we are (one line)
+
+Phase 2.16 engine-wiring is **fully closed** (W3.E1 last to tick); Phase 2.15 C8 sim chain is **ungated**; Phase 2.17 "Cowork-Paul liaison" queue is up (12 items, 3 done); engine UI build is mid-polish with the courier pushing the IMV-1 visual stream.
+
+### What happened this session (most recent first)
+
+1. **Ungate-cascade pass (2026-05-28).** Per Paul's "ungate anything I have gated, no cost implication beyond allocated" directive: closed 5 Paul-gated items + cascaded 6 follow-ons. See `## Ungate-cascade turn` block immediately above for the full per-decision rationale. Net: Phase 2.16 W3.E1 done; C7-v0.2 audit §8b adds Resolutions section endorsing Q1–Q7; extended_game_modes §0 PvP-reversal endorsed; cross-linked with pvp_design_v0.md; AC3 / AC9 in Phase 2.17 closed; AC10–AC12 queued as follow-ons.
+2. **Phase 2.17 authored (2026-05-28).** New "Cowork-Paul liaison: autonomous queue" section in `backlog.md` — 12 items (AC1–AC12) tagged by collision risk (`cold` / `engine-safe` / `engine-hot`). AC1 (P3 file relocation) done live; AC3 (L11 drift) done; AC9 (icon_path) done. 9 items pickable.
+3. **TAUNT E1 done in prior turn (2026-05-26).** Engine wired in `turn_engine.gd::_friendly_on_tile`, SCENE D added to `turn_engine_test.gd`, 5/6 cards tagged (L11 SKIPPED — it's a SPELL not a UNIT, now formally reconciled by AC3 above). Controller cycle later picked up SCENE D and extended with SCENE E (LIFESTEAL) + SCENE F (AURA).
+4. **PvP design v0 doc authored (2026-05-26).** `pvp_design_v0.md` at root. Now cross-linked to `extended_game_modes_v0.md` as the architecture supplement (extended_game_modes = canon design; pvp_design = engineering shape for Modes B/D).
+
+### Open backlog right now (full list, in priority order)
+
+**Phase 2.17 — Cowork-Paul liaison (autonomous queue):**
+
+- AC2. Consolidate 29 root-level cards (`C1–C10`, `M1–M11`, `P1–P9`) into faction subfolders. `engine-safe`. Pure data move + populate_art_path re-run. **Recommend pick this up next — closes the data-layout drift before DB-1 ships.**
+- AC4. Add `is_token` Card schema field + tighten TAUNT filter. `engine-hot` (touches card.gd + turn_engine.gd).
+- AC5. Wire `Card.validate()` into a dev test (depends on DB-1). `cold`.
+- AC6. Source 3 SFX stubs for IMV-1 from freesound. `engine-hot` for wiring step.
+- AC7. RNG determinism audit per `pvp_design_v0.md` §3.1. `cold`.
+- AC8. Doc index for the *_v0 corpus. `cold`.
+- AC10. Fear-Caller TAUNT-conditional `effect_text` rewrite + engine wiring (from C7-v0.2 §8b Q4). `engine-hot`.
+- AC11. GDD canonical-pool-target update 40→40-45 (from C7-v0.2 §8b Q6). `cold`.
+- AC12. GDD / shop_economy / monetisation_map PvP-canon updates (from extended_game_modes §0 endorsement). `cold`.
+
+**Phase 2.15 — Playtest sim charter (C8 chain, now ungated):**
+
+- C8.D3b. Sim runner Python game-loop module. Was gated on Q1; **ungated.** Pick up freely.
+- C8.D4. Results doc — post-run only.
+- C8.D5. Tuning recommendations — post-run only.
+
+**Phase 2.16 — Deck-Builder screen (Paul-directed, original spec):**
+
+- DB-1 → DB-7. CardDatabase autoload, deck persistence, deck_builder logic + UI, title wiring, test, polish. All `cold`/`engine-safe` — paint-by-numbers from the spec doc.
+
+### Paul-only items (will NOT auto-resolve; do not waste cycles attempting)
+
+- **D-VALIDATE-1 Stage A LoRA anchors.** Civitai 451 geo-blocks Cowork's UK IP. Paul or `.151` must run from a machine with Civitai access (or HF-mirror the 9 LoRAs). Network-level, not a sign-off.
+- **IMV-1 playtest "feel" gate.** Only Paul can pass the 5-criteria gate in `internal_mvp_scope.md`. Engine is reportedly ready (per `HOW_TO_TEST.md` + the courier's recent UI-polish commits).
+- **Godot editor import handoff.** The staged 203 card webps + 21 SVG icons need a one-time Godot 4.6 editor open to generate `.import` sidecars. Until then `card_view.gd`'s safe-fallback shows placeholder.
+
+### Engine collision discipline (active surface)
+
+Controller's hourly cycle (#17–#22 on 2026-05-27) is editing `game/src/runtime/{turn_engine,turn_engine_test,combat,game_state,aura_dispatch,lane,card_play,run_controller}.gd` actively. **Cowork edits in these files this turn: zero.** Phase 2.17 items tagged `engine-hot` should be scheduled between Controller cycles or queued for a Phase 2.16 lull.
+
+### What I (Cowork Claude) am NOT working on
+
+- Engine `.gd` edits (collision discipline). Controller's surface.
+- Stage A LoRA anchors / any Civitai-dependent work (network blocked).
+- DB-1 deck-builder build (queued for Controller; Paul-directed, well-spec'd).
+- Faction sigil generation S2–S5 (heartbeat workstream per `_sigils.md`).
+
+### Files modified this session (for courier visibility)
+
+`backlog.md` (Phase 2.17 + W3.E1 / AC3 / AC9 ticks + AC10–AC12), `research_notes.md` (3 new sections: Cowork-Paul liaison turn / Ungate-cascade turn / this status snapshot), `c7_v0_2_balance_audit.md` (new §8b Resolutions), `c8_ai_policy_v0.md` (Q1 ungate lines), `extended_game_modes_v0.md` (§0 PvP-reversal endorsement), `pvp_design_v0.md` (cross-link to extended_game_modes), `cards_skinward_pact_v1.md` (Open-Q6 resolved), `keywords/taunt_v0.md` (L11 drift fix), `art_direction.md` (new §8 icon-path clarification), `game/data/cards/skinward_pact/W3.tres` (LIFESTEAL retag), P3 moved `game/data/cards/iron_penitents/P3.tres` + webp.
+
+### Next-heartbeat suggested pick
+
+Phase 2.17 **AC2** (consolidate 29 root cards). Pure data move, idempotent re-run of `populate_art_path.py` verifies, closes the data-layout drift surfaced when AC1's single-card move uncovered the broader pattern. Estimated effort: 1 Controller cycle. Removes the `game/assets/cards/cards/` pseudo-faction folder permanently before DB-1's CardDatabase indexes it as a real faction.
+

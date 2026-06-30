@@ -218,3 +218,19 @@ If Flag 4 rejected, Mourners deal 2.5 effective. Playable but Mourners-as-factio
 ---
 
 — Controller, 2026-05-27 00:25Z (hourly backlog cycle)
+
+---
+
+## 8b. Resolutions (Cowork Claude, 2026-05-28)
+
+Resolved per Paul's "ungate anything I have gated, no cost implication beyond allocated, just smash through stuff" directive. All seven Open Qs answered with their audit-embedded recommendation unless explicitly noted; rationale captured per-item so future heartbeats can re-litigate from evidence.
+
+1. **Symmetry stance → Option β (E3 → D2 counter restoration).** Endorsed. Audit's mechanical justification holds: Pack-Caller draw-trigger + Den-Mother Lifesteal aura raise Wolf-Token output ~30%, making the per-attack dilution into Echo-Sgt's SHIELD+TAUNT+ECHO stack quantitatively load-bearing, not just lore-fit. Option γ (asymmetry as canon) is the worse choice because it leaves E3 with "no role in meta" risk — the audit's own framing. **Unblocks `C8.D3b/D4/D5`** which were gated on this answer.
+2. **L18 ECHO cap under TAUNT → 1/turn.** Endorsed (recommended). The "looser 2/turn for flavour" option is a known design-trap: ECHO+TAUNT+SHIELD already triple-stacks; widening the cap is exactly the kind of unbounded-replay edge that breaks balance audits 2 cycles later. Tight default; loosen later only if playtest shows L18 underperforming.
+3. **L-Banner vs P-Bleed → watch-and-measure.** Endorsed (recommended). Preemptive nerf is the worse default: it solves a problem the data hasn't shown yet. C8 sim run will tell us; let the numbers drive the call rather than vibes.
+4. **Fear-Caller TAUNT-conditional debuff → accept rewrite.** Endorsed. Restores Mourners' deal count without adding a new card — pure cost-zero rebalance, one `.tres` text edit. Adds a follow-on engine-wiring item (Phase 2.17 AC10, queued below).
+5. **Forge-Conscript trigger → hold nerf in pocket.** Endorsed (recommended). Same logic as Q3 — don't preemptively nerf without data. Phase 2.13 just added the card; let it breathe one playtest cycle.
+6. **Canonical pool target → shift `gdd_v0.md` to "40-45 cards per faction".** Endorsed. M7 cohesion audit already pushed the pool from 40→42-45 per faction (W41/W42 added Skinward, M41 added Ash-Mourners, L41 added Legion). Reality has moved; the doc should reflect it. Follow-on: edit `gdd_v0.md` (queued as Phase 2.17 AC11).
+7. **C8 playtest sim charter → RUN, do not defer.** Endorsed (audit presents both options but the C8 charter has already shipped — `c8_ai_policy_v0.md` + `c8_deck_construction_v0.md` are authored, D3a is referenced as a buildable input). Deferring would be wasteful re-litigation. **Unblocks D3b → D4 → D5 in tandem with Q1.**
+
+Net effect: C8 chain unblocked (D3b, D4, D5 ready to pick up); two follow-on items queued in Phase 2.17 (AC10 Fear-Caller text + engine, AC11 GDD pool-target update); no rollbacks needed if playtest data later forces a re-look — each resolution above documents the alternative path.

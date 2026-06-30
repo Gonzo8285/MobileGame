@@ -129,3 +129,16 @@ The 9-tile sheet is the cheap commit point — burns ~30 mins of GPU time, surfa
 2. **Card backs** — single design or 5 faction-specific backs?
 3. **Day/night / Hanging Hour visual shift** — when the Hanging Hour curse kicks in mid-combat, does the whole screen tint? Or just the affected cards/units? Worth a separate spec line.
 4. **Boss art tier** — should bosses get 2–3× the art budget (custom illustration, not pipeline-generated) to feel hand-crafted? Standard in this genre.
+
+---
+
+## 8. Card schema icon paths — clarification (2026-05-28, Cowork)
+
+The `Card` schema (`game/src/data/card.gd`) defines two art-related fields that have caused mild confusion:
+
+- **`art_path: String`** — `res://` path to the **card portrait** (the large oil-painted illustration on the card body). Populated for 203/203 cards at 512×768 webp under `game/assets/cards/<faction>/`. Rendered by `card_view.gd` as a portrait `TextureRect` behind the text overlays.
+- **`icon_path: String`** — `res://` path to a **small compact icon** for hand/deck-list views. Currently empty on every card; consumed by `theme_pack_manager.gd` (lines 165, 176-177) which bundles it for theme-pack UI and falls back gracefully on empty.
+
+Distinct from both of the above are the **per-keyword + per-stat UI icons** sourced from game-icons.net per `ART_INTEGRATION.md`: those live at `game/assets/icons/{kw_*,stat_*}.svg`, are NOT per-card, and feed the keyword strip + stat row inside `card_view.gd`.
+
+**AC9 resolution (Phase 2.17, Cowork 2026-05-28):** `icon_path` is **kept, documented as intentional, and remains empty per card until the theme-pack UI surfaces a compact list view that genuinely needs a per-card thumb crop.** When that lands, the populate step is: generate a 128×128 webp crop of the existing portrait → `game/assets/icons/cards/<id>.webp` → populate `icon_path` via a script in `pipeline_setup/` mirroring `populate_art_path.py`. Until then, the empty value falls through theme_pack_manager's existing null-check (line 176) and no UI breaks.

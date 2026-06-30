@@ -2,7 +2,7 @@
 
 **Author:** Controller (hourly backlog cycle #10)
 **Date:** 2026-05-27 02:25Z
-**Status:** SPEC ONLY — no `.py`, no `.gd`, no `.tres` edits. D3 (`outputs/c8_sim_runner.py`) implements against this spec, gated separately on Paul Q1 (Option β endorsement) per `c7_v0_2_balance_audit.md` §2.
+**Status:** SPEC ONLY — no `.py`, no `.gd`, no `.tres` edits. D3 (`outputs/c8_sim_runner.py`) implements against this spec. **Paul Q1 (Option β) endorsed 2026-05-28 by Cowork Claude per Paul's ungate-everything directive (see `c7_v0_2_balance_audit.md` §8b) — D3 is now UNGATED.**
 **Supersedes:** `c8_playtest_sim_charter.md` §2.6 (5-rule stub).
 **Inputs:**
 - `c8_playtest_sim_charter.md` (D1, 2026-05-27 01:20Z) — §2.6 policy rule stubs
@@ -223,7 +223,7 @@ None of these open Qs block D3 implementation — D3 picks the recommendation de
 
 ## 10. Downstream / handoff
 
-- **D3 (`outputs/c8_sim_runner.py`)** implements §4 + §5 against the engine-truth gates in §8. **Gated on Paul Q1 endorsement** (Option β confirms the v0.2.1 grid the sim runs against).
+- **D3 (`outputs/c8_sim_runner.py`)** implements §4 + §5 against the engine-truth gates in §8. ~~**Gated on Paul Q1 endorsement**~~ **UNGATED 2026-05-28 by Cowork Claude — Option β endorsed; v0.2.1 grid is the runtime canon. See `c7_v0_2_balance_audit.md` §8b.**
 - **D4 (`c8_results_v0.md`)** runs the sim once D3 is built; flags any open-Q recommendation that the data invalidates.
 - **D5 (tuning recommendations)** per matchup with delta >5pp from C7-v0.2 expected.
 - **v1 sweep** (after IMV-1 Paul-playtest signoff): asymmetric policy (player-skill modelling), Tier 2-4 Warlord variants, MCTS lookahead at the decision layer, dynamic mulligan beyond opening-hand.
