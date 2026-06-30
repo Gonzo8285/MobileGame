@@ -18,6 +18,7 @@ func _ready() -> void:
 		_run_dev_test("res://src/runtime/card_zones_test.gd")    # B2.3
 		_run_dev_test("res://src/runtime/game_state_test.gd")    # B2.4
 		_run_dev_test("res://src/runtime/card_database_test.gd") # DB-1
+		_run_dev_test("res://src/runtime/deck_builder_test.gd")  # DB-6
 		_run_dev_test("res://src/runtime/combat_test.gd")        # B2.5
 		_run_dev_test("res://src/runtime/card_play_test.gd")     # B2.6
 		_run_dev_test("res://src/runtime/turn_engine_test.gd")   # B2.7
