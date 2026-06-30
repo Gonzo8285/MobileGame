@@ -21,6 +21,7 @@ const MAP_SCENE: PackedScene = preload("res://scenes/map_view.tscn")
 const COMBAT_SCENE: PackedScene = preload("res://scenes/combat.tscn")
 const REWARD_SCENE: PackedScene = preload("res://scenes/reward_view.tscn")
 const GAME_OVER_SCENE: PackedScene = preload("res://scenes/game_over.tscn")
+const DECK_BUILDER_SCENE: PackedScene = preload("res://scenes/deck_builder.tscn")
 
 # How many enemies to spawn per combat. Placeholder until proper wave content
 # is per-node. Hook for B2.11 (Hanging Hour escalation per chapter depth).
@@ -36,6 +37,8 @@ func _ready() -> void:
 	# default GameState phase is MAP, so set_phase(MAP) during start_run is a
 	# no-op and phase_changed wouldn't fire for the initial title → map swap.
 	GameState.run_started.connect(_on_run_started)
+	# DB-5: Title emits deck_build_requested on Warlord pick → show the builder.
+	GameState.deck_build_requested.connect(_on_deck_build_requested)
 	# Start on title screen.
 	_swap_to(TITLE_SCENE)
 
@@ -43,6 +46,18 @@ func _ready() -> void:
 func _on_run_started(_seed_value: int, _warlord_id: StringName) -> void:
 	# Initial title → map swap. From here on phase_changed handles transitions.
 	_swap_to(MAP_SCENE, _wire_map)
+
+
+func _on_deck_build_requested(warlord_id: StringName, faction: int) -> void:
+	# DB-5: swap to the deck-builder. setup() runs BEFORE add_child so the
+	# builder's _ready resolves the draftable pool for the right faction.
+	if _active_child != null:
+		_active_child.queue_free()
+		_active_child = null
+	var db: Node = DECK_BUILDER_SCENE.instantiate()
+	db.setup(warlord_id, faction)
+	add_child(db)
+	_active_child = db
 
 
 func _on_phase_changed(_old: int, new_phase: int) -> void:
@@ -353,6 +368,8 @@ func _get_active_warlord_faction() -> int:
 		&"vyrrun": return GFEnums.Faction.IRON_PENITENTS
 		&"vey":    return GFEnums.Faction.ASH_MOURNERS
 		&"quag":   return GFEnums.Faction.COVEN
+		&"sergeant_smith_vikar": return GFEnums.Faction.LAST_LEGION
+		&"thrask": return GFEnums.Faction.SKINWARD_PACT
 		_:         return GFEnums.Faction.NEUTRAL
 
 

@@ -1945,3 +1945,5 @@ Controller's hourly cycle (#17–#22 on 2026-05-27) is editing `game/src/runtime
 
 Phase 2.17 **AC2** (consolidate 29 root cards). Pure data move, idempotent re-run of `populate_art_path.py` verifies, closes the data-layout drift surfaced when AC1's single-card move uncovered the broader pattern. Estimated effort: 1 Controller cycle. Removes the `game/assets/cards/cards/` pseudo-faction folder permanently before DB-1's CardDatabase indexes it as a real faction.
 
+
+_Claude-Code git heartbeat 2026-06-30 18:34 — pushed c373a27 "feat(engine): add deck builder UI and tests"_

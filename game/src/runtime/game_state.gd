@@ -193,6 +193,16 @@ func _ready() -> void:
 # Run lifecycle
 # ============================================================================
 
+## Emitted when a Warlord has been chosen and the player should assemble a deck.
+## RunController listens and swaps to the deck-builder screen (DB-5).
+signal deck_build_requested(warlord_id: StringName, faction: int)
+
+
+## Ask the run controller to open the deck-builder for `warlord_id` / `faction`.
+func request_deck_build(warlord_id: StringName, faction: int) -> void:
+	deck_build_requested.emit(warlord_id, faction)
+
+
 ## Start a new run. Builds the deck from `starter_pool`, sets the active Warlord,
 ## resets all combat state. Call this once per run from a "new game" or
 ## "continue from save" entry point.

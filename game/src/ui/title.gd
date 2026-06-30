@@ -124,27 +124,20 @@ func _populate_warlord_button(btn: Button, w: Dictionary) -> void:
 
 
 func _start_run_with(warlord_id: StringName) -> void:
-	# Load the cards we want in the starter pool. IMV-1 keeps it loose:
-	# pull all is_starter UNITs ≤ cost 3 from the 3 IMV-1 factions, shuffle,
-	# take first STARTER_DECK_SIZE. Faction-locked starters land in IMV-2.
-	var pool: Array[Card] = RewardGenerator.load_pool(POOL_DIRS)
-	if pool.size() < STARTER_DECK_SIZE:
-		push_error("[title] not enough cards in IMV-1 pool (got %d)" % pool.size())
-		return
+	# DB-5: route to the deck-builder instead of auto-starting. RunController
+	# listens for deck_build_requested and swaps to the builder; the old random
+	# starter-deck path now lives behind the builder's Auto-fill button.
+	GameState.active_warlord_id = warlord_id
+	GameState.request_deck_build(warlord_id, _faction_for_warlord(warlord_id))
 
-	var playable: Array[Card] = []
-	for c in pool:
-		if c.is_starter and c.card_type == GFEnums.CardType.UNIT and c.cost <= 3:
-			playable.append(c)
-	if playable.size() < STARTER_DECK_SIZE:
-		playable.clear()
-		for c in pool:
-			if c.card_type == GFEnums.CardType.UNIT and c.cost <= 3:
-				playable.append(c)
 
-	playable.shuffle()
-	var starter: Array[Card] = playable.slice(0, STARTER_DECK_SIZE)
-
-	print("[title] starting run with warlord=%s, deck=%d cards" % [warlord_id, starter.size()])
-	GameState.start_run(starter, warlord_id, 0)  # 0 = random seed
-	GameState.enter_chapter(1)  # builds the map graph and emits chapter_started
+## Map a Warlord id → its faction. Mirrors run_controller._get_active_warlord_faction;
+## WL-5 will unify both via WarlordDatabase.faction_of.
+func _faction_for_warlord(id: StringName) -> int:
+	match id:
+		&"vyrrun": return GFEnums.Faction.IRON_PENITENTS
+		&"vey": return GFEnums.Faction.ASH_MOURNERS
+		&"quag": return GFEnums.Faction.COVEN
+		&"sergeant_smith_vikar": return GFEnums.Faction.LAST_LEGION
+		&"thrask": return GFEnums.Faction.SKINWARD_PACT
+		_: return GFEnums.Faction.NEUTRAL

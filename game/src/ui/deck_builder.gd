@@ -35,13 +35,22 @@ var _filter_group: ButtonGroup = ButtonGroup.new()
 func setup(warlord_id: StringName, faction: int) -> void:
 	_warlord_id = warlord_id
 	_faction = faction
+	# If the UI is already built (setup called after _ready), re-resolve the pool
+	# for the new faction. With the RunController/test path setup runs BEFORE
+	# add_child, so _ready does the initial load with the right faction.
+	if _collection_grid != null:
+		_reload_pool()
 
 
 func _ready() -> void:
 	anchor_right = 1.0
 	anchor_bottom = 1.0
-	_available = CardDatabase.draftable_for([_faction, GFEnums.Faction.NEUTRAL])
 	_build_ui()
+	_reload_pool()
+
+
+func _reload_pool() -> void:
+	_available = CardDatabase.draftable_for([_faction, GFEnums.Faction.NEUTRAL])
 	_refresh_all()
 
 
