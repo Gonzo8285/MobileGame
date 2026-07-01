@@ -28,6 +28,7 @@ func _ready() -> void:
 		_run_dev_test("res://src/runtime/map_test.gd")           # B2.9
 		_run_dev_test("res://src/runtime/e2e_smoke_test.gd")     # B2.10
 		_run_dev_test("res://src/runtime/deck_builder_flow_test.gd")  # DB-5
+		_run_dev_test("res://src/runtime/warlord_select_flow_test.gd") # WL-4
 
 
 func _run_dev_test(path: String) -> void:

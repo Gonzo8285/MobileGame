@@ -41,34 +41,16 @@ func _build() -> void:
 	sub.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(sub)
 
-	# Three warlord buttons.
-	var warlords := [
-		{"id": &"vyrrun", "name": "Penance-Captain Vyrrun", "faction": "Iron Penitents", "colour": Color(0.55, 0.10, 0.10)},
-		{"id": &"vey",    "name": "Lord-Justiciar Vey",     "faction": "Ash-Mourners",   "colour": Color(0.30, 0.15, 0.35)},
-		{"id": &"quag",   "name": "Mother Quag",            "faction": "Coven of the Black Mire", "colour": Color(0.18, 0.30, 0.22)},
-		{"id": &"sergeant_smith_vikar", "name": "Sergeant-Smith Vikar", "faction": "The Last Legion", "colour": Color(0.45, 0.32, 0.12)},
-		{"id": &"thrask", "name": "Thrask the Bear-Who-Was-King", "faction": "Skinward Pact", "colour": Color(0.40, 0.22, 0.10)},
-	]
-	# Two-row grid: 3 across the top, 2 centred underneath. 1080px viewport.
-	var btn_w: float = 320.0
-	var btn_h: float = 340.0
-	var gap: float = 20.0
-	var top_row_count: int = 3
-	var top_row_w: float = top_row_count * btn_w + (top_row_count - 1) * gap
-	var top_x_start: float = (1080.0 - top_row_w) * 0.5
-	var bot_row_count: int = warlords.size() - top_row_count
-	var bot_row_w: float = bot_row_count * btn_w + (bot_row_count - 1) * gap
-	var bot_x_start: float = (1080.0 - bot_row_w) * 0.5
-	for i in range(warlords.size()):
-		var w: Dictionary = warlords[i]
-		var btn := _make_warlord_button(w)
-		if i < top_row_count:
-			btn.position = Vector2(top_x_start + i * (btn_w + gap), 440)
-		else:
-			var j: int = i - top_row_count
-			btn.position = Vector2(bot_x_start + j * (btn_w + gap), 440 + btn_h + gap)
-		btn.size = Vector2(btn_w, btn_h)
-		add_child(btn)
+	# WL-4: a single Play button opens the data-driven Warlord-select screen.
+	# (The old hardcoded warlord grid is superseded by WarlordSelect; the
+	# _make_warlord_button/_start_run_with helpers below are now dead code.)
+	var play := Button.new()
+	play.text = "▶  Play"
+	play.add_theme_font_size_override("font_size", 44)
+	play.position = Vector2(340, 540)
+	play.size = Vector2(400, 130)
+	play.pressed.connect(func(): GameState.request_warlord_select())
+	add_child(play)
 
 	# Footer.
 	var foot := Label.new()

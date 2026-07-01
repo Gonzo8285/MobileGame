@@ -22,6 +22,7 @@ const COMBAT_SCENE: PackedScene = preload("res://scenes/combat.tscn")
 const REWARD_SCENE: PackedScene = preload("res://scenes/reward_view.tscn")
 const GAME_OVER_SCENE: PackedScene = preload("res://scenes/game_over.tscn")
 const DECK_BUILDER_SCENE: PackedScene = preload("res://scenes/deck_builder.tscn")
+const WARLORD_SELECT_SCENE: PackedScene = preload("res://scenes/warlord_select.tscn")
 
 # How many enemies to spawn per combat. Placeholder until proper wave content
 # is per-node. Hook for B2.11 (Hanging Hour escalation per chapter depth).
@@ -39,6 +40,9 @@ func _ready() -> void:
 	GameState.run_started.connect(_on_run_started)
 	# DB-5: Title emits deck_build_requested on Warlord pick → show the builder.
 	GameState.deck_build_requested.connect(_on_deck_build_requested)
+	# WL-4: screen router — Title "Play" → Warlord Select; Back → Title.
+	GameState.warlord_select_requested.connect(func(): _swap_to(WARLORD_SELECT_SCENE))
+	GameState.title_requested.connect(func(): _swap_to(TITLE_SCENE))
 	# Start on title screen.
 	_swap_to(TITLE_SCENE)
 
@@ -363,14 +367,8 @@ func _award_reward_after_node() -> void:
 
 
 func _get_active_warlord_faction() -> int:
-	# Map starter warlord ids → factions. Real game reads from Warlord resource.
-	match GameState.active_warlord_id:
-		&"vyrrun": return GFEnums.Faction.IRON_PENITENTS
-		&"vey":    return GFEnums.Faction.ASH_MOURNERS
-		&"quag":   return GFEnums.Faction.COVEN
-		&"sergeant_smith_vikar": return GFEnums.Faction.LAST_LEGION
-		&"thrask": return GFEnums.Faction.SKINWARD_PACT
-		_:         return GFEnums.Faction.NEUTRAL
+	# WL-5: resolve via the roster DB (was a hardcoded match).
+	return WarlordDatabase.faction_of(GameState.active_warlord_id)
 
 
 

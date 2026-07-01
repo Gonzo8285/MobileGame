@@ -145,7 +145,10 @@ func _on_start() -> void:
 
 
 func _on_back() -> void:
-	get_tree().change_scene_to_file("res://scenes/title.tscn")
+	# Route back through the RunController scene router (WL-4). NOT
+	# change_scene_to_file — the builder is RunController's child, so that would
+	# replace RunController itself. Back → Warlord select.
+	GameState.request_warlord_select()
 
 
 # ============================================================================
