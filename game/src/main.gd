@@ -24,6 +24,7 @@ func _ready() -> void:
 		_run_dev_test("res://src/runtime/turn_engine_test.gd")   # B2.7
 		_run_dev_test("res://src/runtime/reward_test.gd")        # B2.8
 		_run_dev_test("res://src/runtime/warlord_test.gd")       # W5
+		_run_dev_test("res://src/runtime/warlord_select_test.gd") # WL-6
 		_run_dev_test("res://src/runtime/map_test.gd")           # B2.9
 		_run_dev_test("res://src/runtime/e2e_smoke_test.gd")     # B2.10
 		_run_dev_test("res://src/runtime/deck_builder_flow_test.gd")  # DB-5
