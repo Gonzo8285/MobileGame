@@ -20,6 +20,7 @@ var kind: int = 0  # GFEnums.NodeKind
 var depth: int = 0
 var children: Array[StringName] = []
 var seed_offset: int = 0
+var encounter_id: StringName = &""    ## BM: EncounterArchetype for combat-type nodes (&"" = none)
 
 
 func _init(p_id: StringName = &"", p_kind: int = 0, p_depth: int = 0, p_seed_offset: int = 0) -> void:
@@ -43,6 +44,6 @@ func make_rng(run_seed: int) -> RandomNumberGenerator:
 ## Debug helper. Used by map_test.gd output and the (future) map screen
 ## inspector overlay.
 func describe() -> String:
-	return "MapNode(%s, kind=%s, depth=%d, children=%s)" % [
-		id, GFEnums.NodeKind.keys()[kind], depth, str(children)
+	return "MapNode(%s, kind=%s, depth=%d, enc=%s, children=%s)" % [
+		id, GFEnums.NodeKind.keys()[kind], depth, encounter_id, str(children)
 	]
