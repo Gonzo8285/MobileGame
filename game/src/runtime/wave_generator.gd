@@ -58,6 +58,64 @@ static func for_round(round_num: int, kind: int, run_seed: int) -> Wave:
 	return wave
 
 
+## Build a wave for a specific map node (BM-3). Round scaling comes from the
+## node depth; the node's EncounterArchetype (if any) then layers density / stat
+## / move / keyword biases on top. Non-combat or archetype-less nodes get the
+## plain scaled wave. `for_round` stays as the shim used elsewhere.
+static func for_node(node: MapNode, run_seed: int) -> Wave:
+	if node == null:
+		return null
+	var round_num: int = max(1, node.depth + 1)
+	var wave: Wave = for_round(round_num, node.kind, run_seed)
+	if wave == null:
+		return null
+	var arch: EncounterArchetype = EncounterArchetype.get_archetype(node.encounter_id)
+	if arch != null:
+		_apply_archetype(wave, arch, run_seed ^ node.seed_offset)
+		wave.display_name = "%s — %s" % [wave.display_name, arch.display_name]
+	return wave
+
+
+## Layer an archetype's biases onto an already-scaled wave (BM-3).
+static func _apply_archetype(wave: Wave, arch: EncounterArchetype, seed_value: int) -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value ^ 0x9E3779B9
+	for entry in wave.spawns:
+		var e: Enemy = entry.enemy
+		if e == null:
+			continue
+		if arch.hp_bias != 1.0:
+			e.max_hp = max(1, int(round(float(e.max_hp) * arch.hp_bias)))
+		if arch.atk_bias != 1.0:
+			e.attack = max(0, int(round(float(e.attack) * arch.atk_bias)))
+		if arch.move_bias != 0:
+			e.move_speed = max(0, e.move_speed + arch.move_bias)
+		for kw in arch.emphasise_keywords:
+			if not e.keywords.has(kw):
+				e.keywords.append(kw)
+		if arch.prefer_faction != GFEnums.Faction.NEUTRAL:
+			e.faction = arch.prefer_faction
+	if arch.density > 0:
+		_add_density(wave, arch.density * 2, rng)
+	elif arch.density < 0:
+		var remove: int = min(-arch.density, max(0, wave.spawns.size() - 1))
+		for _i in range(remove):
+			wave.spawns.remove_at(wave.spawns.size() - 1)
+
+
+## Clone `extra` already-biased spawns into fresh lanes/turns (density +).
+static func _add_density(wave: Wave, extra: int, rng: RandomNumberGenerator) -> void:
+	if wave.spawns.is_empty():
+		return
+	for _i in range(extra):
+		var src: WaveSpawnEntry = wave.spawns[rng.randi() % wave.spawns.size()]
+		var clone: WaveSpawnEntry = WaveSpawnEntry.new()
+		clone.on_turn = 1 + (rng.randi() % 3)
+		clone.lane = rng.randi() % 3
+		clone.enemy = _scaled_enemy(src.enemy, 1.0, 1.0, false)
+		wave.spawns.append(clone)
+
+
 # ----------------------------------------------------------------------------
 # Spawn-pattern builders — each returns Array[WaveSpawnEntry]
 # ----------------------------------------------------------------------------

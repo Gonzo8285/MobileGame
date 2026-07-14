@@ -33,4 +33,36 @@ func _run() -> int:
 	if EncounterArchetype.get_archetype(&"__nope__") != null:
 		errors += 1; printerr("get_archetype(unknown) should be null")
 
+	# ---- WaveGenerator.for_node → legal wave per archetype (BM-3) ----------
+	for aid in EncounterArchetype.ids():
+		var node := MapNode.new(StringName("t_%s" % aid), GFEnums.NodeKind.COMBAT, 5, 55)
+		node.encounter_id = aid
+		var wave: Wave = WaveGenerator.for_node(node, 4242)
+		if wave == null:
+			errors += 1; printerr("for_node(%s) returned null" % aid); continue
+		if wave.spawns.is_empty():
+			errors += 1; printerr("for_node(%s) produced no spawns" % aid)
+		for entry in wave.spawns:
+			if entry.enemy == null or entry.enemy.max_hp <= 0:
+				errors += 1; printerr("for_node(%s) has an invalid spawn" % aid); break
+
+	# Density biases actually change counts: swarm (+) > bruisers (-).
+	var swarm_n := _spawn_count(&"swarm")
+	var bruiser_n := _spawn_count(&"bruisers")
+	if swarm_n <= bruiser_n:
+		errors += 1; printerr("swarm (%d) should out-number bruisers (%d)" % [swarm_n, bruiser_n])
+
+	# Determinism: same node + seed → identical spawn count.
+	var n2 := MapNode.new(&"t_det", GFEnums.NodeKind.COMBAT, 5, 55)
+	n2.encounter_id = &"swarm"
+	if WaveGenerator.for_node(n2, 999).spawns.size() != WaveGenerator.for_node(n2, 999).spawns.size():
+		errors += 1; printerr("for_node not deterministic")
+
 	return errors
+
+
+func _spawn_count(aid: StringName) -> int:
+	var node := MapNode.new(StringName("c_%s" % aid), GFEnums.NodeKind.COMBAT, 5, 55)
+	node.encounter_id = aid
+	var w: Wave = WaveGenerator.for_node(node, 4242)
+	return 0 if w == null else w.spawns.size()
