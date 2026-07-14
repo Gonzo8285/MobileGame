@@ -193,9 +193,10 @@ func _ready() -> void:
 # Run lifecycle
 # ============================================================================
 
-## Screen-router signals — RunController swaps to the matching scene (WL-4).
+## Screen-router signals — RunController swaps to the matching scene (WL-4/CO-5).
 signal warlord_select_requested()
 signal title_requested()
+signal collection_requested()
 
 ## Emitted when a Warlord has been chosen and the player should assemble a deck.
 ## RunController listens and swaps to the deck-builder screen (DB-5).
@@ -210,6 +211,11 @@ func request_warlord_select() -> void:
 ## Ask the run controller to return to the Title screen (WL-4).
 func request_title() -> void:
 	title_requested.emit()
+
+
+## Ask the run controller to open the Collection/Codex screen (CO-5).
+func request_collection() -> void:
+	collection_requested.emit()
 
 
 ## Ask the run controller to open the deck-builder for `warlord_id` / `faction`.

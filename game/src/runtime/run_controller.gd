@@ -23,6 +23,7 @@ const REWARD_SCENE: PackedScene = preload("res://scenes/reward_view.tscn")
 const GAME_OVER_SCENE: PackedScene = preload("res://scenes/game_over.tscn")
 const DECK_BUILDER_SCENE: PackedScene = preload("res://scenes/deck_builder.tscn")
 const WARLORD_SELECT_SCENE: PackedScene = preload("res://scenes/warlord_select.tscn")
+const COLLECTION_SCENE: PackedScene = preload("res://scenes/collection.tscn")
 
 # How many enemies to spawn per combat. Placeholder until proper wave content
 # is per-node. Hook for B2.11 (Hanging Hour escalation per chapter depth).
@@ -43,6 +44,7 @@ func _ready() -> void:
 	# WL-4: screen router — Title "Play" → Warlord Select; Back → Title.
 	GameState.warlord_select_requested.connect(func(): _swap_to(WARLORD_SELECT_SCENE))
 	GameState.title_requested.connect(func(): _swap_to(TITLE_SCENE))
+	GameState.collection_requested.connect(func(): _swap_to(COLLECTION_SCENE))
 	# Start on title screen.
 	_swap_to(TITLE_SCENE)
 

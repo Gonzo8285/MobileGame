@@ -52,6 +52,14 @@ func _build() -> void:
 	play.pressed.connect(func(): GameState.request_warlord_select())
 	add_child(play)
 
+	var coll := Button.new()
+	coll.text = "Collection"
+	coll.add_theme_font_size_override("font_size", 30)
+	coll.position = Vector2(340, 700)
+	coll.size = Vector2(400, 90)
+	coll.pressed.connect(func(): GameState.request_collection())
+	add_child(coll)
+
 	# Footer.
 	var foot := Label.new()
 	foot.text = "Once in combat: drag a card → lane. Press C = win combat, X = lose combat (IMV-1 placeholder)."
