@@ -169,8 +169,8 @@ static func _assign_encounters(graph: MapGraph, rows: Array, parents: Dictionary
 					candidates.append(aid)
 			if candidates.is_empty():
 				candidates = arch_ids
-			var rng := node.make_rng(graph.seed_value)
-			node.encounter_id = candidates[rng.randi() % candidates.size()]
+			var node_rng: RandomNumberGenerator = node.make_rng(graph.seed_value)
+			node.encounter_id = candidates[node_rng.randi() % candidates.size()]
 
 
 # ============================================================================
