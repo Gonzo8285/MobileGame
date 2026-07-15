@@ -135,6 +135,24 @@ func _clear() -> void:
 	_refresh_all()
 
 
+## DB-7: fill the deck from GameState.last_deck_ids, keeping only cards draftable
+## for this faction (skips off-faction / unknown ids, and stops at DECK_SIZE).
+func _use_last_deck() -> void:
+	_deck.clear()
+	for id in GameState.last_deck_ids:
+		var card: Card = CardDatabase.get_by_id(id)
+		if card != null and _is_available(card) and _can_add(card):
+			_deck[card.id] = int(_deck.get(card.id, 0)) + 1
+	_refresh_all()
+
+
+func _is_available(card: Card) -> bool:
+	for c in _available:
+		if c.id == card.id:
+			return true
+	return false
+
+
 func _on_start() -> void:
 	if _deck_count() != DECK_SIZE:
 		return
@@ -254,6 +272,12 @@ func _build_ui() -> void:
 	clear.add_theme_font_size_override("font_size", 26)
 	clear.pressed.connect(_clear)
 	bottom.add_child(clear)
+	var last := Button.new()
+	last.text = "Use Last"
+	last.add_theme_font_size_override("font_size", 26)
+	last.disabled = GameState.last_deck_ids.is_empty()
+	last.pressed.connect(_use_last_deck)
+	bottom.add_child(last)
 	_validation_label = Label.new()
 	_validation_label.add_theme_font_size_override("font_size", 22)
 	_validation_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL

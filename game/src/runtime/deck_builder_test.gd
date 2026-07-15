@@ -91,5 +91,16 @@ func _run() -> int:
 		errors += 1
 		printerr("_on_start: last_deck_ids size %d, expected 20" % GameState.last_deck_ids.size())
 
+	# ---- DB-7: Use Last Deck fills only faction-valid ids -----------------
+	var last_ids: Array[StringName] = []
+	for k in range(3):
+		last_ids.append(db._available[k].id)
+	last_ids.append(&"__not_a_card__")           # unknown → skipped
+	GameState.set_last_deck(last_ids)
+	db._use_last_deck()
+	if db._deck_count() != 3:
+		errors += 1
+		printerr("_use_last_deck: expected 3 valid cards, got %d" % db._deck_count())
+
 	db.queue_free()
 	return errors
