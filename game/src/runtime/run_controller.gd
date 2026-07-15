@@ -114,16 +114,15 @@ func _wire_combat(combat: Node) -> void:
 	# we need to: load a Wave, call Combat.setup(wave)+start() to kick the turn
 	# engine, and add an End-Turn button + HUD so the player can act each turn.
 	# We also listen for `combat_ended` to route victory → reward, defeat → HP-check.
-	# Per-round wave: build via WaveGenerator using the current node's kind +
-	# round number (derived from MapNode depth + 1). Falls back to the static
-	# act1_combat1.tres if anything goes wrong.
-	var round_num: int = 1
-	var kind: int = GFEnums.NodeKind.COMBAT
+	# BM-5: build the wave from the current node's EncounterArchetype via
+	# for_node (depth scaling + density/stat/keyword/move biases). Falls back to
+	# for_round (no map node) then the static act1_combat1.tres.
+	var wave: Wave
 	if GameState.current_map_graph != null and GameState.current_map_graph.nodes.has(GameState.current_node_id):
-		var cur_node: MapNode = GameState.current_map_graph.nodes[GameState.current_node_id]
-		round_num = cur_node.depth + 1
-		kind = cur_node.kind
-	var wave: Wave = WaveGenerator.for_round(round_num, kind, GameState.run_seed)
+		wave = WaveGenerator.for_node(
+				GameState.current_map_graph.nodes[GameState.current_node_id], GameState.run_seed)
+	else:
+		wave = WaveGenerator.for_round(1, GFEnums.NodeKind.COMBAT, GameState.run_seed)
 	if wave == null:
 		wave = load("res://data/waves/act1_combat1.tres") as Wave
 	if wave == null:
