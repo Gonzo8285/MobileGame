@@ -1949,3 +1949,5 @@ Phase 2.17 **AC2** (consolidate 29 root cards). Pure data move, idempotent re-ru
 _Claude-Code git heartbeat 2026-06-30 18:34 — pushed c373a27 "feat(engine): add deck builder UI and tests"_
 
 _Claude-Code git heartbeat 2026-07-08 — pushed d005e2c "feat(engine): add warlord select/deck builder uid files …and more"_
+
+_Claude-Code git heartbeat 2026-07-08 12:07 — pushed 6360061 "docs: heartbeat updates (2026-07-08)"_

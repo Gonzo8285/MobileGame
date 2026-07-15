@@ -1,32 +1,19 @@
 extends Node
 
-## Smoke test for the map subsystem (B2.9, IMV-1 linear redesign 2026-05-18).
+## Map subsystem test (BM-2/BM-6). generate() now yields a branching DAG;
+## generate_linear() keeps the 8-round gauntlet for back-compat.
 ##
-## The chapter map is an 8-round linear gauntlet (r1..r8): three combats, an
-## elite gate (r4), two hordes (r5, r7), a mid combat (r6), then a boss (r8).
-## Win all 8 = run victory. No branching at IMV-1 — MapGraph still supports DAG
-## branching for future chapters (see MapGenerator header); when BM-2 flips
-## generate() to branching, BM-6 will revise these assertions.
-##
-## Covers:
-##   - generate(1, seed) returns exactly 8 nodes (r1..r8)
-##   - chapter + seed_value fields propagate
-##   - start_id = r1 (COMBAT, depth 0, single child r2)
-##   - boss_id = r8 (BOSS, depth 7, 0 children — terminal)
-##   - round kinds match the locked ROUND_KINDS layout (ELITE@4, HORDE@5/7, BOSS@8)
-##   - linear wiring: every non-boss round points to exactly the next round
-##   - graph.validate() returns no errors (terminal boss, no dangling refs,
-##     boss reachable, no orphans)
-##   - determinism: same seed → identical graph (kind/depth/seed_offset/children)
-##   - per-node make_rng(run_seed) deterministic for same node; distinct between
-##     sibling rounds (different seed_offset)
-##   - GameState.enter_chapter seats player at start, fires chapter_started, MAP phase
-##   - GameState.choose_next_node accepts the legal next round
-##   - choose_next_node REJECTS an illegal skip (jumping past the next round)
-##   - choose_next_node REJECTS unknown node ids
-##   - map_node_entered fires once per legal advance; walking r1→r8 seats at boss
-##
-## All assertions PASS = 0 errors. Wired into main.gd alongside the other tests.
+## Covers (branching via generate()):
+##   - valid graph: START (COMBAT, depth 0) → BOSS (terminal, last depth)
+##   - graph.validate() clean (reachable, boss-terminal, no orphans/dangling)
+##   - a full SHOP row + full REST row exist → every path hits a shop and a rest
+##   - an ELITE gate node around depth 6-9
+##   - combat nodes carry an encounter_id; no parent→child pair shares an
+##     archetype (no back-to-back repeat on any path)
+##   - determinism: same (chapter, seed) → identical graph
+##   - GameState.enter_chapter seats at start; choose_next_node walks children to
+##     the boss; illegal (non-child) + unknown jumps rejected
+##   - generate_linear() still yields the 8-round gauntlet (back-compat)
 
 
 func _ready() -> void:
@@ -38,164 +25,130 @@ func _ready() -> void:
 
 
 func _run() -> int:
-	var errors: int = 0
-
-	# ---- Basic generation: 8-round linear gauntlet -------------------------
+	var errors := 0
 	var g: MapGraph = MapGenerator.generate(1, 12345)
 	if g == null:
 		printerr("FATAL: generate returned null")
 		return 1
-	if g.size() != 8:
-		errors += 1; printerr("expected 8 nodes, got %d" % g.size())
-	if g.chapter != 1:
-		errors += 1; printerr("chapter field not propagated: got %d" % g.chapter)
-	if g.seed_value != 12345:
-		errors += 1; printerr("seed_value field not propagated: got %d" % g.seed_value)
 
-	# ---- Start invariants: r1 = COMBAT, depth 0, single child r2 -----------
-	if g.start_id != &"r1":
-		errors += 1; printerr("start_id = %s, expected r1" % g.start_id)
+	# ---- Structure --------------------------------------------------------
+	if g.size() < 10:
+		errors += 1; printerr("branching graph too small: %d nodes" % g.size())
+	if g.chapter != 1 or g.seed_value != 12345:
+		errors += 1; printerr("chapter/seed not propagated")
 	var start_node: MapNode = g.get_node_by_id(g.start_id)
-	if start_node == null:
-		errors += 1; printerr("start_id %s did not resolve" % g.start_id)
-	else:
-		if start_node.kind != GFEnums.NodeKind.COMBAT:
-			errors += 1; printerr("start kind = %d, expected COMBAT" % start_node.kind)
-		if start_node.depth != 0:
-			errors += 1; printerr("start depth = %d, expected 0" % start_node.depth)
-		if start_node.children.size() != 1 or start_node.children[0] != &"r2":
-			errors += 1; printerr("start children = %s, expected [r2]" % str(start_node.children))
-
-	# ---- Boss invariants: r8 = BOSS, depth 7, terminal ---------------------
-	if g.boss_id != &"r8":
-		errors += 1; printerr("boss_id = %s, expected r8" % g.boss_id)
+	if start_node == null or start_node.depth != 0 or start_node.kind != GFEnums.NodeKind.COMBAT:
+		errors += 1; printerr("start not a depth-0 COMBAT")
 	var boss_node: MapNode = g.get_node_by_id(g.boss_id)
-	if boss_node == null:
-		errors += 1; printerr("boss_id %s did not resolve" % g.boss_id)
-	else:
-		if boss_node.kind != GFEnums.NodeKind.BOSS:
-			errors += 1; printerr("boss kind = %d, expected BOSS" % boss_node.kind)
-		if boss_node.depth != 7:
-			errors += 1; printerr("boss depth = %d, expected 7" % boss_node.depth)
-		if boss_node.children.size() != 0:
-			errors += 1; printerr("boss children = %d, expected 0" % boss_node.children.size())
+	if boss_node == null or boss_node.kind != GFEnums.NodeKind.BOSS or boss_node.children.size() != 0:
+		errors += 1; printerr("boss not a terminal BOSS")
 
-	# ---- Round-kind layout + linear wiring ---------------------------------
-	var expected_kinds: Array[int] = [
-		GFEnums.NodeKind.COMBAT, GFEnums.NodeKind.COMBAT, GFEnums.NodeKind.COMBAT,
-		GFEnums.NodeKind.ELITE, GFEnums.NodeKind.HORDE, GFEnums.NodeKind.COMBAT,
-		GFEnums.NodeKind.HORDE, GFEnums.NodeKind.BOSS,
-	]
-	for i in range(8):
-		var nid: StringName = StringName("r%d" % (i + 1))
-		var n: MapNode = g.get_node_by_id(nid)
-		if n == null:
-			errors += 1; printerr("round %s missing" % nid)
-			continue
-		if n.kind != expected_kinds[i]:
-			errors += 1; printerr("%s kind = %d, expected %d" % [nid, n.kind, expected_kinds[i]])
-		if n.depth != i:
-			errors += 1; printerr("%s depth = %d, expected %d" % [nid, n.depth, i])
-		# Non-boss rounds point to exactly the next round.
-		if i < 7:
-			var want: StringName = StringName("r%d" % (i + 2))
-			if n.children.size() != 1 or n.children[0] != want:
-				errors += 1; printerr("%s children = %s, expected [%s]" % [nid, str(n.children), want])
-
-	# ---- Validate clean graph (terminal boss, no orphans/dangling) ---------
+	# ---- validate() clean -------------------------------------------------
 	var validation: Array[String] = g.validate()
 	if not validation.is_empty():
 		errors += 1; printerr("validate errors: %s" % str(validation))
 
-	# ---- Determinism: same seed → identical graph -------------------------
-	var g_again: MapGraph = MapGenerator.generate(1, 12345)
-	if g_again.size() != g.size():
-		errors += 1; printerr("determinism: size drift %d vs %d" % [g.size(), g_again.size()])
-	for nid in g.nodes.keys():
-		var n1: MapNode = g.nodes[nid]
-		var n2: MapNode = g_again.nodes.get(nid, null)
-		if n2 == null:
-			errors += 1; printerr("determinism: node %s missing in second gen" % nid)
+	# ---- Per-path SHOP + REST (full rows) + ELITE gate --------------------
+	var max_depth: int = boss_node.depth if boss_node != null else 0
+	var has_shop_row := false
+	var has_rest_row := false
+	var has_elite_gate := false
+	for d in range(max_depth + 1):
+		var row: Array[MapNode] = g.nodes_at_depth(d)
+		if row.is_empty():
 			continue
-		if n1.kind != n2.kind:
-			errors += 1; printerr("determinism: node %s kind drift" % nid)
-		if n1.depth != n2.depth:
-			errors += 1; printerr("determinism: node %s depth drift" % nid)
-		if n1.seed_offset != n2.seed_offset:
-			errors += 1; printerr("determinism: node %s seed_offset drift" % nid)
-		if n1.children != n2.children:
-			errors += 1; printerr("determinism: node %s children drift" % nid)
+		var all_shop := true
+		var all_rest := true
+		for n in row:
+			if n.kind != GFEnums.NodeKind.SHOP: all_shop = false
+			if n.kind != GFEnums.NodeKind.REST: all_rest = false
+			if n.kind == GFEnums.NodeKind.ELITE and d >= 6 and d <= 9: has_elite_gate = true
+		if all_shop: has_shop_row = true
+		if all_rest: has_rest_row = true
+	if not has_shop_row:
+		errors += 1; printerr("no full SHOP row — per-path shop not guaranteed")
+	if not has_rest_row:
+		errors += 1; printerr("no full REST row — per-path rest not guaranteed")
+	if not has_elite_gate:
+		errors += 1; printerr("no ELITE gate around depth 6-9")
 
-	# ---- Per-node make_rng determinism + sibling distinctness -------------
-	if start_node != null:
-		var rng_a := start_node.make_rng(99)
-		var rng_b := start_node.make_rng(99)
-		if rng_a.randi() != rng_b.randi():
-			errors += 1; printerr("per-node RNG not deterministic for same run_seed")
-	var r2node: MapNode = g.get_node_by_id(&"r2")
-	if start_node != null and r2node != null:
-		var s_rng := start_node.make_rng(99)
-		var r_rng := r2node.make_rng(99)
-		if s_rng.randi() == r_rng.randi():
-			errors += 1; printerr("sibling rounds share first-roll RNG (seed_offset not mixed)")
+	# ---- Encounter archetypes + no back-to-back repeat --------------------
+	for nid in g.nodes.keys():
+		var n: MapNode = g.nodes[nid]
+		if (n.kind == GFEnums.NodeKind.COMBAT or n.kind == GFEnums.NodeKind.ELITE) \
+				and n.encounter_id == &"":
+			errors += 1; printerr("combat node %s has no encounter_id" % nid); break
+	for nid in g.nodes.keys():
+		var n: MapNode = g.nodes[nid]
+		if n.encounter_id == &"":
+			continue
+		for cid in n.children:
+			var c: MapNode = g.get_node_by_id(cid)
+			if c != null and c.encounter_id != &"" and c.encounter_id == n.encounter_id:
+				errors += 1
+				printerr("back-to-back archetype %s: %s->%s" % [n.encounter_id, nid, cid]); break
 
-	# ---- GameState integration: enter_chapter + choose_next_node ----------
-	var dummy_pool: Array[Card] = _dummy_card_pool()
-	GameState.start_run(dummy_pool, &"map_test_warlord", 12345)
+	# ---- Determinism ------------------------------------------------------
+	var g2: MapGraph = MapGenerator.generate(1, 12345)
+	if g2.size() != g.size():
+		errors += 1; printerr("determinism: size drift %d vs %d" % [g.size(), g2.size()])
+	else:
+		for nid in g.nodes.keys():
+			var a: MapNode = g.nodes[nid]
+			var b: MapNode = g2.get_node_by_id(nid)
+			if b == null or a.kind != b.kind or a.depth != b.depth \
+					or a.encounter_id != b.encounter_id or a.children != b.children:
+				errors += 1; printerr("determinism drift at %s" % nid); break
 
+	# ---- Back-compat: generate_linear() still the 8-round gauntlet ---------
+	var lin: MapGraph = MapGenerator.generate_linear(1, 12345)
+	if lin.size() != 8 or lin.start_id != &"r1" or lin.boss_id != &"r8":
+		errors += 1; printerr("generate_linear drifted from the 8-round gauntlet")
+
+	# ---- GameState nav over the branching graph ---------------------------
+	GameState.start_run(_dummy_card_pool(), &"map_test_warlord", 12345)
 	var chapter_count: Array = [0]
 	var entered_count: Array = [0]
-	var on_chap := func(_num: int, _gph: MapGraph) -> void:
-		chapter_count[0] = (chapter_count[0] as int) + 1
-	var on_entered := func(_node: MapNode) -> void:
-		entered_count[0] = (entered_count[0] as int) + 1
+	var on_chap := func(_num, _gph): chapter_count[0] = int(chapter_count[0]) + 1
+	var on_entered := func(_node): entered_count[0] = int(entered_count[0]) + 1
 	GameState.chapter_started.connect(on_chap)
 	GameState.map_node_entered.connect(on_entered)
 
 	var built: MapGraph = GameState.enter_chapter(1)
 	if built == null:
 		errors += 1; printerr("enter_chapter returned null")
-	elif GameState.current_map_graph == null:
-		errors += 1; printerr("current_map_graph not set after enter_chapter")
-	if built != null and GameState.current_node_id != built.start_id:
-		errors += 1; printerr("current_node_id not seated at start, got %s" % GameState.current_node_id)
+	elif GameState.current_node_id != built.start_id:
+		errors += 1; printerr("not seated at start, got %s" % GameState.current_node_id)
 	if chapter_count[0] != 1:
 		errors += 1; printerr("chapter_started fired %d times (expected 1)" % chapter_count[0])
 	if GameState.current_phase != GFEnums.RunPhase.MAP:
 		errors += 1; printerr("phase not MAP after enter_chapter")
 
-	# Legal advance: r1 → r2
-	if not GameState.choose_next_node(&"r2"):
-		errors += 1; printerr("choose_next_node(r2) rejected legal advance")
-	if GameState.current_node_id != &"r2":
-		errors += 1; printerr("current_node_id not updated after legal advance")
-	if entered_count[0] != 1:
-		errors += 1; printerr("map_node_entered fired %d times (expected 1)" % entered_count[0])
+	if built != null:
+		if GameState.choose_next_node(built.boss_id):
+			errors += 1; printerr("illegal jump straight to boss accepted")
+		if GameState.choose_next_node(&"__nope__"):
+			errors += 1; printerr("unknown node id accepted")
+		var cur: StringName = built.start_id
+		var steps := 0
+		var entered_before: int = int(entered_count[0])
+		while cur != built.boss_id and steps < 30:
+			var node: MapNode = built.get_node_by_id(cur)
+			if node == null or node.children.is_empty():
+				break
+			var nxt: StringName = node.children[0]
+			if not GameState.choose_next_node(nxt):
+				errors += 1; printerr("legal advance to %s rejected" % nxt); break
+			if GameState.current_node_id != nxt:
+				errors += 1; printerr("current_node_id not updated to %s" % nxt); break
+			cur = nxt
+			steps += 1
+		if cur != built.boss_id:
+			errors += 1; printerr("did not reach boss on children[0] walk (stuck at %s)" % cur)
+		if int(entered_count[0]) - entered_before != steps:
+			errors += 1; printerr("map_node_entered count mismatch (%d fires, %d steps)" %
+					[int(entered_count[0]) - entered_before, steps])
 
-	# Illegal skip: r2 → r8 (rounds must be taken in order)
-	if GameState.choose_next_node(&"r8"):
-		errors += 1; printerr("choose_next_node(r8) ACCEPTED an illegal skip from r2")
-	if entered_count[0] != 1:
-		errors += 1; printerr("illegal skip still fired map_node_entered")
-
-	# Unknown node id
-	if GameState.choose_next_node(&"r_does_not_exist"):
-		errors += 1; printerr("choose_next_node(unknown) ACCEPTED an invalid id")
-
-	# Walk the rest legally: r3 → r4 → … → r8
-	for r in range(3, 9):
-		var nid: StringName = StringName("r%d" % r)
-		if not GameState.choose_next_node(nid):
-			errors += 1; printerr("choose_next_node(%s) rejected legal advance" % nid)
-	if GameState.current_node_id != &"r8":
-		errors += 1
-		printerr("not seated at boss r8 after the gauntlet, got %s" % GameState.current_node_id)
-	# map_node_entered fires once per legal advance: r2..r8 = 7 total.
-	if entered_count[0] != 7:
-		errors += 1
-		printerr("map_node_entered fired %d times (expected 7 for r2..r8)" % entered_count[0])
-
-	# Cleanup listeners so later suites don't see leaked connections.
 	if GameState.chapter_started.is_connected(on_chap):
 		GameState.chapter_started.disconnect(on_chap)
 	if GameState.map_node_entered.is_connected(on_entered):
@@ -204,8 +157,7 @@ func _run() -> int:
 	return errors
 
 
-## Minimal Card pool so start_run can build a deck. Map test doesn't care about
-## deck contents — just that GameState is valid when enter_chapter fires.
+## Minimal Card pool so start_run can build a deck.
 func _dummy_card_pool() -> Array[Card]:
 	var out: Array[Card] = []
 	for i in range(5):
