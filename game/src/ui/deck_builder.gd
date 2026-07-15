@@ -25,6 +25,7 @@ var _search: String = ""
 # ---- UI references (built in _build_ui; null in headless tests) ------------
 var _count_label: Label = null
 var _validation_label: Label = null
+var _curve_label: Label = null
 var _collection_grid: GridContainer = null
 var _deck_list: VBoxContainer = null
 var _start_btn: Button = null
@@ -251,6 +252,10 @@ func _build_ui() -> void:
 	deck_hdr.text = "Your deck"
 	deck_hdr.add_theme_font_size_override("font_size", 24)
 	deck_panel.add_child(deck_hdr)
+	_curve_label = Label.new()
+	_curve_label.add_theme_font_size_override("font_size", 15)
+	_curve_label.modulate = Color(1, 1, 1, 0.7)
+	deck_panel.add_child(_curve_label)
 	var deck_scroll := ScrollContainer.new()
 	deck_scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	deck_panel.add_child(deck_scroll)
@@ -326,7 +331,32 @@ func _refresh_deck_panel() -> void:
 		_count_label.text = "%d / %d" % [_deck_count(), DECK_SIZE]
 	if _start_btn != null:
 		_start_btn.disabled = _deck_count() != DECK_SIZE
+	if _curve_label != null:
+		_curve_label.text = _curve_text()
 	_refresh_validation()
+
+
+## DB-7: mana-curve buckets (cost -> count) over the current deck.
+func _cost_buckets() -> Dictionary:
+	var buckets: Dictionary = {}
+	for id in _deck:
+		var c: Card = CardDatabase.get_by_id(id)
+		if c == null:
+			continue
+		buckets[c.cost] = int(buckets.get(c.cost, 0)) + int(_deck[id])
+	return buckets
+
+
+func _curve_text() -> String:
+	var buckets := _cost_buckets()
+	if buckets.is_empty():
+		return "Curve  —"
+	var costs := buckets.keys()
+	costs.sort()
+	var parts: Array[String] = []
+	for c in costs:
+		parts.append("%d:%d" % [c, int(buckets[c])])
+	return "Curve  " + "   ".join(parts)
 
 
 func _refresh_validation() -> void:

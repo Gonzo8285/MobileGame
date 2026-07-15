@@ -102,5 +102,13 @@ func _run() -> int:
 		errors += 1
 		printerr("_use_last_deck: expected 3 valid cards, got %d" % db._deck_count())
 
+	# ---- DB-7: mana-curve buckets sum to the deck size --------------------
+	var bucket_sum := 0
+	for v in db._cost_buckets().values():
+		bucket_sum += int(v)
+	if bucket_sum != db._deck_count():
+		errors += 1
+		printerr("cost buckets sum %d != deck count %d" % [bucket_sum, db._deck_count()])
+
 	db.queue_free()
 	return errors
