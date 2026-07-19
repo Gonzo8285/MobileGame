@@ -1953,3 +1953,5 @@ _Claude-Code git heartbeat 2026-07-08 — pushed d005e2c "feat(engine): add warl
 _Claude-Code git heartbeat 2026-07-08 12:07 — pushed 6360061 "docs: heartbeat updates (2026-07-08)"_
 
 _Claude-Code git heartbeat 2026-07-15 14:23 — pushed 53fd0b4 "feat(engine): update map generator and runtime tests"_
+
+_Claude-Code git heartbeat 2026-07-15 16:06 — pushed 9ebd470 "feat(engine): update deck builder …and more"_
