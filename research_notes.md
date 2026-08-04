@@ -1955,3 +1955,5 @@ _Claude-Code git heartbeat 2026-07-08 12:07 — pushed 6360061 "docs: heartbeat 
 _Claude-Code git heartbeat 2026-07-15 14:23 — pushed 53fd0b4 "feat(engine): update map generator and runtime tests"_
 
 _Claude-Code git heartbeat 2026-07-15 16:06 — pushed 9ebd470 "feat(engine): update deck builder …and more"_
+
+**BLOCKED — needs Paul:** git push failed: `git push origin main` timed out after 2m (no error returned — likely a hung credential/auth prompt or network stall). Remote `main` is still at 71d2b45; local commit 9ff29c2 "docs: heartbeat updates (2026-07-19)" is committed but unpushed. Working tree was otherwise clean. Not retried per heartbeat rules.
