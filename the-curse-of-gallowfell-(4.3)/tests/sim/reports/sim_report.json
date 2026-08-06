@@ -1,0 +1,118 @@
+{
+  "avg_base_hp": 0.285,
+  "avg_base_hp_on_loss": 0,
+  "avg_combats_cleared": 2.21,
+  "runs": 200,
+  "telemetry": {
+    "C1": {
+      "damage": 285,
+      "drawn": 463,
+      "kills": 13,
+      "played": 426
+    },
+    "C2": {
+      "damage": 275,
+      "drawn": 456,
+      "kills": 16,
+      "played": 412
+    },
+    "C3": {
+      "damage": 184,
+      "drawn": 424,
+      "kills": 14,
+      "played": 392
+    },
+    "C4": {
+      "damage": 0,
+      "drawn": 419,
+      "kills": 0,
+      "played": 383
+    },
+    "C5": {
+      "damage": 686,
+      "drawn": 456,
+      "kills": 46,
+      "played": 280
+    },
+    "C6": {
+      "damage": 549,
+      "drawn": 428,
+      "kills": 33,
+      "played": 123
+    },
+    "M1": {
+      "damage": 293,
+      "drawn": 452,
+      "kills": 25,
+      "played": 425
+    },
+    "M2": {
+      "damage": 74,
+      "drawn": 443,
+      "kills": 0,
+      "played": 396
+    },
+    "M3": {
+      "damage": 268,
+      "drawn": 434,
+      "kills": 23,
+      "played": 391
+    },
+    "M4": {
+      "damage": 0,
+      "drawn": 398,
+      "kills": 0,
+      "played": 364
+    },
+    "M5": {
+      "damage": 289,
+      "drawn": 425,
+      "kills": 39,
+      "played": 255
+    },
+    "M6": {
+      "damage": 430,
+      "drawn": 447,
+      "kills": 17,
+      "played": 141
+    },
+    "P1": {
+      "damage": 197,
+      "drawn": 442,
+      "kills": 13,
+      "played": 413
+    },
+    "P2": {
+      "damage": 368,
+      "drawn": 417,
+      "kills": 24,
+      "played": 386
+    },
+    "P3": {
+      "damage": 206,
+      "drawn": 414,
+      "kills": 18,
+      "played": 375
+    },
+    "P4": {
+      "damage": 704,
+      "drawn": 449,
+      "kills": 45,
+      "played": 422
+    },
+    "P5": {
+      "damage": 658,
+      "drawn": 444,
+      "kills": 35,
+      "played": 267
+    },
+    "P6": {
+      "damage": 691,
+      "drawn": 443,
+      "kills": 39,
+      "played": 150
+    }
+  },
+  "win_rate": 0.21,
+  "wins": 42
+}

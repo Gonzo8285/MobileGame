@@ -38,7 +38,7 @@ func _run() -> int:
 	var sample: Card = CardDatabase.all_cards()[0] if total > 0 else null
 	if sample != null:
 		screen._show_detail(sample)
-		if screen.get_node_or_null("DetailOverlay") == null:
+		if screen.get_node_or_null("CardDetailOverlay") == null:
 			errors += 1; printerr("detail overlay did not open for %s" % sample.id)
 
 	# CO-4: type filter narrows the view to units only.

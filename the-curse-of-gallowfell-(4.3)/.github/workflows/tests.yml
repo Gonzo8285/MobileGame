@@ -1,0 +1,48 @@
+name: Gallowfell CI
+
+# Runs the headless test suite on every push / PR (build-gating) and the
+# balance simulator (report uploaded as an artifact, non-gating).
+
+on:
+  push:
+    branches: [ main, master, "**" ]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # Engine version the suite was validated against. Bump to match the team's
+  # editor version when standardised (project targets 4.x / Mobile).
+  GODOT_VERSION: "4.3-stable"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download Godot headless
+        run: |
+          set -e
+          URL="https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip"
+          curl -sL -o godot.zip "$URL"
+          unzip -q godot.zip
+          mv Godot_v${GODOT_VERSION}_linux.x86_64 godot
+          chmod +x godot
+          ./godot --version
+
+      - name: Import resources
+        run: ./godot --headless --editor --quit || true
+
+      - name: Run test suite (gating)
+        run: ./godot --headless res://tests/test_main.tscn
+
+      - name: Run balance simulation (non-gating)
+        run: ./godot --headless res://tests/sim/run_sim.tscn -- --runs 200 || true
+
+      - name: Upload balance report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: balance-report
+          path: tests/sim/reports/
+          if-no-files-found: ignore
