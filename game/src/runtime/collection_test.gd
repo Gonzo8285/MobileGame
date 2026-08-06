@@ -40,6 +40,22 @@ func _run() -> int:
 		screen._show_detail(sample)
 		if screen.get_node_or_null("DetailOverlay") == null:
 			errors += 1; printerr("detail overlay did not open for %s" % sample.id)
+
+	# CO-4: type filter narrows the view to units only.
+	screen._filter_type = GFEnums.CardType.UNIT
+	var units_only := true
+	var unit_count := 0
+	for c in screen._cards_in_view():
+		unit_count += 1
+		if c.card_type != GFEnums.CardType.UNIT:
+			units_only = false
+			break
+	if not units_only:
+		errors += 1; printerr("type filter leaked a non-unit card")
+	if unit_count == 0:
+		errors += 1; printerr("type=UNIT filter returned nothing")
+	screen._filter_type = -1
+
 	screen.queue_free()
 
 	return errors

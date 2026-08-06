@@ -30,6 +30,9 @@ const _KEYWORD_BLURBS := {
 
 var _active_faction: int = -1                  ## -1 = All
 var _search: String = ""
+var _filter_type: int = -1                     ## -1 = all, else GFEnums.CardType
+var _filter_rarity: int = -1                   ## -1 = all, else GFEnums.Rarity
+var _filter_cost_bucket: int = -1              ## -1 = all, 0 = 0-2, 1 = 3-4, 2 = 5+
 var _grid: GridContainer = null
 var _count_label: Label = null
 
@@ -94,6 +97,19 @@ func _build_ui() -> void:
 	search.text_changed.connect(func(t): _search = t; _rebuild_grid())
 	root.add_child(search)
 
+	# CO-4: type / rarity / cost dropdown filters.
+	var filt := HBoxContainer.new()
+	filt.add_theme_constant_override("separation", 10)
+	root.add_child(filt)
+	_add_dropdown(filt, [["All Types", -1], ["Units", GFEnums.CardType.UNIT],
+			["Spells", GFEnums.CardType.SPELL], ["Traps", GFEnums.CardType.TRAP]],
+			func(id: int): _filter_type = id)
+	_add_dropdown(filt, [["All Rarities", -1], ["Common", GFEnums.Rarity.COMMON],
+			["Uncommon", GFEnums.Rarity.UNCOMMON], ["Rare", GFEnums.Rarity.RARE]],
+			func(id: int): _filter_rarity = id)
+	_add_dropdown(filt, [["All Costs", -1], ["0-2", 0], ["3-4", 1], ["5+", 2]],
+			func(id: int): _filter_cost_bucket = id)
+
 	# Scrollable grid.
 	var scroll := ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -125,10 +141,41 @@ func _cards_in_view() -> Array:
 			else CardDatabase.by_faction(_active_faction)
 	var out: Array = []
 	for c in src:
-		if _search != "" and not c.display_name.to_lower().contains(_search.to_lower()):
-			continue
-		out.append(c)
+		if _passes(c):
+			out.append(c)
 	return out
+
+
+## CO-4: search + type/rarity/cost filter predicate.
+func _passes(c: Card) -> bool:
+	if _search != "" and not c.display_name.to_lower().contains(_search.to_lower()):
+		return false
+	if _filter_type != -1 and c.card_type != _filter_type:
+		return false
+	if _filter_rarity != -1 and c.rarity != _filter_rarity:
+		return false
+	if _filter_cost_bucket != -1 and _cost_bucket(c.cost) != _filter_cost_bucket:
+		return false
+	return true
+
+
+func _cost_bucket(cost: int) -> int:
+	if cost <= 2:
+		return 0
+	elif cost <= 4:
+		return 1
+	return 2
+
+
+func _add_dropdown(parent: HBoxContainer, entries: Array, on_pick: Callable) -> void:
+	var opt := OptionButton.new()
+	for e in entries:
+		opt.add_item(String(e[0]), int(e[1]))
+	opt.add_theme_font_size_override("font_size", 18)
+	opt.item_selected.connect(func(idx: int):
+		on_pick.call(opt.get_item_id(idx))
+		_rebuild_grid())
+	parent.add_child(opt)
 
 
 func _rebuild_grid() -> void:
