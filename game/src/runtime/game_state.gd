@@ -269,6 +269,25 @@ func end_run(victory: bool) -> void:
 	run_ended.emit(victory)
 
 
+## Apply a non-combat map node's effect (REST / SHRINE / EVENT) and return a
+## human-readable description. SHOP stays a stub until the shop screen lands.
+## (Branching-map follow-on — richer event choices come later.)
+func resolve_map_node_effect(kind: int) -> String:
+	match kind:
+		GFEnums.NodeKind.REST:
+			var healed: int = heal(int(round(float(max_base_hp) * 0.30)))
+			return "Rest — recovered %d HP." % healed
+		GFEnums.NodeKind.SHRINE:
+			var boon: int = heal(int(round(float(max_base_hp) * 0.15)))
+			gain_gems(2)
+			return "Shrine — a small mercy: +%d HP and 2 gems." % boon
+		GFEnums.NodeKind.EVENT:
+			gain_gems(3)
+			return "Event — fortune favours you: +3 gems."
+		_:
+			return "Nothing stirs here."
+
+
 # ============================================================================
 # Phase transitions
 # ============================================================================

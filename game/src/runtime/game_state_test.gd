@@ -132,6 +132,15 @@ func _run() -> int:
 	errors += _expect_eq("start_run_from_ids set warlord", GameState.active_warlord_id, &"db2_warlord")
 	errors += _expect_eq("start_run_from_ids set seed", GameState.run_seed, 777)
 
+	# ---- Non-combat map-node effects (REST heals, EVENT grants gems) ------
+	GameState.base_hp = 10
+	GameState.resolve_map_node_effect(GFEnums.NodeKind.REST)
+	errors += _expect_eq("REST heals ~30% of max",
+			GameState.base_hp, 10 + int(round(float(GameState.max_base_hp) * 0.30)))
+	var gems_before: int = GameState.gems
+	GameState.resolve_map_node_effect(GFEnums.NodeKind.EVENT)
+	errors += _expect_eq("EVENT grants gems", GameState.gems > gems_before, true)
+
 	print("Signals fired (%d total): %s" % [signal_log.size(), str(signal_log)])
 	return errors
 

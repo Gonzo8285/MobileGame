@@ -299,9 +299,10 @@ func _on_map_node_selected(node_id: StringName) -> void:
 		GFEnums.NodeKind.COMBAT, GFEnums.NodeKind.ELITE, GFEnums.NodeKind.HORDE, GFEnums.NodeKind.BOSS:
 			GameState.start_combat(5)  # 5-card opening hand
 		_:
-			# IMV-1: non-combat nodes auto-resolve with a console note + reward roll.
-			print("[run_controller] non-combat node kind=%s — auto-resolving (IMV-1 stub)" %
-					GFEnums.NodeKind.keys()[node.kind])
+			# Non-combat nodes apply their effect (REST/SHRINE/EVENT heal/gems),
+			# then roll a card reward. SHOP is still a stub (needs a shop screen).
+			var desc: String = GameState.resolve_map_node_effect(node.kind)
+			print("[run_controller] %s node — %s" % [GFEnums.NodeKind.keys()[node.kind], desc])
 			_award_reward_after_node()
 
 
