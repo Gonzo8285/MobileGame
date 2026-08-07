@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"M41"
+display_name = "Wraith-Caller of the Dirge"
+faction = 1
+card_type = 0
+rarity = 1
+cost = 3
+hp = 3
+attack = 2
+attack_range = 1
+cooldown = 1
+keywords = Array[int]([])
+effect_text = "When a friendly Mourner dies, the next Mourner you play this turn costs 1 less. Cap once per turn."
+flavour_text = "She sings the dirge from memory. The choir she trained has long since joined it."
+art_path = "res://assets/cards/ash_mourners/M41.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""
