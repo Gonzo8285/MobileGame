@@ -22,22 +22,31 @@ func _init(host: Node) -> void:
 # ---- content --------------------------------------------------------------
 
 func _starter_pool() -> Array[Card]:
+	## Cards live in per-faction subdirs (data/cards/<faction>/), so this must
+	## recurse — a top-level-only scan returns an empty pool and the whole
+	## simulation silently reports 0% win-rate instead of failing loudly.
 	var out: Array[Card] = []
-	var dir: DirAccess = DirAccess.open(CARDS_DIR)
+	_collect_starters(CARDS_DIR, out)
+	return out
+
+func _collect_starters(dir_path: String, out: Array[Card]) -> void:
+	var dir: DirAccess = DirAccess.open(dir_path)
 	if dir == null:
-		return out
+		return
 	dir.list_dir_begin()
 	var f: String = dir.get_next()
 	while f != "":
-		if not dir.current_is_dir() and f.ends_with(".tres"):
-			var c: Card = load(CARDS_DIR + f) as Card
+		if dir.current_is_dir():
+			if not f.begins_with("."):
+				_collect_starters(dir_path + f + "/", out)
+		elif f.ends_with(".tres"):
+			var c: Card = load(dir_path + f) as Card
 			if c != null and c.is_starter and c.card_type == GFEnums.CardType.UNIT:
 				# multiple copies so a deck is playable
 				out.append(c.duplicate_card())
 				out.append(c.duplicate_card())
 		f = dir.get_next()
 	dir.list_dir_end()
-	return out
 
 ## Escalating wave set — each combat is tougher than the last.
 func _waves() -> Array[Wave]:
@@ -58,6 +67,11 @@ func _waves() -> Array[Wave]:
 
 func simulate_run(seed_value: int, telem: Dictionary) -> Dictionary:
 	var pool: Array[Card] = _starter_pool()
+	if pool.is_empty():
+		# Fail loudly: an empty pool would otherwise report a plausible-looking
+		# 0% win-rate and hide a content/loader regression.
+		push_error("[sim] starter pool is EMPTY under %s — content or loader regression, aborting run" % CARDS_DIR)
+		return {"victory": false, "cleared": 0, "turns": 0, "aborted": true}
 	GameState.start_run(pool, &"sim", seed_value)
 	var waves: Array[Wave] = _waves()
 	var cleared: int = 0
