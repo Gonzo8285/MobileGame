@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="Card" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/data/card.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+id = &"C41"
+display_name = "Bog-Bargain Recall"
+faction = 2
+card_type = 1
+rarity = 1
+cost = 2
+hp = 0
+attack = 0
+attack_range = 0
+cooldown = 0
+keywords = Array[int]([])
+effect_text = "Choose a friendly unit. Return it to your hand. If it had Persist, that unit's Persist marker resets — it can Persist again this combat."
+flavour_text = "The bog gives, the bog takes, the bog gives again. The bog charges interest."
+art_path = "res://assets/cards/coven/C41.webp"
+icon_path = ""
+sfx_play = ""
+sfx_death = ""
+is_draftable = true
+is_starter = false
+unlock_tag = &""
